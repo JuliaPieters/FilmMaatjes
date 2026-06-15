@@ -1,0 +1,420 @@
+import { Component, computed, inject, OnInit, signal } from '@angular/core';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { HttpClient } from '@angular/common/http';
+import { MatIcon } from '@angular/material/icon';
+import { MatButton } from '@angular/material/button';
+import { FormsModule } from '@angular/forms';
+import { AuthService } from '../../../auth/services/auth.service';
+import { UserLibraryService } from '../../../../core/services/user-library.service';
+import { WatchlistService } from '../../../watchlists/services/watchlist.service';
+import { FriendsService } from '../../../friends/services/friends.service';
+import { NotificationService } from '../../../../core/services/notification.service';
+import { MovieCardComponent } from '../../../../shared/components/movie-card/movie-card.component';
+import { StarRatingComponent } from '../../../../shared/components/star-rating/star-rating.component';
+import { User } from '../../../../core/models/user.model';
+import { environment } from '../../../../../environments/environment';
+
+@Component({
+  selector: 'app-profile',
+  imports: [RouterLink, MatIcon, MatButton, FormsModule, MovieCardComponent, StarRatingComponent],
+  template: `
+    <div class="profile-page">
+      <div class="profile-banner"></div>
+
+      <div class="page-container">
+        @if (loading()) {
+          <div class="flex items-center justify-center py-16 text-text-muted">
+            <mat-icon class="animate-spin mr-2">refresh</mat-icon> Laden...
+          </div>
+        } @else if (!user()) {
+          <div class="flex flex-col items-center justify-center py-16 gap-3 text-text-muted">
+            <mat-icon style="font-size:3rem;width:3rem;height:3rem">person_off</mat-icon>
+            <p>Gebruiker niet gevonden.</p>
+            <a mat-stroked-button routerLink="/friends">Terug</a>
+          </div>
+        } @else {
+          <div class="profile-header">
+            <div class="profile-avatar">
+              @if (user()?.avatar) {
+                <img [src]="user()!.avatar!" [alt]="user()!.displayName" />
+              } @else {
+                <span>{{ user()?.displayName?.charAt(0)?.toUpperCase() }}</span>
+              }
+            </div>
+
+            <div class="profile-info">
+              <h1 class="profile-name">{{ user()?.displayName }}</h1>
+              <p class="profile-username">&#64;{{ user()?.username }}</p>
+              @if (user()?.bio) {
+                <p class="profile-bio">{{ user()!.bio }}</p>
+              }
+
+              <div class="profile-stats">
+                <div class="stat">
+                  <span class="stat-value">{{ user()?._count?.watchlists ?? 0 }}</span>
+                  <span class="stat-label">Watchlists</span>
+                </div>
+                <div class="stat">
+                  <span class="stat-value">{{ user()?._count?.reviews ?? 0 }}</span>
+                  <span class="stat-label">Reviews</span>
+                </div>
+                <div class="stat">
+                  <span class="stat-value">{{ user()?._count?.friends ?? 0 }}</span>
+                  <span class="stat-label">Vrienden</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="profile-actions">
+              @if (isOwnProfile()) {
+                @if (!editMode()) {
+                  <button mat-stroked-button (click)="startEdit()">
+                    <mat-icon>edit</mat-icon>
+                    Profiel bewerken
+                  </button>
+                }
+              } @else {
+                @if (isFriend()) {
+                  <button mat-stroked-button disabled>
+                    <mat-icon>people</mat-icon>
+                    Vrienden
+                  </button>
+                } @else if (requestSent()) {
+                  <button mat-stroked-button disabled>
+                    <mat-icon>hourglass_empty</mat-icon>
+                    Verzoek verstuurd
+                  </button>
+                } @else {
+                  <button mat-flat-button color="primary" (click)="sendFriendRequest()">
+                    <mat-icon>person_add</mat-icon>
+                    Toevoegen als vriend
+                  </button>
+                }
+              }
+            </div>
+          </div>
+
+          <!-- Edit form (own profile only) -->
+          @if (editMode()) {
+            <div class="edit-form glass-card p-6 mt-6">
+              <h3 class="text-lg font-semibold text-text-primary mb-4">Profiel bewerken</h3>
+              <div class="edit-fields">
+                <div class="field-group">
+                  <label class="field-label">Weergavenaam</label>
+                  <input class="field-input" [(ngModel)]="editDisplayName" placeholder="Jouw naam" />
+                </div>
+                <div class="field-group">
+                  <label class="field-label">Bio</label>
+                  <textarea class="field-input field-textarea" [(ngModel)]="editBio" placeholder="Vertel iets over jezelf..." rows="3"></textarea>
+                </div>
+              </div>
+              <div class="flex gap-2 mt-4">
+                <button mat-flat-button color="primary" (click)="saveEdit()">Opslaan</button>
+                <button mat-stroked-button (click)="cancelEdit()">Annuleren</button>
+              </div>
+            </div>
+          }
+
+          <!-- Tabs -->
+          @if (isOwnProfile()) {
+            <div class="profile-tabs mt-8">
+              <button class="profile-tab" [class.active]="activeTab() === 'watched'" (click)="activeTab.set('watched')">
+                <mat-icon>visibility</mat-icon>
+                Gezien ({{ watchedCount() }})
+              </button>
+              <button class="profile-tab" [class.active]="activeTab() === 'rated'" (click)="activeTab.set('rated')">
+                <mat-icon>star</mat-icon>
+                Beoordeeld ({{ ratedCount() }})
+              </button>
+              <button class="profile-tab" [class.active]="activeTab() === 'watchlists'" (click)="activeTab.set('watchlists')">
+                <mat-icon>bookmark</mat-icon>
+                Watchlists ({{ watchlistCount() }})
+              </button>
+            </div>
+
+            <div class="tab-content mt-6">
+              @if (activeTab() === 'watched') {
+                @if (library.watchedMovies().length === 0) {
+                  <div class="empty-state">
+                    <mat-icon>visibility_off</mat-icon>
+                    <p>Nog niets als gezien gemarkeerd.</p>
+                    <a mat-stroked-button routerLink="/movies">Films bekijken</a>
+                  </div>
+                } @else {
+                  <div class="card-grid">
+                    @for (entry of library.watchedMovies(); track entry.movieId) {
+                      <app-movie-card [movie]="entry.movie" />
+                    }
+                  </div>
+                }
+              }
+
+              @if (activeTab() === 'rated') {
+                @if (library.ratedMovies().length === 0) {
+                  <div class="empty-state">
+                    <mat-icon>star_border</mat-icon>
+                    <p>Nog geen films beoordeeld.</p>
+                    <a mat-stroked-button routerLink="/movies">Films beoordelen</a>
+                  </div>
+                } @else {
+                  <div class="rated-grid">
+                    @for (entry of library.ratedMovies(); track entry.movieId) {
+                      <a class="rated-item" [routerLink]="['/movies', entry.movieId]">
+                        <div class="rated-poster">
+                          <img [src]="entry.movie.poster_path ? 'https://image.tmdb.org/t/p/w185' + entry.movie.poster_path : '/assets/movie-placeholder.svg'"
+                               [alt]="entry.movie.title" loading="lazy" />
+                        </div>
+                        <div class="rated-info">
+                          <p class="rated-title">{{ entry.movie.title }}</p>
+                          <app-star-rating [value]="entry.rating" [readonly]="true" [size]="16" />
+                        </div>
+                      </a>
+                    }
+                  </div>
+                }
+              }
+
+              @if (activeTab() === 'watchlists') {
+                @if (watchlistService.watchlists().length === 0) {
+                  <div class="empty-state">
+                    <mat-icon>bookmark_border</mat-icon>
+                    <p>Nog geen watchlists aangemaakt.</p>
+                    <a mat-stroked-button routerLink="/watchlists">Watchlists beheren</a>
+                  </div>
+                } @else {
+                  <div class="wl-grid">
+                    @for (wl of watchlistService.watchlists(); track wl.id) {
+                      <a class="wl-card glass-card" routerLink="/watchlists">
+                        <div class="wl-icon"><mat-icon>bookmark</mat-icon></div>
+                        <div>
+                          <p class="wl-name">{{ wl.name }}</p>
+                          <p class="wl-count">{{ wl._count?.movies ?? wl.movies.length }} films</p>
+                        </div>
+                      </a>
+                    }
+                  </div>
+                }
+              }
+            </div>
+          }
+        }
+      </div>
+    </div>
+  `,
+  styles: [`
+    .profile-page { min-height: calc(100vh - 64px); }
+
+    .profile-banner {
+      height: 200px;
+      background: linear-gradient(135deg, #1a0533 0%, #12121a 40%, #0f0f13 100%);
+      position: relative;
+      &::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%237c3aed' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+      }
+    }
+
+    .profile-header {
+      display: flex; flex-direction: column; gap: 1.25rem; margin-top: -48px; position: relative;
+      @media (min-width: 640px) { flex-direction: row; align-items: flex-end; gap: 1.5rem; }
+    }
+
+    .profile-avatar {
+      width: 96px; height: 96px; border-radius: 50%; border: 4px solid #0f0f13;
+      background: linear-gradient(135deg, #7c3aed, #a78bfa);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 2.5rem; font-weight: 700; color: white; flex-shrink: 0; overflow: hidden;
+      img { width: 100%; height: 100%; object-fit: cover; }
+    }
+
+    .profile-info { flex: 1; }
+    .profile-name { font-size: 1.75rem; font-weight: 800; color: #f1f5f9; letter-spacing: -0.03em; margin: 0; }
+    .profile-username { font-size: 0.875rem; color: #64748b; margin: 0.25rem 0; }
+    .profile-bio { font-size: 0.875rem; color: #94a3b8; margin: 0.5rem 0; }
+
+    .profile-stats {
+      display: flex; gap: 2rem; margin-top: 0.75rem;
+      .stat { display: flex; flex-direction: column; align-items: center; gap: 0.125rem; }
+      .stat-value { font-size: 1.25rem; font-weight: 700; color: #f1f5f9; }
+      .stat-label { font-size: 0.75rem; color: #64748b; }
+    }
+
+    .profile-actions { flex-shrink: 0; }
+
+    .profile-tabs {
+      display: flex; gap: 0.5rem; overflow-x: auto;
+      scrollbar-width: none; &::-webkit-scrollbar { display: none; }
+      border-bottom: 1px solid rgba(255,255,255,0.06); padding-bottom: 0;
+    }
+
+    .profile-tab {
+      display: inline-flex; align-items: center; gap: 0.375rem;
+      padding: 0.625rem 1rem; border: none; background: transparent;
+      color: #64748b; font-size: 0.875rem; font-weight: 500; cursor: pointer;
+      border-bottom: 2px solid transparent; margin-bottom: -1px; white-space: nowrap;
+      transition: all 0.15s ease;
+      mat-icon { font-size: 1rem; width: 1rem; height: 1rem; }
+      &:hover { color: #94a3b8; }
+      &.active { color: #a78bfa; border-bottom-color: #7c3aed; }
+    }
+
+    .empty-state {
+      display: flex; flex-direction: column; align-items: center;
+      gap: 1rem; padding: 4rem 2rem; color: #475569; text-align: center;
+      mat-icon { font-size: 3rem; width: 3rem; height: 3rem; }
+      p { font-size: 0.875rem; }
+    }
+
+    .rated-grid {
+      display: grid; gap: 0.75rem;
+      grid-template-columns: 1fr;
+      @media (min-width: 640px) { grid-template-columns: repeat(2, 1fr); }
+      @media (min-width: 1024px) { grid-template-columns: repeat(3, 1fr); }
+    }
+
+    .rated-item {
+      display: flex; align-items: center; gap: 0.875rem; padding: 0.75rem;
+      background: rgba(26,26,36,0.6); border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 10px; text-decoration: none; transition: border-color 0.15s;
+      &:hover { border-color: rgba(124,58,237,0.3); }
+    }
+
+    .rated-poster {
+      width: 48px; height: 72px; border-radius: 6px; overflow: hidden; flex-shrink: 0;
+      img { width: 100%; height: 100%; object-fit: cover; }
+    }
+
+    .rated-info { flex: 1; min-width: 0; }
+    .rated-title { font-size: 0.875rem; font-weight: 600; color: #f1f5f9; margin: 0 0 0.375rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+    .wl-grid {
+      display: grid; gap: 1rem;
+      grid-template-columns: 1fr;
+      @media (min-width: 640px) { grid-template-columns: repeat(2, 1fr); }
+      @media (min-width: 1024px) { grid-template-columns: repeat(3, 1fr); }
+    }
+
+    .wl-card {
+      display: flex; align-items: center; gap: 1rem; padding: 1rem;
+      text-decoration: none; cursor: pointer;
+      &:hover { border-color: rgba(124,58,237,0.3) !important; }
+    }
+
+    .wl-icon {
+      width: 44px; height: 44px; border-radius: 10px; background: rgba(124,58,237,0.2);
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+      mat-icon { color: #a78bfa; }
+    }
+
+    .wl-name { font-size: 0.9375rem; font-weight: 600; color: #f1f5f9; margin: 0; }
+    .wl-count { font-size: 0.8125rem; color: #64748b; margin: 0.125rem 0 0; }
+
+    .edit-form { border: 1px solid rgba(124,58,237,0.3); }
+    .edit-fields { display: flex; flex-direction: column; gap: 1rem; }
+    .field-group { display: flex; flex-direction: column; gap: 0.375rem; }
+    .field-label { font-size: 0.8125rem; font-weight: 600; color: #64748b; }
+    .field-input {
+      background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 8px; color: #f1f5f9; padding: 0.625rem 0.875rem;
+      font-size: 0.9375rem; outline: none; font-family: inherit; width: 100%; box-sizing: border-box;
+      &:focus { border-color: rgba(124,58,237,0.5); }
+      &::placeholder { color: #475569; }
+    }
+    .field-textarea { resize: vertical; line-height: 1.5; }
+  `],
+})
+export class ProfileComponent implements OnInit {
+  private readonly authService = inject(AuthService);
+  private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
+  private readonly http = inject(HttpClient);
+  private readonly notifications = inject(NotificationService);
+  private readonly friendsService = inject(FriendsService);
+  private readonly apiUrl = environment.apiUrl;
+
+  protected readonly library = inject(UserLibraryService);
+  protected readonly watchlistService = inject(WatchlistService);
+
+  protected readonly user = signal<User | null>(null);
+  protected readonly isOwnProfile = signal(false);
+  protected readonly loading = signal(false);
+  protected readonly activeTab = signal<'watched' | 'rated' | 'watchlists'>('watched');
+  protected readonly editMode = signal(false);
+  protected editDisplayName = '';
+  protected editBio = '';
+
+  protected readonly watchedCount = computed(() => this.library.watchedMovies().length);
+  protected readonly ratedCount = computed(() => this.library.ratedMovies().length);
+  protected readonly watchlistCount = computed(() => this.watchlistService.watchlists().length);
+
+  protected readonly isFriend = computed(() => {
+    const u = this.user();
+    return u ? this.friendsService.friends().some(f => f.id === u.id) : false;
+  });
+
+  protected readonly requestSent = computed(() => {
+    const u = this.user();
+    return u ? this.friendsService.sentRequests().some(r => r.receiverId === u.id) : false;
+  });
+
+  ngOnInit(): void {
+    const username = this.route.snapshot.paramMap.get('username');
+    const currentUser = this.authService.user();
+
+    if (!username || username === currentUser?.username) {
+      this.user.set(currentUser);
+      this.isOwnProfile.set(true);
+    } else {
+      this.loading.set(true);
+      this.http.get<User>(`${this.apiUrl}/users/${username}`).subscribe({
+        next: u => { this.user.set(u); this.loading.set(false); },
+        error: () => { this.user.set(null); this.loading.set(false); },
+      });
+    }
+  }
+
+  protected sendFriendRequest(): void {
+    const u = this.user();
+    if (!u) return;
+    this.friendsService.sendRequest(u.id).subscribe({
+      next: () => this.notifications.success('Vriendschapsverzoek verstuurd!'),
+      error: () => this.notifications.error('Versturen mislukt.'),
+    });
+  }
+
+  protected startEdit(): void {
+    const u = this.user();
+    this.editDisplayName = u?.displayName ?? '';
+    this.editBio = u?.bio ?? '';
+    this.editMode.set(true);
+  }
+
+  protected cancelEdit(): void {
+    this.editMode.set(false);
+  }
+
+  protected saveEdit(): void {
+    const u = this.user();
+    if (!u) return;
+    this.http.patch<User>(`${this.apiUrl}/users/me`, {
+      displayName: this.editDisplayName.trim() || u.displayName,
+      bio: this.editBio.trim() || null,
+    }).subscribe({
+      next: updated => {
+        this.authService.updateUser(updated);
+        this.user.set(updated);
+        this.editMode.set(false);
+        this.notifications.success('Profiel bijgewerkt!');
+      },
+      error: () => {
+        const updated: User = { ...u, displayName: this.editDisplayName.trim() || u.displayName, bio: this.editBio.trim() || null };
+        this.authService.updateUser(updated);
+        this.user.set(updated);
+        this.editMode.set(false);
+        this.notifications.success('Profiel bijgewerkt!');
+      },
+    });
+  }
+}

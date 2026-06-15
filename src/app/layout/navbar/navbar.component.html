@@ -1,0 +1,126 @@
+<header class="navbar">
+  <div class="navbar-inner">
+    <div class="navbar-left">
+      <a routerLink="/" class="logo" (click)="closeMobileMenu()">
+        <div class="logo-icon">
+          <mat-icon>local_movies</mat-icon>
+        </div>
+        <span class="logo-text">FilmMaatjes</span>
+      </a>
+    </div>
+
+    <nav class="navbar-center">
+      @for (link of navLinks; track link.route) {
+        <a
+          [routerLink]="link.route"
+          routerLinkActive="nav-link-active"
+          class="nav-link"
+        >
+          {{ link.label }}
+        </a>
+      }
+    </nav>
+
+    <div class="navbar-right">
+      <a mat-icon-button routerLink="/movies/search" matTooltip="Zoeken">
+        <mat-icon>search</mat-icon>
+      </a>
+
+      @if (authService.isAuthenticated()) {
+        <a mat-icon-button routerLink="/watchlists" matTooltip="Watchlists">
+          <mat-icon>bookmark</mat-icon>
+        </a>
+
+        <button
+          mat-icon-button
+          [matMenuTriggerFor]="userMenu"
+          class="avatar-btn"
+        >
+          <div class="avatar">
+            @if (authService.user()?.avatar) {
+              <img [src]="authService.user()!.avatar" [alt]="authService.user()!.displayName" />
+            } @else {
+              <span>{{ authService.user()?.displayName?.charAt(0)?.toUpperCase() }}</span>
+            }
+          </div>
+        </button>
+
+        <mat-menu #userMenu="matMenu" class="user-menu">
+          <div class="user-menu-header">
+            <p class="user-display-name">{{ authService.user()?.displayName }}</p>
+            <p class="user-username">&#64;{{ authService.user()?.username }}</p>
+          </div>
+          <mat-divider />
+          <a mat-menu-item routerLink="/profile">
+            <mat-icon>person</mat-icon>
+            <span>Profiel</span>
+          </a>
+          <a mat-menu-item routerLink="/watchlists">
+            <mat-icon>bookmark</mat-icon>
+            <span>Mijn Watchlists</span>
+          </a>
+          <a mat-menu-item routerLink="/dashboard">
+            <mat-icon>dashboard</mat-icon>
+            <span>Dashboard</span>
+          </a>
+          <mat-divider />
+          <button mat-menu-item (click)="logout()">
+            <mat-icon>logout</mat-icon>
+            <span>Uitloggen</span>
+          </button>
+        </mat-menu>
+      } @else {
+        <a mat-button routerLink="/auth/login" class="login-btn">Inloggen</a>
+        <a mat-flat-button routerLink="/auth/register" color="primary" class="register-btn">
+          Aanmelden
+        </a>
+      }
+
+      <button
+        mat-icon-button
+        class="mobile-menu-btn"
+        (click)="toggleMobileMenu()"
+        [attr.aria-expanded]="mobileMenuOpen()"
+      >
+        <mat-icon>{{ mobileMenuOpen() ? 'close' : 'menu' }}</mat-icon>
+      </button>
+    </div>
+  </div>
+
+  @if (mobileMenuOpen()) {
+    <div class="mobile-menu">
+      @for (link of navLinks; track link.route) {
+        <a
+          [routerLink]="link.route"
+          class="mobile-nav-link"
+          (click)="closeMobileMenu()"
+        >
+          <mat-icon>{{ link.icon }}</mat-icon>
+          {{ link.label }}
+        </a>
+      }
+
+      @if (authService.isAuthenticated()) {
+        <a routerLink="/watchlists" class="mobile-nav-link" (click)="closeMobileMenu()">
+          <mat-icon>bookmark</mat-icon>
+          Watchlists
+        </a>
+        <a routerLink="/profile" class="mobile-nav-link" (click)="closeMobileMenu()">
+          <mat-icon>person</mat-icon>
+          Profiel
+        </a>
+        <button class="mobile-nav-link logout-btn" (click)="logout()">
+          <mat-icon>logout</mat-icon>
+          Uitloggen
+        </button>
+      } @else {
+        <div class="mobile-auth-btns">
+          <a mat-stroked-button routerLink="/auth/login" (click)="closeMobileMenu()">Inloggen</a>
+          <a mat-flat-button color="primary" routerLink="/auth/register" (click)="closeMobileMenu()">
+            Aanmelden
+          </a>
+        </div>
+      }
+    </div>
+  }
+</header>

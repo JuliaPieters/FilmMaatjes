@@ -1,0 +1,122 @@
+<div class="landing">
+  <section class="hero">
+    <div class="hero-bg">
+      <div class="hero-gradient"></div>
+      <div class="hero-particles"></div>
+    </div>
+
+    <div class="hero-content">
+      <div class="hero-badge">
+        <mat-icon>auto_awesome</mat-icon>
+        <span>Jouw filmwereld begint hier</span>
+      </div>
+
+      <h1 class="hero-title">
+        Ontdek Films.<br>
+        <span class="gradient-text">Deel Verhalen.</span><br>
+        Vind Jouw Favoriet.
+      </h1>
+
+      <p class="hero-subtitle">
+        FilmMaatjes is het sociale filmplatform voor filmliefhebbers.
+        Beoordeel films, maak watchlists en ontdek nieuwe favorieten met vrienden.
+      </p>
+
+      <div class="hero-actions">
+        @if (authService.isAuthenticated()) {
+          <a mat-flat-button color="primary" routerLink="/dashboard" class="hero-cta-primary">
+            <mat-icon>dashboard</mat-icon>
+            Naar Dashboard
+          </a>
+          <a mat-stroked-button routerLink="/movies" class="hero-cta-secondary">
+            <mat-icon>movie</mat-icon>
+            Films ontdekken
+          </a>
+        } @else {
+          <a mat-flat-button color="primary" routerLink="/auth/register" class="hero-cta-primary">
+            <mat-icon>person_add</mat-icon>
+            Gratis aanmelden
+          </a>
+          <a mat-stroked-button routerLink="/movies" class="hero-cta-secondary">
+            <mat-icon>explore</mat-icon>
+            Films ontdekken
+          </a>
+        }
+      </div>
+
+      <p class="hero-note">Helemaal gratis &bull; Geen creditcard nodig</p>
+    </div>
+
+    <div class="hero-film-strip">
+      <div class="film-strip-inner">
+        @for (i of [1,2,3,4,5,6,7,8,9,10]; track i) {
+          <div class="film-frame"></div>
+        }
+      </div>
+    </div>
+  </section>
+
+  <section class="features-section">
+    <div class="page-container">
+      <div class="features-header">
+        <h2>Alles wat je nodig hebt als filmliefhebber</h2>
+        <p>Van beoordelingen tot watchlists en de unieke Film Roulette — FilmMaatjes heeft het allemaal.</p>
+      </div>
+
+      <div class="features-grid">
+        @for (feature of features; track feature.title) {
+          <div class="feature-card glass-card p-6">
+            <div class="feature-icon" [style.background]="feature.color + '20'" [style.border-color]="feature.color + '30'">
+              <mat-icon [style.color]="feature.color">{{ feature.icon }}</mat-icon>
+            </div>
+            <h3 class="feature-title">{{ feature.title }}</h3>
+            <p class="feature-desc">{{ feature.description }}</p>
+          </div>
+        }
+      </div>
+    </div>
+  </section>
+
+  @if (trendingMovies().length > 0) {
+    <section class="trending-section">
+      <div class="page-container">
+        <div class="flex items-center justify-between mb-6">
+          <h2 class="section-title">Trending deze week</h2>
+          <a routerLink="/movies" class="see-all">
+            Alle films
+            <mat-icon style="font-size: 1rem; width: 1rem; height: 1rem;">arrow_forward</mat-icon>
+          </a>
+        </div>
+        <div class="card-grid">
+          @for (movie of trendingMovies(); track movie.id) {
+            <app-movie-card [movie]="movie" />
+          }
+        </div>
+      </div>
+    </section>
+  }
+
+  <section class="cta-section">
+    <div class="page-container">
+      <div class="cta-card">
+        <div class="cta-icon">
+          <mat-icon>local_movies</mat-icon>
+        </div>
+        <h2 class="cta-title">Klaar om te beginnen?</h2>
+        <p class="cta-subtitle">
+          Sluit je aan bij duizenden filmliefhebbers en ontdek jouw volgende favoriete film.
+        </p>
+        @if (!authService.isAuthenticated()) {
+          <a mat-flat-button color="primary" routerLink="/auth/register" class="cta-btn">
+            Maak een gratis account aan
+          </a>
+        } @else {
+          <a mat-flat-button color="primary" routerLink="/roulette" class="cta-btn">
+            <mat-icon>casino</mat-icon>
+            Probeer Film Roulette
+          </a>
+        }
+      </div>
+    </div>
+  </section>
+</div>

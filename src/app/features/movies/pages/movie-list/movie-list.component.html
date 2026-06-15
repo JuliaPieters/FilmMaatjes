@@ -1,0 +1,54 @@
+<div class="page-container">
+  <div class="flex items-center justify-between mb-6">
+    <h1 class="text-3xl font-bold text-text-primary tracking-tight">Films</h1>
+    <a mat-stroked-button routerLink="/movies/search">
+      <mat-icon>search</mat-icon>
+      Zoeken
+    </a>
+  </div>
+
+  @if (!hasApiKey) {
+    <div class="api-key-notice">
+      <mat-icon style="font-size: 3rem; width: 3rem; height: 3rem;" class="mb-3 text-accent-light">key</mat-icon>
+      <h2 class="text-xl font-semibold text-text-primary mb-2">TMDB API-sleutel nodig</h2>
+      <p class="text-text-secondary max-w-md text-center">
+        Voeg je sleutel toe aan
+        <code class="bg-surface-50 px-2 py-0.5 rounded text-accent-light">src/environments/environment.ts</code>.
+      </p>
+    </div>
+  } @else {
+    <div class="tab-bar">
+      @for (tab of tabs; track tab.category) {
+        <button
+          class="tab-btn"
+          [class.active]="selectedTab() === $index"
+          (click)="onTabChange($index)"
+        >
+          <mat-icon>{{ tab.icon }}</mat-icon>
+          {{ tab.label }}
+        </button>
+      }
+    </div>
+
+    @if (error()) {
+      <div class="error-state">
+        <mat-icon style="font-size: 2.5rem; width: 2.5rem; height: 2.5rem;" class="text-red-400 mb-3">error_outline</mat-icon>
+        <p class="text-text-secondary">{{ error() }}</p>
+      </div>
+    } @else if (movies().length === 0 && loading()) {
+      <app-loading-spinner message="Films laden..." [minHeight]="'400px'" />
+    } @else {
+      <div class="card-grid mt-4">
+        @for (movie of movies(); track movie.id) {
+          <app-movie-card [movie]="movie" [showActions]="true" />
+        }
+      </div>
+
+      @if (loading()) {
+        <div class="flex justify-center py-8">
+          <app-loading-spinner [diameter]="36" />
+        </div>
+      }
+    }
+  }
+</div>

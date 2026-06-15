@@ -1,0 +1,114 @@
+<div class="page-container">
+  <div class="dashboard-welcome">
+    <div>
+      <h1 class="welcome-title">
+        Hoi, <span class="gradient-text">{{ authService.user()?.displayName }}</span>!
+      </h1>
+      <p class="welcome-subtitle">Wat ga je vandaag kijken?</p>
+    </div>
+    <div class="flex gap-3 flex-wrap">
+      <a mat-flat-button color="primary" routerLink="/roulette" class="quick-action">
+        <mat-icon>casino</mat-icon>
+        Film Roulette
+      </a>
+      <a mat-stroked-button routerLink="/movies/search" class="quick-action">
+        <mat-icon>search</mat-icon>
+        Zoeken
+      </a>
+      <a mat-stroked-button routerLink="/matcher" class="quick-action">
+        <mat-icon>people</mat-icon>
+        Film Matcher
+      </a>
+    </div>
+  </div>
+
+  <div class="stats-row">
+    <a routerLink="/watchlists" class="stat-card glass-card">
+      <mat-icon class="stat-icon" style="color: #7c3aed;">bookmark</mat-icon>
+      <div>
+        <p class="stat-value">{{ watchlistCount() }}</p>
+        <p class="stat-label">Watchlists</p>
+      </div>
+    </a>
+    <a routerLink="/profile" class="stat-card glass-card">
+      <mat-icon class="stat-icon" style="color: #06b6d4;">check_circle</mat-icon>
+      <div>
+        <p class="stat-value">{{ watchedCount() }}</p>
+        <p class="stat-label">Gezien</p>
+      </div>
+    </a>
+    <a routerLink="/friends" class="stat-card glass-card">
+      <mat-icon class="stat-icon" style="color: #ec4899;">people</mat-icon>
+      <div>
+        <p class="stat-value">{{ friendsCount() }}</p>
+        <p class="stat-label">Vrienden</p>
+      </div>
+    </a>
+    <a routerLink="/profile" class="stat-card glass-card">
+      <mat-icon class="stat-icon" style="color: #f59e0b;">star</mat-icon>
+      <div>
+        <p class="stat-value">{{ ratedCount() }}</p>
+        <p class="stat-label">Beoordeeld</p>
+      </div>
+    </a>
+  </div>
+
+  @if (loading()) {
+    <app-loading-spinner message="Films laden..." />
+  } @else if (!hasApiKey) {
+    <div class="api-notice glass-card p-6 mt-6 flex items-center gap-4">
+      <mat-icon class="text-accent-light text-3xl flex-shrink-0" style="font-size: 2rem; width: 2rem; height: 2rem;">info</mat-icon>
+      <div>
+        <p class="text-text-primary font-medium">TMDB API-sleutel nodig</p>
+        <p class="text-text-muted text-sm mt-1">
+          Voeg je TMDB API-sleutel toe aan <code class="bg-surface-50 px-1.5 py-0.5 rounded text-accent-light text-xs">src/environments/environment.ts</code> om films te laden.
+        </p>
+      </div>
+    </div>
+  } @else {
+    @if (recommended().length > 0) {
+      <section class="mt-8">
+        <div class="flex items-center justify-between mb-4">
+          <div>
+            <h2 class="section-title mb-0">Aanbevolen voor jou</h2>
+            <p class="text-text-muted text-sm mt-0.5">Op basis van jouw beoordelingen</p>
+          </div>
+          <a routerLink="/recommendations" class="see-all-link">Alles zien</a>
+        </div>
+        <div class="horizontal-scroll">
+          @for (movie of recommended(); track movie.id) {
+            <app-movie-card [movie]="movie" [showActions]="true" />
+          }
+        </div>
+      </section>
+    }
+
+    @if (trending().length > 0) {
+      <section class="mt-8">
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="section-title mb-0">Trending deze week</h2>
+          <a routerLink="/movies" class="see-all-link">Alles bekijken</a>
+        </div>
+        <div class="horizontal-scroll">
+          @for (movie of trending(); track movie.id) {
+            <app-movie-card [movie]="movie" [showActions]="true" />
+          }
+        </div>
+      </section>
+    }
+
+    @if (popular().length > 0) {
+      <section class="mt-10">
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="section-title mb-0">Populair</h2>
+          <a routerLink="/movies" class="see-all-link">Alles bekijken</a>
+        </div>
+        <div class="horizontal-scroll">
+          @for (movie of popular(); track movie.id) {
+            <app-movie-card [movie]="movie" [showActions]="true" />
+          }
+        </div>
+      </section>
+    }
+  }
+</div>

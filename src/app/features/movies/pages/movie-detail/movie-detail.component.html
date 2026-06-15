@@ -1,0 +1,257 @@
+@if (loading()) {
+  <app-loading-spinner message="Film laden..." [minHeight]="'100vh'" />
+} @else if (error() || !movie()) {
+  <div class="flex flex-col items-center justify-center min-h-[60vh] gap-4">
+    <mat-icon class="text-text-muted" style="font-size: 4rem; width: 4rem; height: 4rem;">movie_off</mat-icon>
+    <p class="text-text-secondary">{{ error() ?? 'Film niet gevonden' }}</p>
+    <a mat-stroked-button routerLink="/movies">Terug naar films</a>
+  </div>
+} @else {
+  <article>
+    <div class="backdrop-section">
+      @if (movie()!.backdrop_path) {
+        <img
+          [src]="movieService.getBackdropUrl(movie()!.backdrop_path)"
+          [alt]="movie()!.title"
+          class="backdrop-img"
+        />
+      }
+      <div class="backdrop-gradient"></div>
+      <div class="backdrop-content page-container">
+        <a mat-icon-button routerLink="/movies" class="back-btn">
+          <mat-icon>arrow_back</mat-icon>
+        </a>
+      </div>
+    </div>
+
+    <div class="page-container movie-content">
+      <div class="movie-header">
+        <div class="poster-wrapper">
+          <img
+            [src]="movieService.getPosterUrl(movie()!.poster_path, 'w500')"
+            [alt]="movie()!.title"
+            class="poster"
+          />
+        </div>
+
+        <div class="movie-info">
+          <div class="flex flex-wrap gap-2 mb-3">
+            @for (genre of movie()!.genres; track genre.id) {
+              <span class="genre-chip">{{ genre.name }}</span>
+            }
+          </div>
+
+          <h1 class="movie-title">{{ movie()!.title }}</h1>
+
+          @if (movie()!.tagline) {
+            <p class="tagline">"{{ movie()!.tagline }}"</p>
+          }
+
+          <div class="meta-row">
+            @if (movie()!.release_date) {
+              <span class="meta-item">
+                <mat-icon>calendar_today</mat-icon>
+                {{ movieService.formatYear(movie()!.release_date) }}
+              </span>
+            }
+            @if (movie()!.runtime) {
+              <span class="meta-item">
+                <mat-icon>schedule</mat-icon>
+                {{ movieService.formatRuntime(movie()!.runtime) }}
+              </span>
+            }
+            @if (movie()!.vote_average > 0) {
+              <span class="meta-item rating">
+                <mat-icon class="text-gold">star</mat-icon>
+                {{ movie()!.vote_average | number:'1.1-1' }}
+                <span class="text-text-muted text-xs">({{ movie()!.vote_count | number }} stemmen)</span>
+              </span>
+            }
+          </div>
+
+          <p class="overview">{{ movie()!.overview }}</p>
+
+          <div class="action-row">
+            @if (trailerKey()) {
+              <button mat-flat-button color="primary" class="action-btn" (click)="openTrailer()">
+                <mat-icon>play_circle</mat-icon>
+                Trailer
+              </button>
+            }
+
+            <!-- Watchlist picker -->
+            <div class="watchlist-anchor" style="position: relative; z-index: 50">
+              <button
+                mat-stroked-button
+                class="action-btn"
+                [class.active]="isInAnyWatchlist()"
+                (click)="openWatchlistPicker($event)"
+              >
+                <mat-icon>{{ isInAnyWatchlist() ? 'bookmark' : 'bookmark_border' }}</mat-icon>
+                {{ isInAnyWatchlist() ? 'In watchlist' : 'Toevoegen' }}
+                <mat-icon style="font-size: 1rem; width: 1rem; height: 1rem; margin-left: 2px">
+                  {{ showWatchlistPicker() ? 'expand_less' : 'expand_more' }}
+                </mat-icon>
+              </button>
+
+              @if (showWatchlistPicker()) {
+                <div class="watchlist-picker" (click)="$event.stopPropagation()">
+                  <p class="picker-header">Voeg toe aan watchlist</p>
+                  @if (userWatchlists().length === 0) {
+                    <p class="picker-empty">
+                      Nog geen watchlists.
+                      <a routerLink="/watchlists" (click)="closeWatchlistPicker()">Maak er een aan</a>
+                    </p>
+                  } @else {
+                    @for (wl of userWatchlists(); track wl.id) {
+                      <button
+                        class="picker-item"
+                        [class.in-list]="isInWatchlist(wl.id)"
+                        (click)="toggleInWatchlist(wl.id, $event)"
+                      >
+                        <mat-icon>{{ isInWatchlist(wl.id) ? 'bookmark' : 'bookmark_border' }}</mat-icon>
+                        <span>{{ wl.name }}</span>
+                        @if (isInWatchlist(wl.id)) {
+                          <mat-icon class="check-icon">check</mat-icon>
+                        }
+                      </button>
+                    }
+                  }
+                </div>
+              }
+            </div>
+
+            <button
+              mat-stroked-button
+              class="action-btn"
+              [class.active-green]="watched()"
+              (click)="toggleWatched()"
+            >
+              <mat-icon>{{ watched() ? 'check_circle' : 'radio_button_unchecked' }}</mat-icon>
+              {{ watched() ? 'Gezien' : 'Markeer gezien' }}
+            </button>
+          </div>
+
+          <div class="rating-section">
+            <p class="text-sm text-text-secondary mb-2">Jouw beoordeling:</p>
+            <app-star-rating
+              [(value)]="userRating"
+              [size]="28"
+              [showValue]="true"
+              (ratingChange)="onRate($event)"
+            />
+          </div>
+        </div>
+      </div>
+
+      @if (cast().length > 0) {
+        <section class="mt-10">
+          <h2 class="section-title">Cast</h2>
+          <div class="cast-grid">
+            @for (member of cast(); track member.id) {
+              <div class="cast-card">
+                <div class="cast-photo">
+                  <img
+                    [src]="movieService.getProfileUrl(member.profile_path)"
+                    [alt]="member.name"
+                    loading="lazy"
+                  />
+                </div>
+                <p class="cast-name">{{ member.name }}</p>
+                <p class="cast-character">{{ member.character }}</p>
+              </div>
+            }
+          </div>
+        </section>
+      }
+
+      <!-- Reviews -->
+      <section class="mt-10">
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="section-title mb-0">Reviews</h2>
+          @if (authService.isAuthenticated() && !showReviewForm()) {
+            <button mat-stroked-button (click)="openReviewForm()">
+              <mat-icon>{{ reviewService.getUserReviewForMovie(movie()!.id) ? 'edit' : 'rate_review' }}</mat-icon>
+              {{ reviewService.getUserReviewForMovie(movie()!.id) ? 'Review bewerken' : 'Review schrijven' }}
+            </button>
+          }
+        </div>
+
+        @if (showReviewForm()) {
+          <div class="review-form glass-card p-5 mb-6">
+            <h3 class="text-text-primary font-semibold mb-3">
+              {{ editingReview() ? 'Review bewerken' : 'Review schrijven' }}
+            </h3>
+            <div class="mb-3">
+              <p class="text-sm text-text-secondary mb-1">Beoordeling:</p>
+              <app-star-rating [(value)]="reviewRating" [size]="24" [showValue]="true" />
+            </div>
+            <textarea
+              class="review-textarea"
+              [(ngModel)]="reviewTextModel"
+              placeholder="Wat vond je van deze film?"
+              rows="4"
+            ></textarea>
+            <div class="flex gap-2 mt-3">
+              <button mat-flat-button color="primary" (click)="submitReview()" [disabled]="reviewSubmitting() || !reviewTextModel.trim()">
+                {{ reviewSubmitting() ? 'Opslaan...' : (editingReview() ? 'Bijwerken' : 'Plaatsen') }}
+              </button>
+              <button mat-stroked-button (click)="cancelReview()">Annuleren</button>
+            </div>
+          </div>
+        }
+
+        @if (reviewService.movieReviews().length === 0 && !showReviewForm()) {
+          <div class="review-empty">
+            <mat-icon>rate_review</mat-icon>
+            <p>Nog geen reviews. Wees de eerste!</p>
+            @if (!authService.isAuthenticated()) {
+              <a mat-stroked-button routerLink="/auth/login">Inloggen om te reviewen</a>
+            }
+          </div>
+        } @else {
+          <div class="reviews-list">
+            @for (review of reviewService.movieReviews(); track review.id) {
+              <div class="review-card glass-card p-5">
+                <div class="review-header">
+                  <div class="reviewer-avatar">
+                    <span>{{ (review.user?.displayName ?? 'U').charAt(0).toUpperCase() }}</span>
+                  </div>
+                  <div class="reviewer-info">
+                    <p class="reviewer-name">{{ review.user?.displayName ?? 'Gebruiker' }}</p>
+                    <p class="review-date">{{ review.createdAt | date:'d MMMM yyyy' }}</p>
+                  </div>
+                  <div class="review-rating-display">
+                    <app-star-rating [value]="review.rating" [readonly]="true" [size]="16" />
+                  </div>
+                  @if (isOwnReview(review)) {
+                    <div class="flex gap-1 ml-auto">
+                      <button mat-icon-button (click)="openReviewForm()" title="Bewerken">
+                        <mat-icon style="font-size: 1rem; width: 1rem; height: 1rem;">edit</mat-icon>
+                      </button>
+                      <button mat-icon-button (click)="deleteReview(review.id)" title="Verwijderen">
+                        <mat-icon style="font-size: 1rem; width: 1rem; height: 1rem;">delete</mat-icon>
+                      </button>
+                    </div>
+                  }
+                </div>
+                <p class="review-content">{{ review.content }}</p>
+              </div>
+            }
+          </div>
+        }
+      </section>
+
+      @if (similar().length > 0) {
+        <section class="mt-10">
+          <h2 class="section-title">Vergelijkbare films</h2>
+          <div class="card-grid">
+            @for (m of similar(); track m.id) {
+              <app-movie-card [movie]="m" />
+            }
+          </div>
+        </section>
+      }
+    </div>
+  </article>
+}

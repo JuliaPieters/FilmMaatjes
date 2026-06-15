@@ -1,0 +1,117 @@
+<div class="auth-page">
+  <div class="auth-backdrop"></div>
+
+  <div class="auth-container">
+    <a routerLink="/" class="auth-logo">
+      <div class="logo-icon">
+        <mat-icon>local_movies</mat-icon>
+      </div>
+      <span>FilmMaatjes</span>
+    </a>
+
+    <div class="auth-card">
+      <div class="auth-header">
+        <h1>Account aanmaken</h1>
+        <p>Sluit je aan bij duizenden filmliefhebbers</p>
+      </div>
+
+      @if (error()) {
+        <div class="error-alert">
+          <mat-icon>error_outline</mat-icon>
+          <span>{{ error() }}</span>
+        </div>
+      }
+
+      <form [formGroup]="form" (ngSubmit)="onSubmit()" class="auth-form">
+        <mat-form-field appearance="fill">
+          <mat-label>Naam</mat-label>
+          <input matInput formControlName="displayName" autocomplete="name" placeholder="Jouw naam" />
+          @if (form.controls.displayName.hasError('required') && form.controls.displayName.touched) {
+            <mat-error>Naam is verplicht</mat-error>
+          }
+          @if (form.controls.displayName.hasError('minlength') && form.controls.displayName.touched) {
+            <mat-error>Naam moet minimaal 2 tekens bevatten</mat-error>
+          }
+        </mat-form-field>
+
+        <mat-form-field appearance="fill">
+          <mat-label>Gebruikersnaam</mat-label>
+          <input matInput formControlName="username" autocomplete="username" placeholder="jouwgebruikersnaam" />
+          <mat-hint>Alleen letters, cijfers en underscores</mat-hint>
+          @if (form.controls.username.hasError('required') && form.controls.username.touched) {
+            <mat-error>Gebruikersnaam is verplicht</mat-error>
+          }
+          @if (form.controls.username.hasError('pattern') && form.controls.username.touched) {
+            <mat-error>Alleen letters, cijfers en underscores toegestaan</mat-error>
+          }
+          @if (form.controls.username.hasError('minlength') && form.controls.username.touched) {
+            <mat-error>Gebruikersnaam moet minimaal 3 tekens bevatten</mat-error>
+          }
+        </mat-form-field>
+
+        <mat-form-field appearance="fill">
+          <mat-label>E-mailadres</mat-label>
+          <input matInput type="email" formControlName="email" autocomplete="email" placeholder="jouw@email.nl" />
+          @if (form.controls.email.hasError('required') && form.controls.email.touched) {
+            <mat-error>E-mailadres is verplicht</mat-error>
+          }
+          @if (form.controls.email.hasError('email') && form.controls.email.touched) {
+            <mat-error>Voer een geldig e-mailadres in</mat-error>
+          }
+        </mat-form-field>
+
+        <mat-form-field appearance="fill">
+          <mat-label>Wachtwoord</mat-label>
+          <input
+            matInput
+            [type]="showPassword() ? 'text' : 'password'"
+            formControlName="password"
+            autocomplete="new-password"
+          />
+          <button mat-icon-button matSuffix type="button" (click)="togglePassword()">
+            <mat-icon>{{ showPassword() ? 'visibility_off' : 'visibility' }}</mat-icon>
+          </button>
+          <mat-hint>Minimaal 8 tekens</mat-hint>
+          @if (form.controls.password.hasError('required') && form.controls.password.touched) {
+            <mat-error>Wachtwoord is verplicht</mat-error>
+          }
+          @if (form.controls.password.hasError('minlength') && form.controls.password.touched) {
+            <mat-error>Wachtwoord moet minimaal 8 tekens bevatten</mat-error>
+          }
+        </mat-form-field>
+
+        <mat-form-field appearance="fill">
+          <mat-label>Wachtwoord bevestigen</mat-label>
+          <input
+            matInput
+            [type]="showPassword() ? 'text' : 'password'"
+            formControlName="confirmPassword"
+            autocomplete="new-password"
+          />
+          @if (form.hasError('passwordMismatch') && form.controls.confirmPassword.touched) {
+            <mat-error>Wachtwoorden komen niet overeen</mat-error>
+          }
+        </mat-form-field>
+
+        <button
+          mat-flat-button
+          color="primary"
+          type="submit"
+          class="submit-btn"
+          [disabled]="isLoading"
+        >
+          @if (isLoading) {
+            <mat-progress-spinner diameter="20" mode="indeterminate" color="accent" />
+          } @else {
+            Account aanmaken
+          }
+        </button>
+      </form>
+
+      <p class="auth-switch">
+        Al een account?
+        <a routerLink="/auth/login">Inloggen</a>
+      </p>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,259 @@
+<div class="roulette-page">
+  <div class="page-container">
+    <div class="roulette-header">
+      <div class="header-icon">
+        <mat-icon>casino</mat-icon>
+      </div>
+      <h1>Film Roulette</h1>
+      <p>Geen idee wat je wilt kijken? Laat het lot beslissen!</p>
+      <p class="header-sub">Kies een modus — willekeurig, uit je watchlists of op basis van jouw smaak — stel eventueel filters in en laat Film Roulette een film voor je uitkiezen.</p>
+    </div>
+
+    @if (!hasApiKey) {
+      <div class="api-notice glass-card p-8 text-center max-w-lg mx-auto">
+        <mat-icon class="text-5xl text-accent-light mb-3" style="font-size: 3rem; width: 3rem; height: 3rem;">key</mat-icon>
+        <p class="text-text-secondary">TMDB API-sleutel nodig om de roulette te gebruiken.</p>
+      </div>
+    } @else {
+      <div class="roulette-layout">
+        <aside class="filters-panel glass-card">
+
+          <!-- Mode selector -->
+          <div class="mode-selector">
+            <button class="mode-btn" [class.active]="mode() === 'random'" (click)="setMode('random')">
+              <mat-icon>shuffle</mat-icon>
+              <span>Willekeurig</span>
+            </button>
+            <button class="mode-btn" [class.active]="mode() === 'watchlists'" (click)="setMode('watchlists')">
+              <mat-icon>bookmark</mat-icon>
+              <span>Watchlists</span>
+            </button>
+            <button class="mode-btn" [class.active]="mode() === 'recommended'" (click)="setMode('recommended')">
+              <mat-icon>recommend</mat-icon>
+              <span>Aanbevolen</span>
+            </button>
+          </div>
+
+          <!-- RANDOM MODE: existing filters -->
+          @if (mode() === 'random') {
+            <div class="filters-header mt-4">
+              <h3>Filters</h3>
+              @if (selectedGenreIds().length > 0 || minRating() > 0 || yearFrom()) {
+                <button mat-button (click)="clearFilters()" class="text-text-muted text-sm">
+                  Wissen
+                </button>
+              }
+            </div>
+
+            <div class="filter-group">
+              <label class="filter-label">Genre</label>
+              <div class="genre-chips">
+                @for (genre of genres; track genre.id) {
+                  <button
+                    class="genre-chip"
+                    [class.selected]="isGenreSelected(genre.id)"
+                    (click)="toggleGenre(genre.id)"
+                  >
+                    {{ genre.name }}
+                  </button>
+                }
+              </div>
+            </div>
+
+            <div class="filter-group">
+              <label class="filter-label">Decennium</label>
+              <div class="decade-chips">
+                @for (decade of decadeOptions; track decade.label) {
+                  <button
+                    class="genre-chip"
+                    [class.selected]="yearFrom() === (decade.from ?? null)"
+                    (click)="setDecade(decade)"
+                  >
+                    {{ decade.label }}
+                  </button>
+                }
+              </div>
+            </div>
+
+            <div class="filter-group">
+              <label class="filter-label">Minimale beoordeling: {{ minRating() > 0 ? minRating() + '/10' : 'Alles' }}</label>
+              <mat-slider min="0" max="9" step="1" class="w-full">
+                <input matSliderThumb [(ngModel)]="minRatingValue" />
+              </mat-slider>
+            </div>
+          }
+
+          <!-- WATCHLIST MODE -->
+          @if (mode() === 'watchlists') {
+            @if (ownWatchlists().length === 0 && friendGroups().length === 0) {
+              <div class="mode-empty">
+                <mat-icon>bookmark_border</mat-icon>
+                <p>Je hebt nog geen watchlists.<br />Maak er een aan via de Watchlists pagina.</p>
+              </div>
+            } @else {
+
+              <!-- Jouw lijsten -->
+              <div class="wl-section-header mt-4">
+                <span class="wl-section-title">Jouw lijsten</span>
+                <button mat-button (click)="selectAllWatchlists()" class="text-text-muted text-sm">Alles</button>
+              </div>
+
+              <div class="watchlist-items">
+                @for (wl of ownWatchlists(); track wl.id) {
+                  <button
+                    class="watchlist-item"
+                    [class.selected]="isWatchlistSelected(wl.id)"
+                    (click)="toggleWatchlist(wl.id)"
+                  >
+                    <mat-icon class="wl-check">{{ isWatchlistSelected(wl.id) ? 'check_box' : 'check_box_outline_blank' }}</mat-icon>
+                    <span class="wl-name flex-1 min-w-0 truncate text-left">{{ wl.name }}</span>
+                    <span class="wl-count">{{ movieCount(wl) }}</span>
+                  </button>
+                }
+              </div>
+
+              <!-- Vrienden lijsten -->
+              @if (friendGroups().length > 0) {
+                <div class="wl-section-header mt-4">
+                  <span class="wl-section-title">Vrienden</span>
+                </div>
+
+                @for (group of friendGroups(); track group.owner) {
+                  <!-- Friend accordion header -->
+                  <button class="friend-accordion" (click)="toggleFriend(group.owner)">
+                    <div class="friend-accordion-avatar">{{ group.owner.charAt(0).toUpperCase() }}</div>
+                    <span class="flex-1 text-left font-medium text-sm text-text-primary">{{ group.owner }}</span>
+                    <span class="wl-count mr-2">{{ group.watchlists.length }} lijst{{ group.watchlists.length === 1 ? '' : 'en' }}</span>
+                    <mat-icon class="accordion-arrow" [class.open]="isFriendExpanded(group.owner)">expand_more</mat-icon>
+                  </button>
+
+                  @if (isFriendExpanded(group.owner)) {
+                    <div class="friend-watchlists">
+                      @for (wl of group.watchlists; track wl.id) {
+                        <button
+                          class="watchlist-item indented"
+                          [class.selected]="isWatchlistSelected(wl.id)"
+                          (click)="toggleWatchlist(wl.id)"
+                        >
+                          <mat-icon class="wl-check">{{ isWatchlistSelected(wl.id) ? 'check_box' : 'check_box_outline_blank' }}</mat-icon>
+                          <span class="wl-name flex-1 min-w-0 truncate text-left">{{ wl.name }}</span>
+                          <span class="wl-count">{{ movieCount(wl) }}</span>
+                        </button>
+                      }
+                    </div>
+                  }
+                }
+              }
+
+              <p class="wl-total">
+                <mat-icon style="font-size: 1rem; width: 1rem; height: 1rem;">movie</mat-icon>
+                {{ selectedMovies().length }} films beschikbaar
+              </p>
+            }
+          }
+
+          <!-- RECOMMENDED MODE -->
+          @if (mode() === 'recommended') {
+            @if (topGenreIds().length === 0) {
+              <div class="mode-empty">
+                <mat-icon>star_outline</mat-icon>
+                <p>Beoordeel minstens één film met 4 sterren of meer om aanbevelingen te activeren.</p>
+              </div>
+            } @else {
+              <div class="filter-group mt-4">
+                <label class="filter-label">Jouw favoriete genres</label>
+                <div class="genre-chips">
+                  @for (name of topGenreNames(); track name) {
+                    <span class="genre-chip selected">{{ name }}</span>
+                  }
+                </div>
+                <p class="text-text-muted text-xs mt-3">
+                  Gebaseerd op films die jij 4 of 5 sterren hebt gegeven.
+                  TMDB zoekt films in deze genres met een hoge beoordeling.
+                </p>
+              </div>
+            }
+          }
+
+        </aside>
+
+        <main class="roulette-main">
+          <div class="spin-area">
+            @if (!spinning() && !showResult()) {
+              <div class="spin-idle">
+                <div class="spin-icon-wrapper">
+                  <mat-icon class="spin-icon">casino</mat-icon>
+                </div>
+                <p class="spin-prompt">Druk op de knop om een willekeurige film te kiezen</p>
+              </div>
+            }
+
+            @if (spinning()) {
+              <div class="spinning-animation">
+                <div class="spinner-reel">
+                  <mat-icon class="reel-icon">movie</mat-icon>
+                  <mat-icon class="reel-icon">local_movies</mat-icon>
+                  <mat-icon class="reel-icon">theaters</mat-icon>
+                </div>
+                <p class="spin-prompt">Kiezen...</p>
+              </div>
+            }
+
+            @if (showResult() && result()) {
+              <div class="result-card fade-in-up">
+                <div class="result-poster-wrapper">
+                  <img
+                    [src]="movieService.getPosterUrl(result()!.poster_path, 'w500')"
+                    [alt]="result()!.title"
+                    class="result-poster"
+                  />
+                  <div class="result-badge">
+                    <mat-icon>auto_awesome</mat-icon>
+                    Jouw film!
+                  </div>
+                </div>
+                <div class="result-info">
+                  <h2 class="result-title">{{ result()!.title }}</h2>
+                  <p class="result-year">{{ movieService.formatYear(result()!.release_date) }}</p>
+                  @if (result()!.vote_average > 0) {
+                    <p class="result-rating">
+                      <mat-icon class="text-gold" style="font-size: 1rem; width: 1rem; height: 1rem;">star</mat-icon>
+                      {{ result()!.vote_average | number:'1.1-1' }} / 10
+                    </p>
+                  }
+                  <p class="result-overview">{{ result()!.overview }}</p>
+                  <div class="result-actions">
+                    <a mat-flat-button color="primary" [routerLink]="['/movies', result()!.id]">
+                      <mat-icon>info</mat-icon>
+                      Details
+                    </a>
+                    <button mat-stroked-button (click)="spinAgain()">
+                      <mat-icon>refresh</mat-icon>
+                      Andere film
+                    </button>
+                  </div>
+                </div>
+              </div>
+            }
+          </div>
+
+          <button
+            mat-flat-button
+            color="primary"
+            class="spin-btn"
+            (click)="spin()"
+            [disabled]="spinning()"
+          >
+            @if (spinning()) {
+              <mat-icon class="animate-spin">autorenew</mat-icon>
+              Kiezen...
+            } @else {
+              <mat-icon>casino</mat-icon>
+              {{ spinCount() === 0 ? 'Film kiezen!' : 'Opnieuw draaien' }}
+            }
+          </button>
+        </main>
+      </div>
+    }
+  </div>
+</div>

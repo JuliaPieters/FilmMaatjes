@@ -1,0 +1,137 @@
+<div class="page-container">
+  <div class="matcher-header">
+    <div class="header-icon">
+      <mat-icon>people</mat-icon>
+    </div>
+    <h1>Film Matcher</h1>
+    <p>Vind de perfecte film om samen te kijken</p>
+    <p class="header-sub">Selecteer een of meer vrienden. Film Matcher analyseert jullie gedeelde smaak en geeft suggesties op maat — van beste match tot wildcard.</p>
+  </div>
+
+  @if (step() === 'select') {
+    @if (friends().length === 0) {
+      <app-empty-state
+        icon="people_outline"
+        title="Geen vrienden gevonden"
+        description="Voeg vrienden toe om de Film Matcher te gebruiken."
+        actionLabel="Vrienden zoeken"
+        actionRoute="/friends"
+      />
+    } @else {
+      <div class="select-step">
+        <h2 class="text-lg font-semibold text-text-primary mb-4">Selecteer vrienden</h2>
+
+        <div class="friends-grid">
+          @for (friend of friends(); track friend.id) {
+            <button
+              class="friend-card"
+              [class.selected]="isFriendSelected(friend.id)"
+              (click)="toggleFriend(friend.id)"
+            >
+              <div class="friend-avatar">
+                <span>{{ friend.displayName.charAt(0).toUpperCase() }}</span>
+              </div>
+              <span class="friend-name">{{ friend.displayName }}</span>
+              <div class="selection-indicator">
+                <mat-icon>{{ isFriendSelected(friend.id) ? 'check_circle' : 'radio_button_unchecked' }}</mat-icon>
+              </div>
+            </button>
+          }
+        </div>
+
+        @if (selectedFriends().size > 0) {
+          <div class="selected-summary">
+            <mat-icon>people</mat-icon>
+            <span>{{ selectedFriends().size }} vriend{{ selectedFriends().size === 1 ? '' : 'en' }} geselecteerd</span>
+          </div>
+        }
+
+        <button
+          mat-flat-button
+          color="primary"
+          class="find-btn"
+          [disabled]="selectedFriends().size === 0"
+          (click)="findMatches()"
+        >
+          <mat-icon>auto_awesome</mat-icon>
+          Vind films
+        </button>
+      </div>
+    }
+  }
+
+  @if (step() === 'results') {
+    @if (loading()) {
+      <div class="loading-container">
+        <app-loading-spinner message="Jullie smaak analyseren..." />
+      </div>
+    } @else if (results().length === 0) {
+      <div class="flex flex-col items-center gap-4 py-16">
+        <mat-icon style="font-size: 3rem; width: 3rem; height: 3rem; color: #475569;">movie_off</mat-icon>
+        <p class="text-text-muted">Geen matches gevonden. Probeer meer films te beoordelen.</p>
+        <button mat-stroked-button (click)="reset()">Opnieuw proberen</button>
+      </div>
+    } @else {
+      <div class="results-header">
+        <button mat-icon-button (click)="reset()" class="back-btn">
+          <mat-icon>arrow_back</mat-icon>
+        </button>
+        <div>
+          <h2 class="text-xl font-bold text-text-primary">Jullie matches</h2>
+          <p class="text-text-muted text-sm">
+            @for (id of selectedFriends(); track id; let last = $last) {
+              {{ getFriendName(id) }}{{ !last ? ' & ' : '' }}
+            }
+          </p>
+        </div>
+      </div>
+
+      <div class="results-grid">
+        @for (result of results(); track result.type) {
+          <div class="result-card glass-card">
+            <div class="result-badge" [style.background]="getMatchColor(result.type) + '22'" [style.color]="getMatchColor(result.type)">
+              <mat-icon>{{ result.icon }}</mat-icon>
+              {{ result.label }}
+            </div>
+
+            <div class="match-score" [style.color]="getMatchColor(result.type)">
+              {{ result.matchScore }}% Match
+            </div>
+
+            <a class="result-movie" [routerLink]="['/movies', result.movie.id]">
+              <div class="result-poster">
+                <img
+                  [src]="result.movie.poster_path ? 'https://image.tmdb.org/t/p/w342' + result.movie.poster_path : '/assets/movie-placeholder.svg'"
+                  [alt]="result.movie.title"
+                  loading="lazy"
+                />
+              </div>
+              <div class="result-info">
+                <h3 class="result-title">{{ result.movie.title }}</h3>
+                <p class="result-year">{{ result.movie.release_date ? result.movie.release_date.substring(0, 4) : '' }}</p>
+                <p class="result-rating">⭐ {{ result.movie.vote_average | number:'1.1-1' }}</p>
+              </div>
+            </a>
+
+            <div class="reasons">
+              <p class="reasons-label">Waarom dit?</p>
+              @for (reason of result.reasons; track reason) {
+                <div class="reason-item">
+                  <mat-icon>check_circle</mat-icon>
+                  <span>{{ reason }}</span>
+                </div>
+              }
+            </div>
+          </div>
+        }
+      </div>
+
+      <div class="flex justify-center mt-8">
+        <button mat-stroked-button (click)="findMatches()">
+          <mat-icon>refresh</mat-icon>
+          Nieuwe suggesties
+        </button>
+      </div>
+    }
+  }
+</div>

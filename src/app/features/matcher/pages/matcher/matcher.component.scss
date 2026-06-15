@@ -1,0 +1,143 @@
+.matcher-header {
+  text-align: center;
+  padding: 3rem 0 2.5rem;
+
+  .header-icon {
+    width: 72px; height: 72px; border-radius: 20px;
+    background: linear-gradient(135deg, #7c3aed, #a78bfa);
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 1rem;
+    mat-icon { color: white; font-size: 2rem; width: 2rem; height: 2rem; }
+  }
+
+  h1 {
+    font-size: 2.5rem; font-weight: 800; color: #f1f5f9;
+    letter-spacing: -0.035em; margin: 0 0 0.5rem;
+  }
+
+  p { font-size: 1rem; color: #94a3b8; margin: 0; }
+
+  .header-sub {
+    font-size: 0.875rem; color: #64748b;
+    margin: 0.5rem auto 0; max-width: 480px;
+  }
+}
+
+.select-step {
+  max-width: 640px;
+}
+
+.friends-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+
+  @media (min-width: 480px) { grid-template-columns: repeat(3, 1fr); }
+  @media (min-width: 640px) { grid-template-columns: repeat(4, 1fr); }
+}
+
+.friend-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1rem 0.75rem;
+  background: rgba(26, 26, 36, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+
+  &:hover { border-color: rgba(124, 58, 237, 0.3); background: rgba(124, 58, 237, 0.08); }
+  &.selected { border-color: #7c3aed; background: rgba(124, 58, 237, 0.15); }
+}
+
+.friend-avatar {
+  width: 48px; height: 48px; border-radius: 50%;
+  background: linear-gradient(135deg, #7c3aed, #a78bfa);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.25rem; font-weight: 700; color: white;
+}
+
+.friend-name {
+  font-size: 0.8125rem; font-weight: 600; color: #f1f5f9;
+  text-align: center; overflow: hidden; text-overflow: ellipsis;
+  white-space: nowrap; width: 100%;
+}
+
+.selection-indicator {
+  position: absolute; top: 0.5rem; right: 0.5rem;
+  mat-icon { font-size: 1.125rem; width: 1.125rem; height: 1.125rem; color: #64748b; }
+  .selected & mat-icon { color: #7c3aed; }
+}
+
+.selected-summary {
+  display: flex; align-items: center; gap: 0.5rem;
+  color: #a78bfa; font-size: 0.875rem; margin-bottom: 1.5rem;
+  mat-icon { font-size: 1.125rem; width: 1.125rem; height: 1.125rem; }
+}
+
+.find-btn { padding: 0 2rem; height: 48px; font-size: 1rem; }
+
+.loading-container { padding: 4rem 0; }
+
+.results-header {
+  display: flex; align-items: center; gap: 1rem; margin-bottom: 2rem;
+}
+
+.back-btn { color: #94a3b8; }
+
+.results-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
+
+  @media (min-width: 768px) { grid-template-columns: repeat(2, 1fr); }
+}
+
+.result-card {
+  padding: 1.5rem;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  transition: border-color 0.2s;
+  &:hover { border-color: rgba(124, 58, 237, 0.2); }
+}
+
+.result-badge {
+  display: inline-flex; align-items: center; gap: 0.375rem;
+  padding: 0.25rem 0.75rem; border-radius: 100px;
+  font-size: 0.8125rem; font-weight: 600; margin-bottom: 0.75rem;
+  mat-icon { font-size: 1rem; width: 1rem; height: 1rem; }
+}
+
+.match-score {
+  font-size: 2rem; font-weight: 800; letter-spacing: -0.04em;
+  margin-bottom: 1rem; line-height: 1;
+}
+
+.result-movie {
+  display: flex; gap: 1rem; margin-bottom: 1rem;
+  text-decoration: none;
+  &:hover .result-title { color: #a78bfa; }
+}
+
+.result-poster {
+  width: 64px; height: 96px; border-radius: 8px; overflow: hidden;
+  flex-shrink: 0; background: #1a1a24;
+  img { width: 100%; height: 100%; object-fit: cover; }
+}
+
+.result-info { flex: 1; min-width: 0; }
+.result-title { font-size: 1rem; font-weight: 700; color: #f1f5f9; margin: 0 0 0.25rem; transition: color 0.15s; }
+.result-year { font-size: 0.8125rem; color: #64748b; margin: 0 0 0.25rem; }
+.result-rating { font-size: 0.875rem; color: #94a3b8; margin: 0; }
+
+.reasons { border-top: 1px solid rgba(255,255,255,0.06); padding-top: 0.875rem; }
+.reasons-label { font-size: 0.75rem; font-weight: 600; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em; margin: 0 0 0.5rem; }
+
+.reason-item {
+  display: flex; align-items: flex-start; gap: 0.5rem;
+  margin-bottom: 0.375rem; color: #94a3b8; font-size: 0.875rem;
+  mat-icon { font-size: 0.9rem; width: 0.9rem; height: 0.9rem; color: #4ade80; flex-shrink: 0; margin-top: 2px; }
+}
