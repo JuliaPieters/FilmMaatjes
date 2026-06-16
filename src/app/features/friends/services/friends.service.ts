@@ -1,9 +1,13 @@
 import { effect, inject, Injectable, signal } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { Observable, of, tap, catchError } from 'rxjs';
+import { from, Observable, of, forkJoin } from 'rxjs';
+import { map, catchError, tap } from 'rxjs/operators';
+import {
+  collection, query, where, getDocs, addDoc, updateDoc,
+  doc, limit, getDoc,
+} from 'firebase/firestore';
 import { User } from '../../../core/models/user.model';
 import { AuthService } from '../../auth/services/auth.service';
-import { environment } from '../../../../environments/environment';
+import { db } from '../../../core/firebase';
 
 export interface FriendRequest {
   id: string;
@@ -17,8 +21,7 @@ export interface FriendRequest {
 
 @Injectable({ providedIn: 'root' })
 export class FriendsService {
-  private readonly http = inject(HttpClient);
-  private readonly apiUrl = environment.apiUrl;
+  private readonly authService = inject(AuthService);
 
   private readonly _friends = signal<User[]>([]);
   private readonly _pendingRequests = signal<FriendRequest[]>([]);
@@ -29,11 +32,10 @@ export class FriendsService {
   readonly sentRequests = this._sentRequests.asReadonly();
 
   constructor() {
-    const authService = inject(AuthService);
     effect(() => {
-      const user = authService.user();
+      const user = this.authService.user();
       if (user) {
-        this.loadAll();
+        this.loadAll(user.id);
       } else {
         this._friends.set([]);
         this._pendingRequests.set([]);
@@ -42,65 +44,111 @@ export class FriendsService {
     });
   }
 
-  private loadAll(): void {
-    this.http.get<User[]>(`${this.apiUrl}/friends`).subscribe({
-      next: friends => this._friends.set(friends),
-      error: () => {},
-    });
-    this.http.get<FriendRequest[]>(`${this.apiUrl}/friends/requests`).subscribe({
-      next: requests => this._pendingRequests.set(requests),
-      error: () => {},
-    });
-    this.http.get<FriendRequest[]>(`${this.apiUrl}/friends/requests/sent`).subscribe({
-      next: requests => this._sentRequests.set(requests),
-      error: () => {},
-    });
+  private async loadAll(userId: string): Promise<void> {
+    try {
+      const [sentSnap, receivedSnap] = await Promise.all([
+        getDocs(query(collection(db, 'friendRequests'), where('senderId', '==', userId))),
+        getDocs(query(collection(db, 'friendRequests'), where('receiverId', '==', userId))),
+      ]);
+
+      const allRequests: FriendRequest[] = [
+        ...sentSnap.docs.map(d => ({ id: d.id, ...d.data() } as FriendRequest)),
+        ...receivedSnap.docs.map(d => ({ id: d.id, ...d.data() } as FriendRequest)),
+      ];
+
+      const accepted = allRequests.filter(r => r.status === 'accepted');
+      const pending = allRequests.filter(r => r.status === 'pending' && r.receiverId === userId);
+      const sent = allRequests.filter(r => r.status === 'pending' && r.senderId === userId);
+
+      const friendIds = accepted.map(r => r.senderId === userId ? r.receiverId : r.senderId);
+      const friends = await this.fetchUsers(friendIds);
+
+      this._friends.set(friends);
+      this._pendingRequests.set(pending);
+      this._sentRequests.set(sent);
+    } catch {
+      // Firestore unavailable, keep empty state
+    }
+  }
+
+  private async fetchUsers(ids: string[]): Promise<User[]> {
+    if (ids.length === 0) return [];
+    const snaps = await Promise.all(ids.map(id => getDoc(doc(db, 'users', id))));
+    return snaps
+      .filter(s => s.exists())
+      .map(s => ({ id: s.id, ...s.data() } as User));
   }
 
   reloadFromStorage(): void {
-    this.loadAll();
+    const user = this.authService.user();
+    if (user) this.loadAll(user.id);
   }
 
   getMyFriends(): Observable<User[]> {
-    return this.http.get<User[]>(`${this.apiUrl}/friends`).pipe(
-      tap(friends => this._friends.set(friends)),
-      catchError(() => of(this._friends())),
-    );
+    return of(this._friends());
   }
 
   getPendingRequests(): Observable<FriendRequest[]> {
-    return this.http.get<FriendRequest[]>(`${this.apiUrl}/friends/requests`).pipe(
-      tap(requests => this._pendingRequests.set(requests)),
-      catchError(() => of(this._pendingRequests())),
-    );
+    return of(this._pendingRequests());
   }
 
   sendRequest(userId: string): Observable<FriendRequest> {
-    return this.http.post<FriendRequest>(`${this.apiUrl}/friends/requests`, { userId }).pipe(
-      tap(req => this._sentRequests.update(prev =>
-        prev.some(r => r.id === req.id) ? prev : [...prev, req],
-      )),
+    const currentUser = this.authService.user();
+    if (!currentUser) return of({} as FriendRequest);
+
+    const request = {
+      senderId: currentUser.id,
+      receiverId: userId,
+      status: 'pending' as const,
+      createdAt: new Date().toISOString(),
+    };
+
+    return from(addDoc(collection(db, 'friendRequests'), request)).pipe(
+      map(docRef => ({ id: docRef.id, ...request })),
+      tap(req => this._sentRequests.update(prev => [...prev, req])),
+      catchError(() => of({} as FriendRequest)),
     );
   }
 
   acceptRequest(requestId: string): Observable<void> {
-    return this.http.patch<void>(`${this.apiUrl}/friends/requests/${requestId}/accept`, {}).pipe(
+    return from(updateDoc(doc(db, 'friendRequests', requestId), { status: 'accepted' })).pipe(
       tap(() => {
-        this._pendingRequests.update(prev => prev.filter(r => r.id !== requestId));
-        this.getMyFriends().subscribe();
+        const req = this._pendingRequests().find(r => r.id === requestId);
+        if (req) {
+          this._pendingRequests.update(prev => prev.filter(r => r.id !== requestId));
+          const user = this.authService.user();
+          if (user) this.loadAll(user.id);
+        }
       }),
+      catchError(() => of(undefined as void)),
     );
   }
 
   declineRequest(requestId: string): Observable<void> {
-    return this.http.patch<void>(`${this.apiUrl}/friends/requests/${requestId}/decline`, {}).pipe(
+    return from(updateDoc(doc(db, 'friendRequests', requestId), { status: 'declined' })).pipe(
       tap(() => this._pendingRequests.update(prev => prev.filter(r => r.id !== requestId))),
+      catchError(() => of(undefined as void)),
     );
   }
 
-  searchUsers(query: string): Observable<User[]> {
-    return this.http.get<User[]>(`${this.apiUrl}/users/search`, {
-      params: { q: query },
-    });
+  searchUsers(searchQuery: string): Observable<User[]> {
+    if (!searchQuery.trim()) return of([]);
+    const currentUser = this.authService.user();
+    const lower = searchQuery.toLowerCase();
+
+    const usernameQuery = query(
+      collection(db, 'users'),
+      where('username', '>=', lower),
+      where('username', '<=', lower + ''),
+      limit(10),
+    );
+
+    return from(getDocs(usernameQuery)).pipe(
+      map(snap => snap.docs
+        .map(d => ({ id: d.id, ...d.data() } as User))
+        .filter(u => u.id !== currentUser?.id)
+      ),
+      catchError(() => of([])),
+    );
   }
 }
