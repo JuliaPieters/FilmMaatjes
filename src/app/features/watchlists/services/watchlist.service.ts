@@ -27,13 +27,12 @@ export class WatchlistService {
     effect(() => {
       const user = this.authService.user();
       if (user) {
-        this._loaded.set(false);
         this.loadAll(user.id);
       } else {
         this._watchlists.set([]);
         this._friendWatchlists.set(new Map());
-        this._loaded.set(true);
       }
+      this._loaded.set(true);
     }, { allowSignalWrites: true });
   }
 
@@ -56,8 +55,6 @@ export class WatchlistService {
       this._watchlists.set(watchlists);
     } catch (err) {
       console.error('[WatchlistService] loadAll failed:', err);
-    } finally {
-      this._loaded.set(true);
     }
   }
 
