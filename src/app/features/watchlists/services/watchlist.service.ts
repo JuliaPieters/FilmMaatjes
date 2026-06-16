@@ -3,7 +3,7 @@ import { Observable, from, of } from 'rxjs';
 import { map, tap, catchError } from 'rxjs/operators';
 import {
   collection, query, where, getDocs, addDoc, deleteDoc,
-  doc, setDoc,
+  doc, setDoc, updateDoc, increment,
 } from 'firebase/firestore';
 import { Watchlist, CreateWatchlistDto, WatchlistMovie } from '../../../core/models/watchlist.model';
 import { TmdbMovie } from '../../../core/models/movie.model';
@@ -175,7 +175,10 @@ export class WatchlistService {
       notes: null,
     };
 
-    return from(setDoc(doc(db, 'watchlists', watchlistId, 'movies', String(movie.id)), entry)).pipe(
+    return from(
+      setDoc(doc(db, 'watchlists', watchlistId, 'movies', String(movie.id)), entry)
+        .then(() => updateDoc(doc(db, 'watchlists', watchlistId), { '_count.movies': increment(1) }))
+    ).pipe(
       tap(() => {
         this._watchlists.update(prev => prev.map(wl => {
           if (wl.id !== watchlistId || (wl.movies ?? []).some(m => m.movieId === movie.id)) return wl;
@@ -191,7 +194,10 @@ export class WatchlistService {
   }
 
   removeMovie(watchlistId: string, movieId: number): Observable<void> {
-    return from(deleteDoc(doc(db, 'watchlists', watchlistId, 'movies', String(movieId)))).pipe(
+    return from(
+      deleteDoc(doc(db, 'watchlists', watchlistId, 'movies', String(movieId)))
+        .then(() => updateDoc(doc(db, 'watchlists', watchlistId), { '_count.movies': increment(-1) }))
+    ).pipe(
       tap(() => {
         this._watchlists.update(prev => prev.map(wl => {
           if (wl.id !== watchlistId) return wl;

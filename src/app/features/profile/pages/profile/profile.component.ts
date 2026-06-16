@@ -52,7 +52,7 @@ import { db } from '../../../../core/firebase';
 
               <div class="profile-stats">
                 <div class="stat">
-                  <span class="stat-value">{{ user()?._count?.watchlists ?? 0 }}</span>
+                  <span class="stat-value">{{ displayWatchlistCount() }}</span>
                   <span class="stat-label">Watchlists</span>
                 </div>
                 <div class="stat">
@@ -349,6 +349,12 @@ export class ProfileComponent implements OnInit {
   protected readonly watchedCount = computed(() => this.library.watchedMovies().length);
   protected readonly ratedCount = computed(() => this.library.ratedMovies().length);
   protected readonly watchlistCount = computed(() => this.watchlistService.watchlists().length);
+
+  protected readonly displayWatchlistCount = computed(() =>
+    this.isOwnProfile()
+      ? this.watchlistService.watchlists().length
+      : (this.user()?._count?.watchlists ?? 0)
+  );
 
   protected readonly isFriend = computed(() => {
     const u = this.user();
