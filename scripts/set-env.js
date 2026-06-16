@@ -1,5 +1,5 @@
 // Wordt uitgevoerd door Vercel vóór de build.
-// Leest environment variables en schrijft environment.prod.ts.
+// Leest environment variables en schrijft environment.ts.
 const fs = require('fs');
 const path = require('path');
 
@@ -9,7 +9,7 @@ function required(name) {
     console.error(`Verplichte environment variable ontbreekt: ${name}`);
     process.exit(1);
   }
-  return value;
+  return value.trim();
 }
 
 const content = `export const environment = {
@@ -32,5 +32,5 @@ const content = `export const environment = {
 };
 `;
 
-fs.writeFileSync(path.join(__dirname, '../src/environments/environment.prod.ts'), content);
-console.log('✓ environment.prod.ts gegenereerd vanuit Vercel environment variables');
+fs.writeFileSync(path.join(__dirname, '../src/environments/environment.ts'), content);
+console.log('✓ environment.ts gegenereerd vanuit Vercel environment variables');
