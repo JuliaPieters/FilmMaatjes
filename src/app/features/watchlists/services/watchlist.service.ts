@@ -32,9 +32,9 @@ export class WatchlistService {
       } else {
         this._watchlists.set([]);
         this._friendWatchlists.set(new Map());
-        this._loaded.set(false);
+        this._loaded.set(true);
       }
-    });
+    }, { allowSignalWrites: true });
   }
 
   private async loadAll(userId: string): Promise<void> {

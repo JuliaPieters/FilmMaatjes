@@ -41,7 +41,7 @@ export class FriendsService {
         this._pendingRequests.set([]);
         this._sentRequests.set([]);
       }
-    });
+    }, { allowSignalWrites: true });
   }
 
   private async loadAll(userId: string): Promise<void> {
