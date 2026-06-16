@@ -63,8 +63,18 @@ export class FriendsService {
       const friendIds = accepted.map(r => r.senderId === userId ? r.receiverId : r.senderId);
       const friends = await this.fetchUsers(friendIds);
 
+      const pendingWithSenders = await Promise.all(
+        pending.map(async req => {
+          const senderSnap = await getDoc(doc(db, 'users', req.senderId));
+          return {
+            ...req,
+            sender: senderSnap.exists() ? ({ id: senderSnap.id, ...senderSnap.data() } as User) : undefined,
+          };
+        })
+      );
+
       this._friends.set(friends);
-      this._pendingRequests.set(pending);
+      this._pendingRequests.set(pendingWithSenders);
       this._sentRequests.set(sent);
     } catch {
       // Firestore unavailable, keep empty state
