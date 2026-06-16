@@ -1,9 +1,9 @@
 import { Component, computed, effect, inject, OnInit, signal } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { HttpClient } from '@angular/common/http';
 import { MatIcon } from '@angular/material/icon';
 import { MatButton } from '@angular/material/button';
 import { FormsModule } from '@angular/forms';
+import { collection, getDocs, query, where } from 'firebase/firestore';
 import { AuthService } from '../../../auth/services/auth.service';
 import { UserLibraryService } from '../../../../core/services/user-library.service';
 import { WatchlistService } from '../../../watchlists/services/watchlist.service';
@@ -12,7 +12,7 @@ import { NotificationService } from '../../../../core/services/notification.serv
 import { MovieCardComponent } from '../../../../shared/components/movie-card/movie-card.component';
 import { StarRatingComponent } from '../../../../shared/components/star-rating/star-rating.component';
 import { User } from '../../../../core/models/user.model';
-import { environment } from '../../../../../environments/environment';
+import { db } from '../../../../core/firebase';
 
 @Component({
   selector: 'app-profile',
@@ -330,10 +330,8 @@ export class ProfileComponent implements OnInit {
   private readonly authService = inject(AuthService);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
-  private readonly http = inject(HttpClient);
   private readonly notifications = inject(NotificationService);
   private readonly friendsService = inject(FriendsService);
-  private readonly apiUrl = environment.apiUrl;
 
   protected readonly library = inject(UserLibraryService);
   protected readonly watchlistService = inject(WatchlistService);
@@ -376,10 +374,17 @@ export class ProfileComponent implements OnInit {
       this.isOwnProfile.set(true);
     } else {
       this.loading.set(true);
-      this.http.get<User>(`${this.apiUrl}/users/${username}`).subscribe({
-        next: u => { this.user.set(u); this.loading.set(false); },
-        error: () => { this.user.set(null); this.loading.set(false); },
-      });
+      getDocs(query(collection(db, 'users'), where('username', '==', username)))
+        .then(snap => {
+          if (!snap.empty) {
+            const d = snap.docs[0];
+            this.user.set({ id: d.id, ...d.data() } as User);
+          } else {
+            this.user.set(null);
+          }
+          this.loading.set(false);
+        })
+        .catch(() => { this.user.set(null); this.loading.set(false); });
     }
   }
 

@@ -1,100 +1,104 @@
 import { inject, Injectable, signal } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { Observable, of, throwError } from 'rxjs';
-import { catchError, tap } from 'rxjs/operators';
+import { Observable, from, of, throwError } from 'rxjs';
+import { catchError, map, tap } from 'rxjs/operators';
+import {
+  collection, query, where, getDocs, addDoc, updateDoc, deleteDoc, doc,
+} from 'firebase/firestore';
 import { Review, CreateReviewDto, UpdateReviewDto } from '../models/review.model';
-import { StorageService } from './storage.service';
 import { AuthService } from '../../features/auth/services/auth.service';
-import { environment } from '../../../environments/environment';
+import { db } from '../firebase';
 
 @Injectable({ providedIn: 'root' })
 export class ReviewService {
-  private readonly http = inject(HttpClient);
-  private readonly storage = inject(StorageService);
   private readonly authService = inject(AuthService);
-  private readonly apiUrl = environment.apiUrl;
 
   private readonly _movieReviews = signal<Review[]>([]);
   readonly movieReviews = this._movieReviews.asReadonly();
 
-  private get storageKey(): string { return 'demo_reviews'; }
-
   getMovieReviews(movieId: number): Observable<Review[]> {
-    return this.http.get<Review[]>(`${this.apiUrl}/reviews/movie/${movieId}`).pipe(
+    return from(
+      getDocs(query(collection(db, 'reviews'), where('movieId', '==', movieId)))
+        .then(snap => snap.docs
+          .map(d => {
+            const data = d.data();
+            return {
+              id: d.id,
+              movieId: data['movieId'],
+              userId: data['userId'],
+              rating: data['rating'],
+              content: data['content'],
+              createdAt: data['createdAt'],
+              updatedAt: data['updatedAt'],
+              user: {
+                id: data['userId'],
+                username: data['username'] ?? 'gebruiker',
+                displayName: data['displayName'] ?? 'Gebruiker',
+                email: '',
+                avatar: null,
+                bio: null,
+                createdAt: '',
+                _count: { watchlists: 0, reviews: 0, friends: 0 },
+              },
+              likesCount: 0,
+              likedByCurrentUser: false,
+            } as Review;
+          })
+          .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
+        )
+    ).pipe(
       tap(reviews => this._movieReviews.set(reviews)),
-      catchError(err => {
-        if (this.isNetworkError(err)) {
-          const all = this.storage.get<Review[]>(this.storageKey) ?? [];
-          const reviews = all.filter(r => r.movieId === movieId);
-          this._movieReviews.set(reviews);
-          return of(reviews);
-        }
-        return throwError(() => err);
+      catchError(() => {
+        this._movieReviews.set([]);
+        return of([]);
       }),
     );
   }
 
   createReview(dto: CreateReviewDto): Observable<Review> {
-    return this.http.post<Review>(`${this.apiUrl}/reviews`, dto).pipe(
-      tap(review => this._movieReviews.update(prev => [...prev, review])),
-      catchError(err => {
-        if (this.isNetworkError(err)) {
-          const user = this.authService.user();
-          if (!user) return throwError(() => err);
-          const review: Review = {
-            id: 'review-' + Date.now(),
-            userId: user.id,
-            movieId: dto.movieId,
-            rating: dto.rating,
-            content: dto.content,
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString(),
-            user,
-            likesCount: 0,
-            likedByCurrentUser: false,
-          };
-          const all = this.storage.get<Review[]>(this.storageKey) ?? [];
-          this.storage.set(this.storageKey, [...all, review]);
-          this._movieReviews.update(prev => [...prev, review]);
-          return of(review);
-        }
-        return throwError(() => err);
-      }),
+    const user = this.authService.user();
+    if (!user) return throwError(() => new Error('Niet ingelogd'));
+
+    const now = new Date().toISOString();
+    const data = {
+      movieId: dto.movieId,
+      userId: user.id,
+      username: user.username,
+      displayName: user.displayName,
+      rating: dto.rating,
+      content: dto.content,
+      createdAt: now,
+      updatedAt: now,
+    };
+
+    return from(addDoc(collection(db, 'reviews'), data)).pipe(
+      map(ref => ({
+        id: ref.id,
+        ...data,
+        user,
+        likesCount: 0,
+        likedByCurrentUser: false,
+      } as Review)),
+      tap(review => this._movieReviews.update(prev => [review, ...prev])),
+      catchError(() => throwError(() => new Error('Review opslaan mislukt'))),
     );
   }
 
   updateReview(id: string, dto: UpdateReviewDto): Observable<Review> {
-    return this.http.patch<Review>(`${this.apiUrl}/reviews/${id}`, dto).pipe(
-      tap(updated => this._movieReviews.update(prev => prev.map(r => r.id === id ? updated : r))),
-      catchError(err => {
-        if (this.isNetworkError(err)) {
-          const all = this.storage.get<Review[]>(this.storageKey) ?? [];
-          const updated = all.map(r =>
-            r.id === id ? { ...r, ...dto, updatedAt: new Date().toISOString() } : r,
-          );
-          this.storage.set(this.storageKey, updated);
-          this._movieReviews.update(prev =>
-            prev.map(r => r.id === id ? { ...r, ...dto, updatedAt: new Date().toISOString() } : r),
-          );
-          return of(updated.find(r => r.id === id)!);
-        }
-        return throwError(() => err);
+    const updatedAt = new Date().toISOString();
+    return from(updateDoc(doc(db, 'reviews', id), { ...dto, updatedAt })).pipe(
+      map(() => {
+        const existing = this._movieReviews().find(r => r.id === id)!;
+        return { ...existing, ...dto, updatedAt };
       }),
+      tap(updated => this._movieReviews.update(prev => prev.map(r => r.id === id ? updated : r))),
+      catchError(() => throwError(() => new Error('Review bijwerken mislukt'))),
     );
   }
 
   deleteReview(id: string): Observable<void> {
-    return this.http.delete<void>(`${this.apiUrl}/reviews/${id}`).pipe(
+    return from(deleteDoc(doc(db, 'reviews', id))).pipe(
       tap(() => this._movieReviews.update(prev => prev.filter(r => r.id !== id))),
-      catchError(err => {
-        if (this.isNetworkError(err)) {
-          const all = this.storage.get<Review[]>(this.storageKey) ?? [];
-          this.storage.set(this.storageKey, all.filter(r => r.id !== id));
-          this._movieReviews.update(prev => prev.filter(r => r.id !== id));
-          return of(undefined as void);
-        }
-        return throwError(() => err);
-      }),
+      catchError(() => throwError(() => new Error('Review verwijderen mislukt'))),
     );
   }
 
@@ -102,10 +106,5 @@ export class ReviewService {
     const user = this.authService.user();
     if (!user) return null;
     return this._movieReviews().find(r => r.movieId === movieId && r.userId === user.id) ?? null;
-  }
-
-  private isNetworkError(err: unknown): boolean {
-    const status = (err as { status?: number })?.status;
-    return status === 0 || status === undefined;
   }
 }
