@@ -1,4 +1,4 @@
-import { Component, computed, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, effect, inject, OnInit, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { MatIcon } from '@angular/material/icon';
 import { MatButton } from '@angular/material/button';
@@ -146,13 +146,17 @@ export class RouletteComponent implements OnInit {
       .filter(Boolean),
   );
 
-  ngOnInit(): void {
-    this.watchlistService.getMyWatchlists().subscribe();
-    this.friendsService.getMyFriends().subscribe(friends => {
+  constructor() {
+    effect(() => {
+      const friends = this.friendsService.friends();
       for (const f of friends) {
         this.watchlistService.loadFriendWatchlists(f.id).subscribe();
       }
     });
+  }
+
+  ngOnInit(): void {
+    this.watchlistService.getMyWatchlists().subscribe();
   }
 
   protected movieCount(wl: WatchlistWithOwner): number {
