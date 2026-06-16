@@ -41,6 +41,8 @@ export class AuthService {
         this._loading.set(false);
         getDoc(doc(db, 'users', fbUser.uid)).then(profileSnap => {
           const profile = profileSnap.data();
+          const cachedUsername = localStorage.getItem(`username_${fbUser.uid}`);
+          const cachedDisplayName = localStorage.getItem(`displayName_${fbUser.uid}`);
           if (profile) {
             if (profile['username']) localStorage.setItem(`username_${fbUser.uid}`, profile['username']);
             this._user.update(u => u ? ({
@@ -52,16 +54,18 @@ export class AuthService {
               _count: profile['_count'] ?? u._count,
             }) : null);
           } else {
-            // Account existed before Firestore rules were fixed — create the missing doc now
-            const username = localStorage.getItem(`username_${fbUser.uid}`) ?? fbUser.email?.split('@')[0] ?? fbUser.uid;
+            // Geen user-doc: aanmaken (nieuw account of account van vóór de rules-fix)
+            const username = cachedUsername ?? fbUser.email?.split('@')[0] ?? fbUser.uid;
+            const displayName = fbUser.displayName ?? cachedDisplayName ?? username;
             setDoc(doc(db, 'users', fbUser.uid), {
               username,
-              displayName: fbUser.displayName ?? username,
+              displayName,
               email: fbUser.email ?? '',
               bio: null,
               createdAt: fbUser.metadata.creationTime ?? new Date().toISOString(),
               _count: { watchlists: 0, reviews: 0, friends: 0 },
             });
+            this._user.update(u => u ? ({ ...u, username, displayName }) : null);
           }
         }).catch(() => {});
       } else {
@@ -89,16 +93,10 @@ export class AuthService {
       createUserWithEmailAndPassword(auth, data.email, data.password).then(async cred => {
         const createdAt = new Date().toISOString();
         localStorage.setItem(`username_${cred.user.uid}`, data.username);
+        localStorage.setItem(`displayName_${cred.user.uid}`, data.displayName);
         await updateProfile(cred.user, { displayName: data.displayName });
         sendEmailVerification(cred.user);
-        setDoc(doc(db, 'users', cred.user.uid), {
-          username: data.username,
-          displayName: data.displayName,
-          email: data.email,
-          bio: null,
-          createdAt,
-          _count: { watchlists: 0, reviews: 0, friends: 0 },
-        });
+        // User doc wordt aangemaakt door onAuthStateChanged zodra auth token klaar is
         this._user.set({
           id: cred.user.uid,
           email: data.email,
