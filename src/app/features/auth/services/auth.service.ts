@@ -51,6 +51,17 @@ export class AuthService {
               createdAt: profile['createdAt'] ?? u.createdAt,
               _count: profile['_count'] ?? u._count,
             }) : null);
+          } else {
+            // Account existed before Firestore rules were fixed — create the missing doc now
+            const username = localStorage.getItem(`username_${fbUser.uid}`) ?? fbUser.email?.split('@')[0] ?? fbUser.uid;
+            setDoc(doc(db, 'users', fbUser.uid), {
+              username,
+              displayName: fbUser.displayName ?? username,
+              email: fbUser.email ?? '',
+              bio: null,
+              createdAt: fbUser.metadata.creationTime ?? new Date().toISOString(),
+              _count: { watchlists: 0, reviews: 0, friends: 0 },
+            });
           }
         }).catch(() => {});
       } else {

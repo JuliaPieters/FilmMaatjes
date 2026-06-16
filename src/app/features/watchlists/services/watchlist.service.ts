@@ -17,6 +17,9 @@ export class WatchlistService {
   private readonly _watchlists = signal<Watchlist[]>([]);
   readonly watchlists = this._watchlists.asReadonly();
 
+  private readonly _loaded = signal(false);
+  readonly loaded = this._loaded.asReadonly();
+
   private readonly _friendWatchlists = signal<Map<string, Watchlist[]>>(new Map());
   readonly friendWatchlists = this._friendWatchlists.asReadonly();
 
@@ -24,10 +27,12 @@ export class WatchlistService {
     effect(() => {
       const user = this.authService.user();
       if (user) {
+        this._loaded.set(false);
         this.loadAll(user.id);
       } else {
         this._watchlists.set([]);
         this._friendWatchlists.set(new Map());
+        this._loaded.set(false);
       }
     });
   }
@@ -49,8 +54,10 @@ export class WatchlistService {
         return { id: d.id, ...d.data(), movies } as Watchlist;
       }));
       this._watchlists.set(watchlists);
-    } catch {
-      // Firestore unavailable
+    } catch (err) {
+      console.error('[WatchlistService] loadAll failed:', err);
+    } finally {
+      this._loaded.set(true);
     }
   }
 

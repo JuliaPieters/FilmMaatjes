@@ -1,7 +1,6 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { MatIcon } from '@angular/material/icon';
 import { MatButton, MatFabButton } from '@angular/material/button';
-import { MatDialog } from '@angular/material/dialog';
 import { RouterLink } from '@angular/router';
 import { WatchlistService } from '../../services/watchlist.service';
 import { Watchlist } from '../../../../core/models/watchlist.model';
@@ -11,7 +10,7 @@ import { NotificationService } from '../../../../core/services/notification.serv
 
 @Component({
   selector: 'app-watchlist-overview',
-  imports: [MatIcon, MatButton, MatFabButton, RouterLink, LoadingSpinnerComponent, EmptyStateComponent],
+  imports: [MatIcon, MatButton, RouterLink, LoadingSpinnerComponent, EmptyStateComponent],
   template: `
     <div class="page-container">
       <div class="flex items-center justify-between mb-6">
@@ -82,19 +81,12 @@ import { NotificationService } from '../../../../core/services/notification.serv
     }
   `],
 })
-export class WatchlistOverviewComponent implements OnInit {
+export class WatchlistOverviewComponent {
   private readonly watchlistService = inject(WatchlistService);
   private readonly notifications = inject(NotificationService);
 
-  protected readonly loading = signal(true);
+  protected readonly loading = computed(() => !this.watchlistService.loaded());
   protected readonly watchlists = this.watchlistService.watchlists;
-
-  ngOnInit(): void {
-    this.watchlistService.getMyWatchlists().subscribe({
-      next: () => this.loading.set(false),
-      error: () => this.loading.set(false),
-    });
-  }
 
   protected createWatchlist(): void {
     const name = window.prompt('Naam van de watchlist:');
