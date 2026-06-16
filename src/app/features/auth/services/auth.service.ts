@@ -1,7 +1,7 @@
 import { computed, inject, Injectable, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { from, Observable, throwError } from 'rxjs';
-import { catchError } from 'rxjs/operators';
+import { catchError, finalize } from 'rxjs/operators';
 import {
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
@@ -64,9 +64,9 @@ export class AuthService {
       signInWithEmailAndPassword(auth, credentials.email, credentials.password).then(() => undefined as void),
     ).pipe(
       catchError(err => {
-        this._loading.set(false);
         return throwError(() => ({ error: { message: this.mapError(err.code) } }));
       }),
+      finalize(() => this._loading.set(false)),
     );
   }
 
@@ -75,7 +75,7 @@ export class AuthService {
     return from(
       createUserWithEmailAndPassword(auth, data.email, data.password).then(async cred => {
         await updateProfile(cred.user, { displayName: data.displayName });
-        await sendEmailVerification(cred.user);
+        sendEmailVerification(cred.user);
         const createdAt = new Date().toISOString();
         await setDoc(doc(db, 'users', cred.user.uid), {
           username: data.username,
@@ -98,9 +98,9 @@ export class AuthService {
       }),
     ).pipe(
       catchError(err => {
-        this._loading.set(false);
         return throwError(() => ({ error: { message: this.mapError(err.code) } }));
       }),
+      finalize(() => this._loading.set(false)),
     );
   }
 
