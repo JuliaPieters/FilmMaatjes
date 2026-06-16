@@ -38,7 +38,9 @@ export class WatchlistService {
 
   private async loadAll(userId: string): Promise<void> {
     try {
+      console.log('[Watchlist] loadAll voor:', userId);
       const snap = await getDocs(query(collection(db, 'watchlists'), where('userId', '==', userId)));
+      console.log('[Watchlist] query resultaat:', snap.size, 'docs');
 
       let docs = snap.docs;
       if (snap.empty) {
@@ -54,7 +56,7 @@ export class WatchlistService {
       }));
       this._watchlists.set(watchlists);
     } catch (err) {
-      console.error('[WatchlistService] loadAll failed:', err);
+      console.error('[Watchlist] loadAll mislukt:', err);
     }
   }
 

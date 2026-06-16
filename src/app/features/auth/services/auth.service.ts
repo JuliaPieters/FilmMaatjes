@@ -39,7 +39,9 @@ export class AuthService {
           _count: { watchlists: 0, reviews: 0, friends: 0 },
         });
         this._loading.set(false);
+        console.log('[Auth] uid:', fbUser.uid, '| email:', fbUser.email);
         getDoc(doc(db, 'users', fbUser.uid)).then(profileSnap => {
+          console.log('[Auth] user doc bestaat:', profileSnap.exists());
           const profile = profileSnap.data();
           const cachedUsername = localStorage.getItem(`username_${fbUser.uid}`);
           const cachedDisplayName = localStorage.getItem(`displayName_${fbUser.uid}`);
@@ -54,9 +56,9 @@ export class AuthService {
               _count: profile['_count'] ?? u._count,
             }) : null);
           } else {
-            // Geen user-doc: aanmaken (nieuw account of account van vóór de rules-fix)
             const username = cachedUsername ?? fbUser.email?.split('@')[0] ?? fbUser.uid;
             const displayName = fbUser.displayName ?? cachedDisplayName ?? username;
+            console.log('[Auth] user doc aanmaken voor:', username);
             setDoc(doc(db, 'users', fbUser.uid), {
               username,
               displayName,
@@ -64,10 +66,11 @@ export class AuthService {
               bio: null,
               createdAt: fbUser.metadata.creationTime ?? new Date().toISOString(),
               _count: { watchlists: 0, reviews: 0, friends: 0 },
-            });
+            }).then(() => console.log('[Auth] user doc aangemaakt'))
+              .catch(err => console.error('[Auth] user doc aanmaken mislukt:', err));
             this._user.update(u => u ? ({ ...u, username, displayName }) : null);
           }
-        }).catch(() => {});
+        }).catch(err => console.error('[Auth] getDoc mislukt:', err));
       } else {
         this._user.set(null);
         this._loading.set(false);
