@@ -90,7 +90,6 @@ export class WatchlistService {
       getDocs(query(
         collection(db, 'watchlists'),
         where('userId', '==', userId),
-        where('isPublic', '==', true),
       )).then(snap =>
         Promise.all(snap.docs.map(async d => {
           const moviesSnap = await getDocs(collection(db, 'watchlists', d.id, 'movies'));

@@ -3,6 +3,7 @@ import { RouterLink } from '@angular/router';
 import { MatIcon } from '@angular/material/icon';
 import { MatButton } from '@angular/material/button';
 import { MatSlider, MatSliderThumb } from '@angular/material/slider';
+import { MatTab, MatTabGroup } from '@angular/material/tabs';
 import { FormsModule } from '@angular/forms';
 import { DecimalPipe } from '@angular/common';
 import { MovieService } from '../../../movies/services/movie.service';
@@ -27,7 +28,7 @@ interface Genre {
 
 @Component({
   selector: 'app-roulette',
-  imports: [RouterLink, MatIcon, MatButton, MatSlider, MatSliderThumb, FormsModule, DecimalPipe, LoadingSpinnerComponent],
+  imports: [RouterLink, MatIcon, MatButton, MatSlider, MatSliderThumb, MatTab, MatTabGroup, FormsModule, DecimalPipe, LoadingSpinnerComponent],
   templateUrl: './roulette.component.html',
   styleUrl: './roulette.component.scss',
 })
@@ -83,7 +84,6 @@ export class RouletteComponent implements OnInit {
 
   // Watchlist mode
   protected readonly selectedWatchlistIds = signal<Set<string>>(new Set());
-  protected readonly expandedFriends = signal<Set<string>>(new Set());
 
   protected readonly availableWatchlists = computed<WatchlistWithOwner[]>(() => {
     const own = this.watchlistService.watchlists()
@@ -156,19 +156,20 @@ export class RouletteComponent implements OnInit {
   }
 
   protected movieCount(wl: WatchlistWithOwner): number {
-    return wl._count?.movies ?? (wl.movies ?? []).length;
+    return (wl.movies ?? []).length || wl._count?.movies || 0;
   }
 
-  protected toggleFriend(owner: string): void {
-    this.expandedFriends.update(prev => {
+  protected selectedCountForGroup(watchlists: WatchlistWithOwner[]): number {
+    const ids = this.selectedWatchlistIds();
+    return watchlists.filter(wl => ids.has(wl.id)).length;
+  }
+
+  protected selectAllInGroup(watchlists: WatchlistWithOwner[]): void {
+    this.selectedWatchlistIds.update(prev => {
       const next = new Set(prev);
-      if (next.has(owner)) next.delete(owner); else next.add(owner);
+      watchlists.forEach(wl => next.add(wl.id));
       return next;
     });
-  }
-
-  protected isFriendExpanded(owner: string): boolean {
-    return this.expandedFriends().has(owner);
   }
 
   protected setMode(m: RouletteMode): void {

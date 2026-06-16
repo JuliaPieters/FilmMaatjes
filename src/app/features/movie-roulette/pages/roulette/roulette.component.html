@@ -91,63 +91,58 @@
                 <p>Je hebt nog geen watchlists.<br />Maak er een aan via de Watchlists pagina.</p>
               </div>
             } @else {
+              <mat-tab-group animationDuration="150ms" class="wl-tabs mt-3">
 
-              <!-- Jouw lijsten -->
-              <div class="wl-section-header mt-4">
-                <span class="wl-section-title">Jouw lijsten</span>
-                <button mat-button (click)="selectAllWatchlists()" class="text-text-muted text-sm">Alles</button>
-              </div>
+                <!-- Tab: Jij -->
+                <mat-tab>
+                  <ng-template mat-tab-label>
+                    <span>Jij</span>
+                    @if (selectedCountForGroup(ownWatchlists()) > 0) {
+                      <span class="tab-badge">{{ selectedCountForGroup(ownWatchlists()) }}</span>
+                    }
+                  </ng-template>
+                  <div class="tab-actions">
+                    <button mat-button (click)="selectAllInGroup(ownWatchlists())" class="text-text-muted text-xs">Alles selecteren</button>
+                  </div>
+                  <div class="watchlist-items">
+                    @for (wl of ownWatchlists(); track wl.id) {
+                      <button class="watchlist-item" [class.selected]="isWatchlistSelected(wl.id)" (click)="toggleWatchlist(wl.id)">
+                        <mat-icon class="wl-check">{{ isWatchlistSelected(wl.id) ? 'check_box' : 'check_box_outline_blank' }}</mat-icon>
+                        <span class="wl-name flex-1 min-w-0 truncate text-left">{{ wl.name }}</span>
+                        <span class="wl-count">{{ movieCount(wl) }}</span>
+                      </button>
+                    }
+                  </div>
+                </mat-tab>
 
-              <div class="watchlist-items">
-                @for (wl of ownWatchlists(); track wl.id) {
-                  <button
-                    class="watchlist-item"
-                    [class.selected]="isWatchlistSelected(wl.id)"
-                    (click)="toggleWatchlist(wl.id)"
-                  >
-                    <mat-icon class="wl-check">{{ isWatchlistSelected(wl.id) ? 'check_box' : 'check_box_outline_blank' }}</mat-icon>
-                    <span class="wl-name flex-1 min-w-0 truncate text-left">{{ wl.name }}</span>
-                    <span class="wl-count">{{ movieCount(wl) }}</span>
-                  </button>
-                }
-              </div>
-
-              <!-- Vrienden lijsten -->
-              @if (friendGroups().length > 0) {
-                <div class="wl-section-header mt-4">
-                  <span class="wl-section-title">Vrienden</span>
-                </div>
-
+                <!-- Tab per vriend -->
                 @for (group of friendGroups(); track group.owner) {
-                  <!-- Friend accordion header -->
-                  <button class="friend-accordion" (click)="toggleFriend(group.owner)">
-                    <div class="friend-accordion-avatar">{{ group.owner.charAt(0).toUpperCase() }}</div>
-                    <span class="flex-1 text-left font-medium text-sm text-text-primary">{{ group.owner }}</span>
-                    <span class="wl-count mr-2">{{ group.watchlists.length }} lijst{{ group.watchlists.length === 1 ? '' : 'en' }}</span>
-                    <mat-icon class="accordion-arrow" [class.open]="isFriendExpanded(group.owner)">expand_more</mat-icon>
-                  </button>
-
-                  @if (isFriendExpanded(group.owner)) {
-                    <div class="friend-watchlists">
+                  <mat-tab>
+                    <ng-template mat-tab-label>
+                      <span>{{ group.owner }}</span>
+                      @if (selectedCountForGroup(group.watchlists) > 0) {
+                        <span class="tab-badge">{{ selectedCountForGroup(group.watchlists) }}</span>
+                      }
+                    </ng-template>
+                    <div class="tab-actions">
+                      <button mat-button (click)="selectAllInGroup(group.watchlists)" class="text-text-muted text-xs">Alles selecteren</button>
+                    </div>
+                    <div class="watchlist-items">
                       @for (wl of group.watchlists; track wl.id) {
-                        <button
-                          class="watchlist-item indented"
-                          [class.selected]="isWatchlistSelected(wl.id)"
-                          (click)="toggleWatchlist(wl.id)"
-                        >
+                        <button class="watchlist-item" [class.selected]="isWatchlistSelected(wl.id)" (click)="toggleWatchlist(wl.id)">
                           <mat-icon class="wl-check">{{ isWatchlistSelected(wl.id) ? 'check_box' : 'check_box_outline_blank' }}</mat-icon>
                           <span class="wl-name flex-1 min-w-0 truncate text-left">{{ wl.name }}</span>
                           <span class="wl-count">{{ movieCount(wl) }}</span>
                         </button>
                       }
                     </div>
-                  }
+                  </mat-tab>
                 }
-              }
+              </mat-tab-group>
 
               <p class="wl-total">
                 <mat-icon style="font-size: 1rem; width: 1rem; height: 1rem;">movie</mat-icon>
-                {{ selectedMovies().length }} films beschikbaar
+                {{ selectedMovies().length }} films geselecteerd
               </p>
             }
           }
