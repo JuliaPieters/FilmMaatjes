@@ -28,22 +28,33 @@ export class AuthService {
   constructor() {
     onAuthStateChanged(auth, async fbUser => {
       if (fbUser) {
-        const profileSnap = await getDoc(doc(db, 'users', fbUser.uid));
-        const profile = profileSnap.data();
         this._user.set({
           id: fbUser.uid,
           email: fbUser.email ?? '',
-          username: profile?.['username'] ?? fbUser.email?.split('@')[0] ?? fbUser.uid,
-          displayName: fbUser.displayName ?? profile?.['displayName'] ?? 'Gebruiker',
+          username: fbUser.email?.split('@')[0] ?? fbUser.uid,
+          displayName: fbUser.displayName ?? 'Gebruiker',
           avatar: fbUser.photoURL,
-          bio: profile?.['bio'] ?? null,
-          createdAt: profile?.['createdAt'] ?? fbUser.metadata.creationTime ?? new Date().toISOString(),
-          _count: profile?.['_count'] ?? { watchlists: 0, reviews: 0, friends: 0 },
+          bio: null,
+          createdAt: fbUser.metadata.creationTime ?? new Date().toISOString(),
+          _count: { watchlists: 0, reviews: 0, friends: 0 },
         });
+        this._loading.set(false);
+        const profileSnap = await getDoc(doc(db, 'users', fbUser.uid));
+        const profile = profileSnap.data();
+        if (profile) {
+          this._user.update(u => u ? ({
+            ...u,
+            username: profile['username'] ?? u.username,
+            displayName: profile['displayName'] ?? u.displayName,
+            bio: profile['bio'] ?? null,
+            createdAt: profile['createdAt'] ?? u.createdAt,
+            _count: profile['_count'] ?? u._count,
+          }) : null);
+        }
       } else {
         this._user.set(null);
+        this._loading.set(false);
       }
-      this._loading.set(false);
     });
   }
 
