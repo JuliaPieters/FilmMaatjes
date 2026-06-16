@@ -9,7 +9,7 @@ function required(name) {
     console.error(`Verplichte environment variable ontbreekt: ${name}`);
     process.exit(1);
   }
-  return value.trim();
+  return value.replace(/\s+/g, '');
 }
 
 const content = `export const environment = {
