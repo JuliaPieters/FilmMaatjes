@@ -9,7 +9,13 @@ function required(name) {
     console.error(`Verplichte environment variable ontbreekt: ${name}`);
     process.exit(1);
   }
-  return value.replace(/\s+/g, '');
+  // Take only the first non-empty line to prevent accidental concatenation
+  const trimmed = value.split('\n').map(s => s.trim()).find(s => s);
+  if (!trimmed) {
+    console.error(`Environment variable is leeg: ${name}`);
+    process.exit(1);
+  }
+  return trimmed;
 }
 
 const content = `export const environment = {
