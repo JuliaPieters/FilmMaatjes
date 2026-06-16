@@ -148,7 +148,7 @@ export class FriendsService {
         .map(d => ({ id: d.id, ...d.data() } as User))
         .filter(u => u.id !== currentUser?.id)
       ),
-      catchError(() => of([])),
+      catchError(err => { console.error('[Friends] searchUsers mislukt:', err); return of([]); }),
     );
   }
 }

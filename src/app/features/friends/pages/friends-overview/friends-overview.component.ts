@@ -117,6 +117,12 @@ import { NotificationService } from '../../../../core/services/notification.serv
 
             @if (searchLoading()) {
               <app-loading-spinner [diameter]="32" />
+            } @else if (searchResults().length === 0 && searchControl.value?.trim()) {
+              <app-empty-state
+                icon="person_search"
+                title="Geen gebruikers gevonden"
+                description="Probeer een andere gebruikersnaam."
+              />
             } @else if (searchResults().length > 0) {
               <div class="friends-grid mt-4">
                 @for (user of searchResults(); track user.id) {
