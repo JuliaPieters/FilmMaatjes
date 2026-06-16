@@ -26,33 +26,14 @@
 .logo {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
   text-decoration: none;
   flex-shrink: 0;
 }
 
-.logo-icon {
-  width: 36px;
-  height: 36px;
-  background: linear-gradient(135deg, #7c3aed, #a78bfa);
+.logo-img {
+  height: 38px;
+  width: auto;
   border-radius: 8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  mat-icon {
-    color: white;
-    font-size: 1.25rem;
-    width: 1.25rem;
-    height: 1.25rem;
-  }
-}
-
-.logo-text {
-  font-size: 1.125rem;
-  font-weight: 700;
-  color: #f1f5f9;
-  letter-spacing: -0.025em;
 }
 
 .navbar-center {
