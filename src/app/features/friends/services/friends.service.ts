@@ -145,19 +145,36 @@ export class FriendsService {
     if (!searchQuery.trim()) return of([]);
     const currentUser = this.authService.user();
     const lower = searchQuery.toLowerCase();
+    const upper = lower + '';
 
-    const usernameQuery = query(
+    const byUsername = getDocs(query(
       collection(db, 'users'),
       where('usernameLower', '>=', lower),
-      where('usernameLower', '<=', lower + ''),
+      where('usernameLower', '<=', upper),
       limit(10),
-    );
+    ));
 
-    return from(getDocs(usernameQuery)).pipe(
-      map(snap => snap.docs
-        .map(d => ({ id: d.id, ...d.data() } as User))
-        .filter(u => u.id !== currentUser?.id)
-      ),
+    const byDisplayName = getDocs(query(
+      collection(db, 'users'),
+      where('displayNameLower', '>=', lower),
+      where('displayNameLower', '<=', upper),
+      limit(10),
+    ));
+
+    return from(Promise.all([byUsername, byDisplayName])).pipe(
+      map(([usernameSnap, displaySnap]) => {
+        const seen = new Set<string>();
+        const results: User[] = [];
+        for (const snap of [usernameSnap, displaySnap]) {
+          for (const d of snap.docs) {
+            if (!seen.has(d.id)) {
+              seen.add(d.id);
+              results.push({ id: d.id, ...d.data() } as User);
+            }
+          }
+        }
+        return results.filter(u => u.id !== currentUser?.id);
+      }),
       catchError(err => { console.error('[Friends] searchUsers mislukt:', err); return of([]); }),
     );
   }

@@ -55,9 +55,10 @@ export class AuthService {
           const cachedDisplayName = localStorage.getItem(`displayName_${fbUser.uid}`);
           if (profile) {
             if (profile['username']) localStorage.setItem(`username_${fbUser.uid}`, profile['username']);
-            if (profile['username'] && !profile['usernameLower']) {
-              updateDoc(doc(db, 'users', fbUser.uid), { usernameLower: profile['username'].toLowerCase() });
-            }
+            const missingFields: Record<string, string> = {};
+            if (profile['username'] && !profile['usernameLower']) missingFields['usernameLower'] = profile['username'].toLowerCase();
+            if (profile['displayName'] && !profile['displayNameLower']) missingFields['displayNameLower'] = profile['displayName'].toLowerCase();
+            if (Object.keys(missingFields).length) updateDoc(doc(db, 'users', fbUser.uid), missingFields);
             this._user.update(u => u ? ({
               ...u,
               username: profile['username'] ?? u.username,
@@ -74,6 +75,7 @@ export class AuthService {
               username,
               usernameLower: username.toLowerCase(),
               displayName,
+              displayNameLower: displayName.toLowerCase(),
               email: fbUser.email ?? '',
               bio: null,
               createdAt: fbUser.metadata.creationTime ?? new Date().toISOString(),
