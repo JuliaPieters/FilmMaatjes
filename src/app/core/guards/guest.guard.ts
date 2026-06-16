@@ -4,10 +4,10 @@ import { AuthService } from '../../features/auth/services/auth.service';
 import { auth } from '../firebase';
 
 export const guestGuard: CanActivateFn = async () => {
-  await auth.authStateReady();
-
   const authService = inject(AuthService);
   const router = inject(Router);
+
+  await auth.authStateReady();
 
   if (!authService.isAuthenticated()) {
     return true;

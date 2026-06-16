@@ -8,8 +8,9 @@ import {
   signOut,
   onAuthStateChanged,
   updateProfile,
+  sendEmailVerification,
 } from 'firebase/auth';
-import { doc, setDoc, getDoc } from 'firebase/firestore';
+import { doc, setDoc, getDoc, updateDoc } from 'firebase/firestore';
 import { auth, db } from '../../../core/firebase';
 import { LoginDto, RegisterDto, User } from '../../../core/models/user.model';
 
@@ -63,12 +64,24 @@ export class AuthService {
     return from(
       createUserWithEmailAndPassword(auth, data.email, data.password).then(async cred => {
         await updateProfile(cred.user, { displayName: data.displayName });
+        await sendEmailVerification(cred.user);
+        const createdAt = new Date().toISOString();
         await setDoc(doc(db, 'users', cred.user.uid), {
           username: data.username,
           displayName: data.displayName,
           email: data.email,
           bio: null,
-          createdAt: new Date().toISOString(),
+          createdAt,
+          _count: { watchlists: 0, reviews: 0, friends: 0 },
+        });
+        this._user.set({
+          id: cred.user.uid,
+          email: data.email,
+          username: data.username,
+          displayName: data.displayName,
+          avatar: null,
+          bio: null,
+          createdAt,
           _count: { watchlists: 0, reviews: 0, friends: 0 },
         });
       }),
@@ -92,6 +105,27 @@ export class AuthService {
     if (current) {
       this._user.set({ ...current, ...updates });
     }
+  }
+
+  async updateProfileData(updates: { displayName?: string; bio?: string }): Promise<void> {
+    const fbUser = auth.currentUser;
+    const current = this._user();
+    if (!fbUser || !current) throw new Error('Niet ingelogd');
+
+    await updateProfile(fbUser, {
+      displayName: updates.displayName ?? current.displayName,
+    });
+
+    await updateDoc(doc(db, 'users', fbUser.uid), {
+      ...(updates.displayName !== undefined && { displayName: updates.displayName }),
+      ...(updates.bio !== undefined && { bio: updates.bio }),
+    });
+
+    this._user.set({
+      ...current,
+      displayName: updates.displayName ?? current.displayName,
+      bio: updates.bio !== undefined ? updates.bio : current.bio,
+    });
   }
 
   private mapError(code: string): string {

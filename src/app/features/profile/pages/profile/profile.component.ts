@@ -1,4 +1,4 @@
-import { Component, computed, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, effect, inject, OnInit, signal } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { MatIcon } from '@angular/material/icon';
@@ -226,6 +226,7 @@ import { environment } from '../../../../../environments/environment';
       background: linear-gradient(135deg, #7c3aed, #a78bfa);
       display: flex; align-items: center; justify-content: center;
       font-size: 2.5rem; font-weight: 700; color: white; flex-shrink: 0; overflow: hidden;
+      position: relative;
       img { width: 100%; height: 100%; object-fit: cover; }
     }
 
@@ -359,12 +360,19 @@ export class ProfileComponent implements OnInit {
     return u ? this.friendsService.sentRequests().some(r => r.receiverId === u.id) : false;
   });
 
+  constructor() {
+    effect(() => {
+      if (this.isOwnProfile()) {
+        this.user.set(this.authService.user());
+      }
+    });
+  }
+
   ngOnInit(): void {
     const username = this.route.snapshot.paramMap.get('username');
     const currentUser = this.authService.user();
 
     if (!username || username === currentUser?.username) {
-      this.user.set(currentUser);
       this.isOwnProfile.set(true);
     } else {
       this.loading.set(true);
@@ -398,23 +406,15 @@ export class ProfileComponent implements OnInit {
   protected saveEdit(): void {
     const u = this.user();
     if (!u) return;
-    this.http.patch<User>(`${this.apiUrl}/users/me`, {
+    this.authService.updateProfileData({
       displayName: this.editDisplayName.trim() || u.displayName,
-      bio: this.editBio.trim() || null,
-    }).subscribe({
-      next: updated => {
-        this.authService.updateUser(updated);
-        this.user.set(updated);
-        this.editMode.set(false);
-        this.notifications.success('Profiel bijgewerkt!');
-      },
-      error: () => {
-        const updated: User = { ...u, displayName: this.editDisplayName.trim() || u.displayName, bio: this.editBio.trim() || null };
-        this.authService.updateUser(updated);
-        this.user.set(updated);
-        this.editMode.set(false);
-        this.notifications.success('Profiel bijgewerkt!');
-      },
+      bio: this.editBio.trim() || undefined,
+    }).then(() => {
+      this.user.set(this.authService.user());
+      this.editMode.set(false);
+      this.notifications.success('Profiel bijgewerkt!');
+    }).catch(() => {
+      this.notifications.error('Opslaan mislukt. Probeer het opnieuw.');
     });
   }
 }

@@ -14,6 +14,7 @@ function required(name) {
 
 const content = `export const environment = {
   production: true,
+  apiUrl: '',
   tmdb: {
     apiKey: '${required('TMDB_API_KEY')}',
     readAccessToken: '${required('TMDB_READ_ACCESS_TOKEN')}',
