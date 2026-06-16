@@ -9,9 +9,11 @@ import {
   onAuthStateChanged,
   updateProfile,
   sendEmailVerification,
+  getIdToken,
 } from 'firebase/auth';
 import { doc, setDoc, getDoc, updateDoc } from 'firebase/firestore';
 import { auth, db } from '../../../core/firebase';
+import { environment } from '../../../../environments/environment';
 import { LoginDto, RegisterDto, User } from '../../../core/models/user.model';
 
 @Injectable({ providedIn: 'root' })
@@ -40,6 +42,12 @@ export class AuthService {
         });
         this._loading.set(false);
         console.log('[Auth] uid:', fbUser.uid, '| email:', fbUser.email);
+        // REST API test: bypass SDK to check raw Firestore connectivity
+        getIdToken(fbUser).then(token => {
+          const url = `https://firestore.googleapis.com/v1/projects/${environment.firebase.projectId}/databases/(default)/documents/users/${fbUser.uid}`;
+          return fetch(url, { headers: { Authorization: `Bearer ${token}` } });
+        }).then(r => console.log('[REST test] Firestore bereikbaar, status:', r.status))
+          .catch(e => console.error('[REST test] Firestore NIET bereikbaar:', e));
         getDoc(doc(db, 'users', fbUser.uid)).then(profileSnap => {
           console.log('[Auth] user doc bestaat:', profileSnap.exists());
           const profile = profileSnap.data();
