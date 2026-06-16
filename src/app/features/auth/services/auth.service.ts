@@ -55,6 +55,9 @@ export class AuthService {
           const cachedDisplayName = localStorage.getItem(`displayName_${fbUser.uid}`);
           if (profile) {
             if (profile['username']) localStorage.setItem(`username_${fbUser.uid}`, profile['username']);
+            if (profile['username'] && !profile['usernameLower']) {
+              updateDoc(doc(db, 'users', fbUser.uid), { usernameLower: profile['username'].toLowerCase() });
+            }
             this._user.update(u => u ? ({
               ...u,
               username: profile['username'] ?? u.username,
@@ -69,6 +72,7 @@ export class AuthService {
             console.log('[Auth] user doc aanmaken voor:', username);
             setDoc(doc(db, 'users', fbUser.uid), {
               username,
+              usernameLower: username.toLowerCase(),
               displayName,
               email: fbUser.email ?? '',
               bio: null,

@@ -148,8 +148,8 @@ export class FriendsService {
 
     const usernameQuery = query(
       collection(db, 'users'),
-      where('username', '>=', lower),
-      where('username', '<=', lower + ''),
+      where('usernameLower', '>=', lower),
+      where('usernameLower', '<=', lower + ''),
       limit(10),
     );
 
