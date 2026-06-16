@@ -31,7 +31,7 @@ export class AuthService {
         this._user.set({
           id: fbUser.uid,
           email: fbUser.email ?? '',
-          username: fbUser.email?.split('@')[0] ?? fbUser.uid,
+          username: localStorage.getItem(`username_${fbUser.uid}`) ?? fbUser.email?.split('@')[0] ?? fbUser.uid,
           displayName: fbUser.displayName ?? 'Gebruiker',
           avatar: fbUser.photoURL,
           bio: null,
@@ -42,6 +42,7 @@ export class AuthService {
         getDoc(doc(db, 'users', fbUser.uid)).then(profileSnap => {
           const profile = profileSnap.data();
           if (profile) {
+            if (profile['username']) localStorage.setItem(`username_${fbUser.uid}`, profile['username']);
             this._user.update(u => u ? ({
               ...u,
               username: profile['username'] ?? u.username,
@@ -76,6 +77,7 @@ export class AuthService {
     return from(
       createUserWithEmailAndPassword(auth, data.email, data.password).then(async cred => {
         const createdAt = new Date().toISOString();
+        localStorage.setItem(`username_${cred.user.uid}`, data.username);
         await updateProfile(cred.user, { displayName: data.displayName });
         sendEmailVerification(cred.user);
         setDoc(doc(db, 'users', cred.user.uid), {
