@@ -1,4 +1,5 @@
-import { Component, computed, effect, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, effect, inject, OnInit, signal, DestroyRef } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { MatIcon } from '@angular/material/icon';
 import { MatButton } from '@angular/material/button';
@@ -330,6 +331,7 @@ export class ProfileComponent implements OnInit {
   private readonly authService = inject(AuthService);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
+  private readonly destroyRef = inject(DestroyRef);
   private readonly notifications = inject(NotificationService);
   private readonly friendsService = inject(FriendsService);
 
@@ -367,25 +369,30 @@ export class ProfileComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    const username = this.route.snapshot.paramMap.get('username');
-    const currentUser = this.authService.user();
+    this.route.paramMap
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(params => {
+        const username = params.get('username');
+        const currentUser = this.authService.user();
 
-    if (!username || username === currentUser?.username) {
-      this.isOwnProfile.set(true);
-    } else {
-      this.loading.set(true);
-      getDocs(query(collection(db, 'users'), where('username', '==', username)))
-        .then(snap => {
-          if (!snap.empty) {
-            const d = snap.docs[0];
-            this.user.set({ id: d.id, ...d.data() } as User);
-          } else {
-            this.user.set(null);
-          }
-          this.loading.set(false);
-        })
-        .catch(() => { this.user.set(null); this.loading.set(false); });
-    }
+        if (!username || username === currentUser?.username) {
+          this.isOwnProfile.set(true);
+          this.user.set(currentUser);
+        } else {
+          this.isOwnProfile.set(false);
+          this.loading.set(true);
+          getDocs(query(collection(db, 'users'), where('username', '==', username)))
+            .then(snap => {
+              this.user.set(snap.empty ? null : { id: snap.docs[0].id, ...snap.docs[0].data() } as User);
+              this.loading.set(false);
+            })
+            .catch(err => {
+              console.error('[Profile] laden mislukt:', err);
+              this.user.set(null);
+              this.loading.set(false);
+            });
+        }
+      });
   }
 
   protected sendFriendRequest(): void {
