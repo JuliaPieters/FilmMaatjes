@@ -139,7 +139,7 @@ export class MovieDetailComponent implements OnInit {
     const editing = this.editingReview();
     const obs = editing
       ? this.reviewService.updateReview(editing.id, { content: text, rating })
-      : this.reviewService.createReview({ movieId, rating, content: text });
+      : this.reviewService.createReview({ movieId, rating, content: text, movieTitle: this.movie()?.title, moviePosterPath: this.movie()?.poster_path });
 
     obs.subscribe({
       next: () => {

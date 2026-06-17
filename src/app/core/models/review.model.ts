@@ -4,6 +4,8 @@ export interface Review {
   id: string;
   userId: string;
   movieId: number;
+  movieTitle?: string;
+  moviePosterPath?: string | null;
   rating: number;
   content: string;
   createdAt: string;
@@ -15,6 +17,8 @@ export interface Review {
 
 export interface CreateReviewDto {
   movieId: number;
+  movieTitle?: string;
+  moviePosterPath?: string | null;
   rating: number;
   content: string;
 }

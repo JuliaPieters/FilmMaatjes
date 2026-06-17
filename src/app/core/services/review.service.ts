@@ -59,7 +59,7 @@ export class ReviewService {
     if (!user) return throwError(() => new Error('Niet ingelogd'));
 
     const now = new Date().toISOString();
-    const data = {
+    const data: Record<string, unknown> = {
       movieId: dto.movieId,
       userId: user.id,
       username: user.username,
@@ -69,6 +69,8 @@ export class ReviewService {
       createdAt: now,
       updatedAt: now,
     };
+    if (dto.movieTitle) data['movieTitle'] = dto.movieTitle;
+    if (dto.moviePosterPath) data['moviePosterPath'] = dto.moviePosterPath;
 
     return from(addDoc(collection(db, 'reviews'), data)).pipe(
       map(ref => ({
@@ -111,6 +113,8 @@ export class ReviewService {
             return {
               id: d.id,
               movieId: data['movieId'],
+              movieTitle: data['movieTitle'] ?? undefined,
+              moviePosterPath: data['moviePosterPath'] ?? null,
               userId: data['userId'],
               rating: data['rating'],
               content: data['content'],

@@ -198,17 +198,25 @@ import { db } from '../../../../core/firebase';
                   <div class="reviews-list">
                     @for (review of friendReviews(); track review.id) {
                       <a class="review-card glass-card" [routerLink]="['/movies', review.movieId]">
-                        <div class="review-top">
-                          <app-star-rating [value]="review.rating" [readonly]="true" [size]="16" />
-                          <span class="review-date">{{ review.createdAt | date: 'd MMM yyyy' }}</span>
+                        <div class="review-poster">
+                          @if (review.moviePosterPath) {
+                            <img [src]="'https://image.tmdb.org/t/p/w92' + review.moviePosterPath" [alt]="review.movieTitle" loading="lazy" />
+                          } @else {
+                            <div class="review-poster-placeholder"><mat-icon>movie</mat-icon></div>
+                          }
                         </div>
-                        @if (review.content) {
-                          <p class="review-content">{{ review.content }}</p>
-                        }
-                        <span class="review-movie-link">
-                          <mat-icon>movie</mat-icon>
-                          Film bekijken
-                        </span>
+                        <div class="review-body">
+                          @if (review.movieTitle) {
+                            <p class="review-movie-title">{{ review.movieTitle }}</p>
+                          }
+                          <div class="review-top">
+                            <app-star-rating [value]="review.rating" [readonly]="true" [size]="16" />
+                            <span class="review-date">{{ review.createdAt | date: 'd MMM yyyy' }}</span>
+                          </div>
+                          @if (review.content) {
+                            <p class="review-content">{{ review.content }}</p>
+                          }
+                        </div>
                       </a>
                     }
                   </div>
@@ -436,26 +444,38 @@ import { db } from '../../../../core/firebase';
     }
 
     .review-card {
-      display: flex; flex-direction: column; gap: 0.625rem; padding: 1rem 1.25rem;
-      text-decoration: none; transition: border-color 0.15s;
+      display: flex; flex-direction: row; gap: 0.875rem; padding: 0.75rem;
+      text-decoration: none; transition: border-color 0.15s; align-items: flex-start;
       &:hover { border-color: rgba(124,58,237,0.3) !important; }
     }
 
+    .review-poster {
+      width: 56px; height: 84px; border-radius: 6px; overflow: hidden; flex-shrink: 0;
+      background: rgba(255,255,255,0.05);
+      img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    }
+
+    .review-poster-placeholder {
+      width: 100%; height: 100%; display: flex; align-items: center; justify-content: center;
+      mat-icon { color: #475569; font-size: 1.5rem; width: 1.5rem; height: 1.5rem; }
+    }
+
+    .review-body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 0.375rem; }
+
+    .review-movie-title {
+      font-size: 0.9375rem; font-weight: 600; color: #f1f5f9; margin: 0;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+
     .review-top {
-      display: flex; align-items: center; gap: 0.875rem; flex-wrap: wrap;
+      display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;
     }
 
     .review-date { font-size: 0.8125rem; color: #64748b; }
 
     .review-content {
       font-size: 0.875rem; color: #94a3b8; line-height: 1.6; margin: 0;
-      display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden;
-    }
-
-    .review-movie-link {
-      display: inline-flex; align-items: center; gap: 0.25rem;
-      font-size: 0.8125rem; color: #7c3aed; font-weight: 500;
-      mat-icon { font-size: 0.875rem; width: 0.875rem; height: 0.875rem; }
+      display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;
     }
 
     .edit-form { border: 1px solid rgba(124,58,237,0.3); }
