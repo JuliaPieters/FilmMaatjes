@@ -175,7 +175,7 @@ export class FriendsService {
         }
         return results.filter(u => u.id !== currentUser?.id);
       }),
-      catchError(err => { console.error('[Friends] searchUsers mislukt:', err); return of([]); }),
+      catchError(() => of([])),
     );
   }
 }

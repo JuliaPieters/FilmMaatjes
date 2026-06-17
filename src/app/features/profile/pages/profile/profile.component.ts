@@ -591,7 +591,6 @@ export class ProfileComponent implements OnInit {
               this.loading.set(false);
             })
             .catch(err => {
-              console.error('[Profile] laden mislukt:', err);
               this.user.set(null);
               this.loading.set(false);
             });
