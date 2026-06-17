@@ -145,14 +145,36 @@ import { db } from '../../../../core/firebase';
                   <p>Geen watchlists om weer te geven.</p>
                 </div>
               } @else {
-                <div class="wl-grid">
+                <div class="public-wl-list">
                   @for (wl of publicWatchlists(); track wl.id) {
-                    <div class="wl-card glass-card">
-                      <div class="wl-icon"><mat-icon>bookmark</mat-icon></div>
-                      <div>
-                        <p class="wl-name">{{ wl.name }}</p>
-                        <p class="wl-count">{{ wl._count?.movies ?? wl.movies.length }} films</p>
-                      </div>
+                    <div class="public-wl-section">
+                      <button class="public-wl-header glass-card" (click)="toggleWatchlist(wl.id)">
+                        <div class="wl-icon"><mat-icon>bookmark</mat-icon></div>
+                        <div class="flex-1 min-w-0 text-left">
+                          <p class="wl-name">{{ wl.name }}</p>
+                          <p class="wl-count">{{ wl.movies.length || wl._count?.movies || 0 }} films</p>
+                        </div>
+                        <mat-icon class="wl-chevron" [class.rotated]="expandedWatchlistId() === wl.id">
+                          expand_more
+                        </mat-icon>
+                      </button>
+
+                      @if (expandedWatchlistId() === wl.id) {
+                        @if (wl.movies.length === 0) {
+                          <div class="empty-state py-8">
+                            <mat-icon>movie_off</mat-icon>
+                            <p>Geen films in deze watchlist.</p>
+                          </div>
+                        } @else {
+                          <div class="card-grid mt-4 pb-4">
+                            @for (entry of wl.movies; track entry.movieId) {
+                              @if (entry.movie) {
+                                <app-movie-card [movie]="entry.movie" />
+                              }
+                            }
+                          </div>
+                        }
+                      }
                     </div>
                   }
                 </div>
@@ -358,6 +380,22 @@ import { db } from '../../../../core/firebase';
     .wl-name { font-size: 0.9375rem; font-weight: 600; color: #f1f5f9; margin: 0; }
     .wl-count { font-size: 0.8125rem; color: #64748b; margin: 0.125rem 0 0; }
 
+    .public-wl-list { display: flex; flex-direction: column; gap: 0.625rem; }
+
+    .public-wl-section { display: flex; flex-direction: column; }
+
+    .public-wl-header {
+      display: flex; align-items: center; gap: 0.875rem; padding: 0.875rem 1rem;
+      width: 100%; border: none; cursor: pointer; text-align: left;
+      transition: border-color 0.15s;
+      &:hover { border-color: rgba(124,58,237,0.3) !important; }
+    }
+
+    .wl-chevron {
+      color: #64748b; flex-shrink: 0; transition: transform 0.2s ease;
+      &.rotated { transform: rotate(180deg); color: #a78bfa; }
+    }
+
     .edit-form { border: 1px solid rgba(124,58,237,0.3); }
     .edit-fields { display: flex; flex-direction: column; gap: 1rem; }
     .field-group { display: flex; flex-direction: column; gap: 0.375rem; }
@@ -394,6 +432,7 @@ export class ProfileComponent implements OnInit {
   // Friend profile data
   protected readonly friendProfileWatchlists = signal<Watchlist[]>([]);
   protected readonly loadingFriendData = signal(false);
+  protected readonly expandedWatchlistId = signal<string | null>(null);
 
   protected readonly watchedCount = computed(() => this.library.watchedMovies().length);
   protected readonly ratedCount = computed(() => this.library.ratedMovies().length);
@@ -464,6 +503,10 @@ export class ProfileComponent implements OnInit {
             });
         }
       });
+  }
+
+  protected toggleWatchlist(id: string): void {
+    this.expandedWatchlistId.update(current => current === id ? null : id);
   }
 
   private loadFriendData(userId: string): void {
