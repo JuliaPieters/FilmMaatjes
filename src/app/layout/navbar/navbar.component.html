@@ -96,51 +96,40 @@
               <span>{{ authService.user()?.displayName?.charAt(0)?.toUpperCase() }}</span>
             }
           </div>
-          <div class="mobile-user-info">
+          <div>
             <p class="mobile-user-name">{{ authService.user()?.displayName }}</p>
             <p class="mobile-user-handle">&#64;{{ authService.user()?.username }}</p>
           </div>
         </div>
-        <div class="mobile-divider"></div>
+        <hr class="mobile-divider" />
       }
 
-      <nav class="mobile-nav-section">
-        @for (link of navLinks; track link.route) {
-          <a
-            [routerLink]="link.route"
-            routerLinkActive="mobile-nav-active"
-            class="mobile-nav-link"
-            (click)="closeMobileMenu()"
-          >
-            <span class="mobile-nav-icon"><mat-icon>{{ link.icon }}</mat-icon></span>
-            <span class="mobile-nav-label">{{ link.label }}</span>
-          </a>
-        }
-        @if (authService.isAuthenticated()) {
-          <a routerLink="/watchlists" routerLinkActive="mobile-nav-active" class="mobile-nav-link" (click)="closeMobileMenu()">
-            <span class="mobile-nav-icon"><mat-icon>bookmark</mat-icon></span>
-            <span class="mobile-nav-label">Watchlists</span>
-          </a>
-          <a routerLink="/profile" routerLinkActive="mobile-nav-active" class="mobile-nav-link" (click)="closeMobileMenu()">
-            <span class="mobile-nav-icon"><mat-icon>person</mat-icon></span>
-            <span class="mobile-nav-label">Profiel</span>
-          </a>
-        }
-      </nav>
+      @for (link of navLinks; track link.route) {
+        <a [routerLink]="link.route" routerLinkActive="mobile-link-active" class="mobile-link" (click)="closeMobileMenu()">
+          <mat-icon>{{ link.icon }}</mat-icon>
+          {{ link.label }}
+        </a>
+      }
 
       @if (authService.isAuthenticated()) {
-        <div class="mobile-divider"></div>
-        <button class="mobile-nav-link mobile-logout" (click)="logout()">
-          <span class="mobile-nav-icon"><mat-icon>logout</mat-icon></span>
-          <span class="mobile-nav-label">Uitloggen</span>
+        <a routerLink="/watchlists" routerLinkActive="mobile-link-active" class="mobile-link" (click)="closeMobileMenu()">
+          <mat-icon>bookmark</mat-icon>
+          Watchlists
+        </a>
+        <a routerLink="/profile" routerLinkActive="mobile-link-active" class="mobile-link" (click)="closeMobileMenu()">
+          <mat-icon>person</mat-icon>
+          Profiel
+        </a>
+        <hr class="mobile-divider" />
+        <button class="mobile-link mobile-link-logout" (click)="logout()">
+          <mat-icon>logout</mat-icon>
+          Uitloggen
         </button>
       } @else {
-        <div class="mobile-divider"></div>
+        <hr class="mobile-divider" />
         <div class="mobile-auth-btns">
           <a mat-stroked-button routerLink="/auth/login" (click)="closeMobileMenu()">Inloggen</a>
-          <a mat-flat-button color="primary" routerLink="/auth/register" (click)="closeMobileMenu()">
-            Aanmelden
-          </a>
+          <a mat-flat-button color="primary" routerLink="/auth/register" (click)="closeMobileMenu()">Aanmelden</a>
         </div>
       }
 
