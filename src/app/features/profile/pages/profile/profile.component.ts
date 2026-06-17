@@ -4,21 +4,25 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { MatIcon } from '@angular/material/icon';
 import { MatButton } from '@angular/material/button';
 import { FormsModule } from '@angular/forms';
+import { DatePipe } from '@angular/common';
+import { firstValueFrom } from 'rxjs';
 import { collection, getDocs, query, where } from 'firebase/firestore';
 import { AuthService } from '../../../auth/services/auth.service';
 import { UserLibraryService } from '../../../../core/services/user-library.service';
 import { WatchlistService } from '../../../watchlists/services/watchlist.service';
 import { FriendsService } from '../../../friends/services/friends.service';
+import { ReviewService } from '../../../../core/services/review.service';
 import { NotificationService } from '../../../../core/services/notification.service';
 import { MovieCardComponent } from '../../../../shared/components/movie-card/movie-card.component';
 import { StarRatingComponent } from '../../../../shared/components/star-rating/star-rating.component';
 import { User } from '../../../../core/models/user.model';
 import { Watchlist } from '../../../../core/models/watchlist.model';
+import { Review } from '../../../../core/models/review.model';
 import { db } from '../../../../core/firebase';
 
 @Component({
   selector: 'app-profile',
-  imports: [RouterLink, MatIcon, MatButton, FormsModule, MovieCardComponent, StarRatingComponent],
+  imports: [RouterLink, MatIcon, MatButton, FormsModule, DatePipe, MovieCardComponent, StarRatingComponent],
   template: `
     <div class="profile-page">
       <div class="profile-banner"></div>
@@ -69,7 +73,7 @@ import { db } from '../../../../core/firebase';
                   </div>
                 }
                 <div class="stat">
-                  <span class="stat-value">{{ user()?._count?.friends ?? 0 }}</span>
+                  <span class="stat-value">{{ isOwnProfile() ? friendsService.friends().length : (friendActualCount() ?? user()?._count?.friends ?? 0) }}</span>
                   <span class="stat-label">Vrienden</span>
                 </div>
               </div>
@@ -128,9 +132,13 @@ import { db } from '../../../../core/firebase';
           <!-- Public profile tabs (friend view) -->
           @if (!isOwnProfile()) {
             <div class="profile-tabs mt-8">
-              <button class="profile-tab active">
+              <button class="profile-tab" [class.active]="publicActiveTab() === 'watchlists'" (click)="publicActiveTab.set('watchlists')">
                 <mat-icon>bookmark</mat-icon>
                 Watchlists ({{ publicWatchlists().length }})
+              </button>
+              <button class="profile-tab" [class.active]="publicActiveTab() === 'reviews'" (click)="publicActiveTab.set('reviews')">
+                <mat-icon>rate_review</mat-icon>
+                Reviews ({{ friendReviews().length }})
               </button>
             </div>
             <div class="tab-content mt-6">
@@ -139,45 +147,72 @@ import { db } from '../../../../core/firebase';
                   <mat-icon class="animate-spin">refresh</mat-icon>
                   <p>Laden...</p>
                 </div>
-              } @else if (publicWatchlists().length === 0) {
-                <div class="empty-state">
-                  <mat-icon>bookmark_border</mat-icon>
-                  <p>Geen watchlists om weer te geven.</p>
-                </div>
-              } @else {
-                <div class="public-wl-list">
-                  @for (wl of publicWatchlists(); track wl.id) {
-                    <div class="public-wl-section">
-                      <button class="public-wl-header glass-card" (click)="toggleWatchlist(wl.id)">
-                        <div class="wl-icon"><mat-icon>bookmark</mat-icon></div>
-                        <div class="flex-1 min-w-0 text-left">
-                          <p class="wl-name">{{ wl.name }}</p>
-                          <p class="wl-count">{{ wl.movies.length || wl._count?.movies || 0 }} films</p>
-                        </div>
-                        <mat-icon class="wl-chevron" [class.rotated]="expandedWatchlistId() === wl.id">
-                          expand_more
-                        </mat-icon>
-                      </button>
+              } @else if (publicActiveTab() === 'watchlists') {
+                @if (publicWatchlists().length === 0) {
+                  <div class="empty-state">
+                    <mat-icon>bookmark_border</mat-icon>
+                    <p>Geen watchlists om weer te geven.</p>
+                  </div>
+                } @else {
+                  <div class="public-wl-list">
+                    @for (wl of publicWatchlists(); track wl.id) {
+                      <div class="public-wl-section">
+                        <button class="public-wl-header glass-card" (click)="toggleWatchlist(wl.id)">
+                          <div class="wl-icon"><mat-icon>bookmark</mat-icon></div>
+                          <div class="flex-1 min-w-0 text-left">
+                            <p class="wl-name">{{ wl.name }}</p>
+                            <p class="wl-count">{{ wl.movies.length || wl._count?.movies || 0 }} films</p>
+                          </div>
+                          <mat-icon class="wl-chevron" [class.rotated]="expandedWatchlistId() === wl.id">
+                            expand_more
+                          </mat-icon>
+                        </button>
 
-                      @if (expandedWatchlistId() === wl.id) {
-                        @if (wl.movies.length === 0) {
-                          <div class="empty-state py-8">
-                            <mat-icon>movie_off</mat-icon>
-                            <p>Geen films in deze watchlist.</p>
-                          </div>
-                        } @else {
-                          <div class="card-grid mt-4 pb-4">
-                            @for (entry of wl.movies; track entry.movieId) {
-                              @if (entry.movie) {
-                                <app-movie-card [movie]="entry.movie" />
+                        @if (expandedWatchlistId() === wl.id) {
+                          @if (wl.movies.length === 0) {
+                            <div class="empty-state py-8">
+                              <mat-icon>movie_off</mat-icon>
+                              <p>Geen films in deze watchlist.</p>
+                            </div>
+                          } @else {
+                            <div class="card-grid mt-4 pb-4">
+                              @for (entry of wl.movies; track entry.movieId) {
+                                @if (entry.movie) {
+                                  <app-movie-card [movie]="entry.movie" />
+                                }
                               }
-                            }
-                          </div>
+                            </div>
+                          }
                         }
-                      }
-                    </div>
-                  }
-                </div>
+                      </div>
+                    }
+                  </div>
+                }
+              } @else {
+                @if (friendReviews().length === 0) {
+                  <div class="empty-state">
+                    <mat-icon>rate_review</mat-icon>
+                    <p>Nog geen reviews geschreven.</p>
+                  </div>
+                } @else {
+                  <div class="reviews-list">
+                    @for (review of friendReviews(); track review.id) {
+                      <a class="review-card glass-card" [routerLink]="['/movies', review.movieId]">
+                        <div class="review-top">
+                          <app-star-rating [value]="review.rating" [readonly]="true" [size]="16" />
+                          <span class="review-date">{{ review.createdAt | date: 'd MMM yyyy' }}</span>
+                        </div>
+                        @if (review.content) {
+                          <p class="review-content">{{ review.content }}</p>
+                        }
+                        <span class="review-movie-link">
+                          <mat-icon>movie</mat-icon>
+                          Film bekijken
+                        </span>
+                      </a>
+                    }
+                  </div>
+                }
               }
             </div>
           }
@@ -396,6 +431,33 @@ import { db } from '../../../../core/firebase';
       &.rotated { transform: rotate(180deg); color: #a78bfa; }
     }
 
+    .reviews-list {
+      display: flex; flex-direction: column; gap: 0.75rem;
+    }
+
+    .review-card {
+      display: flex; flex-direction: column; gap: 0.625rem; padding: 1rem 1.25rem;
+      text-decoration: none; transition: border-color 0.15s;
+      &:hover { border-color: rgba(124,58,237,0.3) !important; }
+    }
+
+    .review-top {
+      display: flex; align-items: center; gap: 0.875rem; flex-wrap: wrap;
+    }
+
+    .review-date { font-size: 0.8125rem; color: #64748b; }
+
+    .review-content {
+      font-size: 0.875rem; color: #94a3b8; line-height: 1.6; margin: 0;
+      display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden;
+    }
+
+    .review-movie-link {
+      display: inline-flex; align-items: center; gap: 0.25rem;
+      font-size: 0.8125rem; color: #7c3aed; font-weight: 500;
+      mat-icon { font-size: 0.875rem; width: 0.875rem; height: 0.875rem; }
+    }
+
     .edit-form { border: 1px solid rgba(124,58,237,0.3); }
     .edit-fields { display: flex; flex-direction: column; gap: 1rem; }
     .field-group { display: flex; flex-direction: column; gap: 0.375rem; }
@@ -416,10 +478,11 @@ export class ProfileComponent implements OnInit {
   private readonly router = inject(Router);
   private readonly destroyRef = inject(DestroyRef);
   private readonly notifications = inject(NotificationService);
-  private readonly friendsService = inject(FriendsService);
+  protected readonly friendsService = inject(FriendsService);
 
   protected readonly library = inject(UserLibraryService);
   protected readonly watchlistService = inject(WatchlistService);
+  private readonly reviewService = inject(ReviewService);
 
   protected readonly user = signal<User | null>(null);
   protected readonly isOwnProfile = signal(false);
@@ -431,8 +494,11 @@ export class ProfileComponent implements OnInit {
 
   // Friend profile data
   protected readonly friendProfileWatchlists = signal<Watchlist[]>([]);
+  protected readonly friendReviews = signal<Review[]>([]);
+  protected readonly friendActualCount = signal<number | null>(null);
   protected readonly loadingFriendData = signal(false);
   protected readonly expandedWatchlistId = signal<string | null>(null);
+  protected readonly publicActiveTab = signal<'watchlists' | 'reviews'>('watchlists');
 
   protected readonly watchedCount = computed(() => this.library.watchedMovies().length);
   protected readonly ratedCount = computed(() => this.library.ratedMovies().length);
@@ -485,6 +551,7 @@ export class ProfileComponent implements OnInit {
           this.isOwnProfile.set(false);
           this.loading.set(true);
           this.friendProfileWatchlists.set([]);
+          this.publicActiveTab.set('watchlists');
           getDocs(query(collection(db, 'users'), where('username', '==', username)))
             .then(snap => {
               if (snap.empty) {
@@ -511,12 +578,22 @@ export class ProfileComponent implements OnInit {
 
   private loadFriendData(userId: string): void {
     this.loadingFriendData.set(true);
-    this.watchlistService.loadFriendWatchlists(userId).subscribe({
-      next: watchlists => {
-        this.friendProfileWatchlists.set(watchlists);
-        this.loadingFriendData.set(false);
-      },
-      error: () => this.loadingFriendData.set(false),
+    this.friendActualCount.set(null);
+    this.friendReviews.set([]);
+    this.friendProfileWatchlists.set([]);
+
+    Promise.all([
+      getDocs(query(collection(db, 'friendRequests'), where('senderId', '==', userId), where('status', '==', 'accepted'))),
+      getDocs(query(collection(db, 'friendRequests'), where('receiverId', '==', userId), where('status', '==', 'accepted'))),
+      firstValueFrom(this.watchlistService.loadFriendWatchlists(userId)),
+      firstValueFrom(this.reviewService.getUserReviews(userId)),
+    ]).then(([sentSnap, receivedSnap, watchlists, reviews]) => {
+      this.friendActualCount.set(sentSnap.size + receivedSnap.size);
+      this.friendProfileWatchlists.set(watchlists);
+      this.friendReviews.set(reviews);
+      this.loadingFriendData.set(false);
+    }).catch(() => {
+      this.loadingFriendData.set(false);
     });
   }
 

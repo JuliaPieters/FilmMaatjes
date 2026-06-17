@@ -102,6 +102,39 @@ export class ReviewService {
     );
   }
 
+  getUserReviews(userId: string): Observable<Review[]> {
+    return from(
+      getDocs(query(collection(db, 'reviews'), where('userId', '==', userId)))
+        .then(snap => snap.docs
+          .map(d => {
+            const data = d.data();
+            return {
+              id: d.id,
+              movieId: data['movieId'],
+              userId: data['userId'],
+              rating: data['rating'],
+              content: data['content'],
+              createdAt: data['createdAt'],
+              updatedAt: data['updatedAt'],
+              user: {
+                id: data['userId'],
+                username: data['username'] ?? 'gebruiker',
+                displayName: data['displayName'] ?? 'Gebruiker',
+                email: '',
+                avatar: null,
+                bio: null,
+                createdAt: '',
+                _count: { watchlists: 0, reviews: 0, friends: 0 },
+              },
+              likesCount: 0,
+              likedByCurrentUser: false,
+            } as Review;
+          })
+          .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
+        )
+    ).pipe(catchError(() => of([])));
+  }
+
   getUserReviewForMovie(movieId: number): Review | null {
     const user = this.authService.user();
     if (!user) return null;
