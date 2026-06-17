@@ -9,11 +9,9 @@ import {
   onAuthStateChanged,
   updateProfile,
   sendEmailVerification,
-  getIdToken,
 } from 'firebase/auth';
 import { doc, setDoc, getDoc, updateDoc } from 'firebase/firestore';
 import { auth, db } from '../../../core/firebase';
-import { environment } from '../../../../environments/environment';
 import { LoginDto, RegisterDto, User } from '../../../core/models/user.model';
 
 @Injectable({ providedIn: 'root' })
@@ -30,10 +28,11 @@ export class AuthService {
   constructor() {
     onAuthStateChanged(auth, async fbUser => {
       if (fbUser) {
+        const cachedUsername = localStorage.getItem(`username_${fbUser.uid}`);
         this._user.set({
           id: fbUser.uid,
           email: fbUser.email ?? '',
-          username: localStorage.getItem(`username_${fbUser.uid}`) ?? fbUser.email?.split('@')[0] ?? fbUser.uid,
+          username: cachedUsername ?? fbUser.email?.split('@')[0] ?? fbUser.uid,
           displayName: fbUser.displayName ?? 'Gebruiker',
           avatar: fbUser.photoURL,
           bio: null,
@@ -41,20 +40,11 @@ export class AuthService {
           _count: { watchlists: 0, reviews: 0, friends: 0 },
         });
         this._loading.set(false);
-        console.log('[Auth] uid:', fbUser.uid, '| email:', fbUser.email);
-        // REST API test: bypass SDK to check raw Firestore connectivity
-        getIdToken(fbUser).then(token => {
-          const url = `https://firestore.googleapis.com/v1/projects/${environment.firebase.projectId}/databases/(default)/documents/users/${fbUser.uid}`;
-          return fetch(url, { headers: { Authorization: `Bearer ${token}` } });
-        }).then(r => console.log('[REST test] Firestore bereikbaar, status:', r.status))
-          .catch(e => console.error('[REST test] Firestore NIET bereikbaar:', e));
         getDoc(doc(db, 'users', fbUser.uid)).then(profileSnap => {
-          console.log('[Auth] user doc bestaat:', profileSnap.exists());
           const profile = profileSnap.data();
-          const cachedUsername = localStorage.getItem(`username_${fbUser.uid}`);
-          const cachedDisplayName = localStorage.getItem(`displayName_${fbUser.uid}`);
           if (profile) {
             if (profile['username']) localStorage.setItem(`username_${fbUser.uid}`, profile['username']);
+            // Backfill missing lowercase search fields
             const missingFields: Record<string, string> = {};
             if (profile['username'] && !profile['usernameLower']) missingFields['usernameLower'] = profile['username'].toLowerCase();
             if (profile['displayName'] && !profile['displayNameLower']) missingFields['displayNameLower'] = profile['displayName'].toLowerCase();
@@ -69,8 +59,7 @@ export class AuthService {
             }) : null);
           } else {
             const username = cachedUsername ?? fbUser.email?.split('@')[0] ?? fbUser.uid;
-            const displayName = fbUser.displayName ?? cachedDisplayName ?? username;
-            console.log('[Auth] user doc aanmaken voor:', username);
+            const displayName = fbUser.displayName ?? username;
             setDoc(doc(db, 'users', fbUser.uid), {
               username,
               usernameLower: username.toLowerCase(),
@@ -80,11 +69,10 @@ export class AuthService {
               bio: null,
               createdAt: fbUser.metadata.creationTime ?? new Date().toISOString(),
               _count: { watchlists: 0, reviews: 0, friends: 0 },
-            }).then(() => console.log('[Auth] user doc aangemaakt'))
-              .catch(err => console.error('[Auth] user doc aanmaken mislukt:', err));
+            }).catch(() => {});
             this._user.update(u => u ? ({ ...u, username, displayName }) : null);
           }
-        }).catch(err => console.error('[Auth] getDoc mislukt:', err));
+        }).catch(() => {});
       } else {
         this._user.set(null);
         this._loading.set(false);

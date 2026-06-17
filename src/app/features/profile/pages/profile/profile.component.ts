@@ -68,7 +68,7 @@ import { db } from '../../../../core/firebase';
                 </div>
                 @if (isOwnProfile()) {
                   <div class="stat">
-                    <span class="stat-value">{{ user()?._count?.reviews ?? 0 }}</span>
+                    <span class="stat-value">{{ ownReviewCount() }}</span>
                     <span class="stat-label">Reviews</span>
                   </div>
                 }
@@ -503,6 +503,7 @@ export class ProfileComponent implements OnInit {
   protected readonly watchedCount = computed(() => this.library.watchedMovies().length);
   protected readonly ratedCount = computed(() => this.library.ratedMovies().length);
   protected readonly watchlistCount = computed(() => this.watchlistService.watchlists().length);
+  protected readonly ownReviewCount = signal(0);
 
   protected readonly publicWatchlists = computed(() =>
     this.friendProfileWatchlists()
@@ -532,7 +533,11 @@ export class ProfileComponent implements OnInit {
   constructor() {
     effect(() => {
       if (this.isOwnProfile()) {
-        this.user.set(this.authService.user());
+        const u = this.authService.user();
+        this.user.set(u);
+        if (u) {
+          this.reviewService.getUserReviews(u.id).subscribe(reviews => this.ownReviewCount.set(reviews.length));
+        }
       }
     });
   }

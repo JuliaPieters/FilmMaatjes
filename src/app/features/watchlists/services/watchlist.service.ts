@@ -26,13 +26,14 @@ export class WatchlistService {
   constructor() {
     effect(() => {
       const user = this.authService.user();
+      this._loaded.set(false);
       if (user) {
-        this.loadAll(user.id);
+        this.loadAll(user.id).then(() => this._loaded.set(true));
       } else {
         this._watchlists.set([]);
         this._friendWatchlists.set(new Map());
+        this._loaded.set(true);
       }
-      this._loaded.set(true);
     }, { allowSignalWrites: true });
   }
 
@@ -55,8 +56,8 @@ export class WatchlistService {
         return { id: d.id, ...d.data(), movies } as Watchlist;
       }));
       this._watchlists.set(watchlists);
-    } catch (err) {
-      console.error('[Watchlist] loadAll mislukt:', err);
+    } catch {
+      // keep current state on failure
     }
   }
 
@@ -77,12 +78,7 @@ export class WatchlistService {
   }
 
   getMyWatchlists(): Observable<Watchlist[]> {
-    const user = this.authService.user();
-    if (!user) return of([]);
-    return from(this.loadAll(user.id)).pipe(
-      map(() => this._watchlists()),
-      catchError(() => of(this._watchlists())),
-    );
+    return of(this._watchlists());
   }
 
   loadFriendWatchlists(userId: string): Observable<Watchlist[]> {

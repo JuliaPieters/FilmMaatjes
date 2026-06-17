@@ -215,7 +215,7 @@ export class FriendsOverviewComponent implements OnInit {
 
   protected readonly friends = this.friendsService.friends;
   protected readonly pendingRequests = this.friendsService.pendingRequests;
-  protected readonly loadingFriends = signal(false);
+  protected readonly loadingFriends = signal(true);
   protected readonly searchLoading = signal(false);
   protected readonly searchResults = signal<User[]>([]);
   protected readonly searchControl = new FormControl('');

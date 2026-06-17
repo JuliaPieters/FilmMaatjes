@@ -1,4 +1,4 @@
-import { Component, computed, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, effect, inject, signal } from '@angular/core';
 import { MatIcon } from '@angular/material/icon';
 import { MovieService } from '../../../movies/services/movie.service';
 import { UserLibraryService } from '../../../../core/services/user-library.service';
@@ -62,7 +62,7 @@ const GENRE_NAMES: Record<number, string> = {
     </div>
   `,
 })
-export class RecommendationsComponent implements OnInit {
+export class RecommendationsComponent {
   private readonly movieService = inject(MovieService);
   private readonly library = inject(UserLibraryService);
 
@@ -83,8 +83,20 @@ export class RecommendationsComponent implements OnInit {
       .map(([id]) => Number(id));
   });
 
-  ngOnInit(): void {
-    const genres = this.topGenres();
+  constructor() {
+    // Reactive: re-runs when Firestore ratings finish loading (ratedMovies changes)
+    let lastGenreKey = '';
+    effect(() => {
+      const genres = this.topGenres();
+      const key = genres.join(',');
+      if (key === lastGenreKey) return; // no change, skip
+      lastGenreKey = key;
+      this.loadGroups(genres);
+    });
+  }
+
+  private loadGroups(genres: number[]): void {
+    this.loading.set(true);
     const watchedIds = new Set(this.library.watchedMovies().map(e => e.movieId));
 
     if (genres.length === 0) {
@@ -103,7 +115,7 @@ export class RecommendationsComponent implements OnInit {
     }
 
     let pending = genres.length;
-    const result: RecommendationGroup[] = genres.map(g => ({ reason: '', icon: 'movie', movies: [] }));
+    const result: RecommendationGroup[] = genres.map(() => ({ reason: '', icon: 'movie', movies: [] }));
 
     genres.forEach((genreId, i) => {
       this.movieService.discoverMovies({ with_genres: String(genreId), 'vote_average.gte': 6.5 }).subscribe({

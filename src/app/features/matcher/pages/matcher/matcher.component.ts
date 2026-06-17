@@ -1,4 +1,4 @@
-import { Component, computed, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, effect, inject, OnInit, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { DecimalPipe } from '@angular/common';
 import { MatIcon } from '@angular/material/icon';
@@ -7,7 +7,6 @@ import { MovieService } from '../../../movies/services/movie.service';
 import { FriendsService } from '../../../friends/services/friends.service';
 import { UserLibraryService, LibraryEntry } from '../../../../core/services/user-library.service';
 import { WatchlistService } from '../../../watchlists/services/watchlist.service';
-import { StorageService } from '../../../../core/services/storage.service';
 import { AuthService } from '../../../auth/services/auth.service';
 import { TmdbMovie } from '../../../../core/models/movie.model';
 import { User } from '../../../../core/models/user.model';
@@ -41,7 +40,6 @@ export class MatcherComponent implements OnInit {
   private readonly friendsService = inject(FriendsService);
   private readonly library = inject(UserLibraryService);
   private readonly watchlistService = inject(WatchlistService);
-  private readonly storage = inject(StorageService);
   private readonly authService = inject(AuthService);
 
   protected readonly friends = this.friendsService.friends;
@@ -49,6 +47,16 @@ export class MatcherComponent implements OnInit {
   protected readonly loading = signal(false);
   protected readonly results = signal<MatchResult[]>([]);
   protected readonly step = signal<'select' | 'results'>('select');
+
+  constructor() {
+    // Pre-load friend watchlists so genre inference works when finding matches
+    effect(() => {
+      const friends = this.friendsService.friends();
+      for (const f of friends) {
+        this.watchlistService.loadFriendWatchlists(f.id).subscribe();
+      }
+    });
+  }
 
   ngOnInit(): void {
     this.friendsService.getMyFriends().subscribe();
@@ -74,20 +82,36 @@ export class MatcherComponent implements OnInit {
     const myLibrary = this.library.ratedMovies();
     const friendIds = [...this.selectedFriends()];
 
-    const friendLibraries = friendIds.map(fid => {
-      const key = `user_library_${fid}`;
-      const data = this.storage.get<Record<string, LibraryEntry>>(key) ?? {};
-      return Object.values(data).filter(e => e.rating > 0);
+    // Infer friend preferences from their Firestore watchlists (not localStorage)
+    const friendLibraries: LibraryEntry[][] = friendIds.map(fid => {
+      const watchlists = this.watchlistService.getWatchlistsForUser(fid);
+      return watchlists
+        .filter(wl => wl.name !== 'Gezien')
+        .flatMap(wl => wl.movies ?? [])
+        .filter(m => m.movie)
+        .map(m => ({
+          movieId: m.movieId,
+          movie: m.movie!,
+          watched: false,
+          watchedAt: null,
+          rating: 4, // all watchlisted movies count as a preference signal
+          ratedAt: null,
+        }));
     });
 
     const myGenreFreq = this.getGenreFreq(myLibrary);
     const sharedGenres = this.computeSharedGenres(myGenreFreq, friendLibraries);
     const topGenre = sharedGenres[0];
 
-    const watchedIds = new Set([
-      ...myLibrary.map(e => e.movieId),
-      ...friendLibraries.flatMap(lib => lib.map(e => e.movieId)),
-    ]);
+    // Exclude movies already watched by me or any selected friend
+    const myWatchedIds = new Set(this.library.watchedMovies().map(e => e.movieId));
+    const friendWatchedIds = new Set<number>(
+      friendIds.flatMap(fid => {
+        const watchlists = this.watchlistService.getWatchlistsForUser(fid);
+        return (watchlists.find(wl => wl.name === 'Gezien')?.movies ?? []).map(m => m.movieId);
+      })
+    );
+    const watchedIds = new Set([...myWatchedIds, ...friendWatchedIds]);
 
     const params: Record<string, string | number> = {
       'vote_average.gte': 6,
