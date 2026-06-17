@@ -12,6 +12,7 @@ import { UserLibraryService } from '../../../../core/services/user-library.servi
 import { WatchlistService } from '../../../watchlists/services/watchlist.service';
 import { FriendsService } from '../../../friends/services/friends.service';
 import { ReviewService } from '../../../../core/services/review.service';
+import { MovieService } from '../../../movies/services/movie.service';
 import { NotificationService } from '../../../../core/services/notification.service';
 import { MovieCardComponent } from '../../../../shared/components/movie-card/movie-card.component';
 import { StarRatingComponent } from '../../../../shared/components/star-rating/star-rating.component';
@@ -503,6 +504,7 @@ export class ProfileComponent implements OnInit {
   protected readonly library = inject(UserLibraryService);
   protected readonly watchlistService = inject(WatchlistService);
   private readonly reviewService = inject(ReviewService);
+  private readonly movieService = inject(MovieService);
 
   protected readonly user = signal<User | null>(null);
   protected readonly isOwnProfile = signal(false);
@@ -612,10 +614,29 @@ export class ProfileComponent implements OnInit {
       getDocs(query(collection(db, 'friendRequests'), where('receiverId', '==', userId), where('status', '==', 'accepted'))),
       firstValueFrom(this.watchlistService.loadFriendWatchlists(userId)),
       firstValueFrom(this.reviewService.getUserReviews(userId)),
-    ]).then(([sentSnap, receivedSnap, watchlists, reviews]) => {
+    ]).then(async ([sentSnap, receivedSnap, watchlists, reviews]) => {
       this.friendActualCount.set(sentSnap.size + receivedSnap.size);
       this.friendProfileWatchlists.set(watchlists);
-      this.friendReviews.set(reviews);
+
+      const missing = reviews.filter(r => !r.moviePosterPath);
+      if (missing.length > 0) {
+        const details = await Promise.allSettled(
+          missing.map(r => firstValueFrom(this.movieService.getMovieDetail(r.movieId)))
+        );
+        const enriched = reviews.map(r => {
+          if (r.moviePosterPath) return r;
+          const idx = missing.findIndex(m => m.id === r.id);
+          const result = details[idx];
+          if (result?.status === 'fulfilled') {
+            return { ...r, movieTitle: result.value.title, moviePosterPath: result.value.poster_path };
+          }
+          return r;
+        });
+        this.friendReviews.set(enriched);
+      } else {
+        this.friendReviews.set(reviews);
+      }
+
       this.loadingFriendData.set(false);
     }).catch(() => {
       this.loadingFriendData.set(false);
