@@ -85,50 +85,29 @@
 
           <!-- WATCHLIST MODE -->
           @if (mode() === 'watchlists') {
-            @if (ownWatchlists().length === 0 && friendGroups().length === 0) {
+            @if (ownWatchlists().length === 0 && friendGroups().length === 0 && !loadingFriendWatchlists()) {
               <div class="mode-empty">
                 <mat-icon>bookmark_border</mat-icon>
                 <p>Je hebt nog geen watchlists.<br />Maak er een aan via de Watchlists pagina.</p>
               </div>
             } @else {
-              <mat-tab-group animationDuration="150ms" class="wl-tabs mt-3">
+              <div class="wl-accordion mt-3">
 
-                <!-- Tab: Jij -->
-                <mat-tab>
-                  <ng-template mat-tab-label>
-                    <span>Jij</span>
-                    @if (selectedCountForGroup(ownWatchlists()) > 0) {
-                      <span class="tab-badge">{{ selectedCountForGroup(ownWatchlists()) }}</span>
-                    }
-                  </ng-template>
-                  <div class="tab-actions">
-                    <button mat-button (click)="selectAllInGroup(ownWatchlists())" class="text-text-muted text-xs">Alles selecteren</button>
-                  </div>
-                  <div class="watchlist-items">
-                    @for (wl of ownWatchlists(); track wl.id) {
-                      <button class="watchlist-item" [class.selected]="isWatchlistSelected(wl.id)" (click)="toggleWatchlist(wl.id)">
-                        <mat-icon class="wl-check">{{ isWatchlistSelected(wl.id) ? 'check_box' : 'check_box_outline_blank' }}</mat-icon>
-                        <span class="wl-name flex-1 min-w-0 truncate text-left">{{ wl.name }}</span>
-                        <span class="wl-count">{{ movieCount(wl) }}</span>
-                      </button>
-                    }
-                  </div>
-                </mat-tab>
-
-                <!-- Tab per vriend -->
-                @for (group of friendGroups(); track group.owner) {
-                  <mat-tab>
-                    <ng-template mat-tab-label>
-                      <span>{{ group.owner }}</span>
-                      @if (selectedCountForGroup(group.watchlists) > 0) {
-                        <span class="tab-badge">{{ selectedCountForGroup(group.watchlists) }}</span>
-                      }
-                    </ng-template>
-                    <div class="tab-actions">
-                      <button mat-button (click)="selectAllInGroup(group.watchlists)" class="text-text-muted text-xs">Alles selecteren</button>
+                <!-- Eigen watchlists (altijd zichtbaar) -->
+                @if (ownWatchlists().length > 0) {
+                  <div class="wl-group">
+                    <div class="wl-group-header own-header">
+                      <div class="wl-group-title">
+                        <mat-icon>person</mat-icon>
+                        <span>Jij</span>
+                        @if (selectedCountForGroup(ownWatchlists()) > 0) {
+                          <span class="tab-badge">{{ selectedCountForGroup(ownWatchlists()) }}</span>
+                        }
+                      </div>
+                      <button mat-button (click)="selectAllInGroup(ownWatchlists())" class="select-all-btn">Alles</button>
                     </div>
                     <div class="watchlist-items">
-                      @for (wl of group.watchlists; track wl.id) {
+                      @for (wl of ownWatchlists(); track wl.id) {
                         <button class="watchlist-item" [class.selected]="isWatchlistSelected(wl.id)" (click)="toggleWatchlist(wl.id)">
                           <mat-icon class="wl-check">{{ isWatchlistSelected(wl.id) ? 'check_box' : 'check_box_outline_blank' }}</mat-icon>
                           <span class="wl-name flex-1 min-w-0 truncate text-left">{{ wl.name }}</span>
@@ -136,9 +115,49 @@
                         </button>
                       }
                     </div>
-                  </mat-tab>
+                  </div>
                 }
-              </mat-tab-group>
+
+                <!-- Vriend-secties (uitklapbaar) -->
+                @if (loadingFriendWatchlists() && friendGroups().length === 0) {
+                  <div class="wl-loading">
+                    <mat-icon class="animate-spin" style="font-size:1.125rem;width:1.125rem;height:1.125rem">refresh</mat-icon>
+                    <span>Vrienden laden...</span>
+                  </div>
+                }
+
+                @for (group of friendGroups(); track group.owner) {
+                  <div class="wl-group">
+                    <button class="wl-group-header friend-header" (click)="toggleFriendGroup(group.owner)">
+                      <div class="wl-group-title">
+                        <mat-icon>person_outline</mat-icon>
+                        <span>{{ group.owner }}</span>
+                        @if (selectedCountForGroup(group.watchlists) > 0) {
+                          <span class="tab-badge">{{ selectedCountForGroup(group.watchlists) }}</span>
+                        }
+                      </div>
+                      <div class="flex items-center gap-1">
+                        @if (isFriendGroupExpanded(group.owner)) {
+                          <button mat-button class="select-all-btn" (click)="$event.stopPropagation(); selectAllInGroup(group.watchlists)">Alles</button>
+                        }
+                        <mat-icon class="wl-chevron" [class.rotated]="isFriendGroupExpanded(group.owner)">expand_more</mat-icon>
+                      </div>
+                    </button>
+
+                    @if (isFriendGroupExpanded(group.owner)) {
+                      <div class="watchlist-items">
+                        @for (wl of group.watchlists; track wl.id) {
+                          <button class="watchlist-item indented" [class.selected]="isWatchlistSelected(wl.id)" (click)="toggleWatchlist(wl.id)">
+                            <mat-icon class="wl-check">{{ isWatchlistSelected(wl.id) ? 'check_box' : 'check_box_outline_blank' }}</mat-icon>
+                            <span class="wl-name flex-1 min-w-0 truncate text-left">{{ wl.name }}</span>
+                            <span class="wl-count">{{ movieCount(wl) }}</span>
+                          </button>
+                        }
+                      </div>
+                    }
+                  </div>
+                }
+              </div>
 
               <p class="wl-total">
                 <mat-icon style="font-size: 1rem; width: 1rem; height: 1rem;">movie</mat-icon>

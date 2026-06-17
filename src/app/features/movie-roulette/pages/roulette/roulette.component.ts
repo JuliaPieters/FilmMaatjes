@@ -3,7 +3,6 @@ import { RouterLink } from '@angular/router';
 import { MatIcon } from '@angular/material/icon';
 import { MatButton } from '@angular/material/button';
 import { MatSlider, MatSliderThumb } from '@angular/material/slider';
-import { MatTab, MatTabGroup } from '@angular/material/tabs';
 import { FormsModule } from '@angular/forms';
 import { DecimalPipe } from '@angular/common';
 import { MovieService } from '../../../movies/services/movie.service';
@@ -27,7 +26,7 @@ interface Genre {
 
 @Component({
   selector: 'app-roulette',
-  imports: [RouterLink, MatIcon, MatButton, MatSlider, MatSliderThumb, MatTab, MatTabGroup, FormsModule, DecimalPipe],
+  imports: [RouterLink, MatIcon, MatButton, MatSlider, MatSliderThumb, FormsModule, DecimalPipe],
   templateUrl: './roulette.component.html',
   styleUrl: './roulette.component.scss',
 })
@@ -83,6 +82,8 @@ export class RouletteComponent implements OnInit {
 
   // Watchlist mode
   protected readonly selectedWatchlistIds = signal<Set<string>>(new Set());
+  protected readonly expandedFriends = signal<Set<string>>(new Set());
+  protected readonly loadingFriendWatchlists = signal(false);
 
   protected readonly availableWatchlists = computed<WatchlistWithOwner[]>(() => {
     const own = this.watchlistService.watchlists()
@@ -148,8 +149,25 @@ export class RouletteComponent implements OnInit {
   constructor() {
     effect(() => {
       const friends = this.friendsService.friends();
+      if (friends.length === 0) return;
+      this.loadingFriendWatchlists.set(true);
+      let pending = friends.length;
       for (const f of friends) {
-        this.watchlistService.loadFriendWatchlists(f.id).subscribe();
+        this.watchlistService.loadFriendWatchlists(f.id).subscribe({
+          next: lists => {
+            // Auto-expand friend group if they have watchlists (excluding Gezien)
+            const hasLists = lists.some(wl => wl.name !== 'Gezien');
+            if (hasLists) {
+              this.expandedFriends.update(s => new Set([...s, f.displayName || f.username || 'Vriend']));
+            }
+            pending--;
+            if (pending === 0) this.loadingFriendWatchlists.set(false);
+          },
+          error: () => {
+            pending--;
+            if (pending === 0) this.loadingFriendWatchlists.set(false);
+          },
+        });
       }
     });
   }
@@ -262,6 +280,18 @@ export class RouletteComponent implements OnInit {
 
   protected selectAllWatchlists(): void {
     this.selectedWatchlistIds.set(new Set(this.availableWatchlists().map(wl => wl.id)));
+  }
+
+  protected toggleFriendGroup(owner: string): void {
+    this.expandedFriends.update(s => {
+      const next = new Set(s);
+      next.has(owner) ? next.delete(owner) : next.add(owner);
+      return next;
+    });
+  }
+
+  protected isFriendGroupExpanded(owner: string): boolean {
+    return this.expandedFriends().has(owner);
   }
 
   protected toggleGenre(genreId: number): void {
