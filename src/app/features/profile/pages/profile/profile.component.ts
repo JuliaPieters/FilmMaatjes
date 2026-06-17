@@ -13,6 +13,7 @@ import { NotificationService } from '../../../../core/services/notification.serv
 import { MovieCardComponent } from '../../../../shared/components/movie-card/movie-card.component';
 import { StarRatingComponent } from '../../../../shared/components/star-rating/star-rating.component';
 import { User } from '../../../../core/models/user.model';
+import { Watchlist } from '../../../../core/models/watchlist.model';
 import { db } from '../../../../core/firebase';
 
 @Component({
@@ -51,14 +52,22 @@ import { db } from '../../../../core/firebase';
               }
 
               <div class="profile-stats">
+                @if (!isOwnProfile()) {
+                  <div class="stat">
+                    <span class="stat-value">{{ friendWatchedCount() }}</span>
+                    <span class="stat-label">Gezien</span>
+                  </div>
+                }
                 <div class="stat">
                   <span class="stat-value">{{ displayWatchlistCount() }}</span>
                   <span class="stat-label">Watchlists</span>
                 </div>
-                <div class="stat">
-                  <span class="stat-value">{{ user()?._count?.reviews ?? 0 }}</span>
-                  <span class="stat-label">Reviews</span>
-                </div>
+                @if (isOwnProfile()) {
+                  <div class="stat">
+                    <span class="stat-value">{{ user()?._count?.reviews ?? 0 }}</span>
+                    <span class="stat-label">Reviews</span>
+                  </div>
+                }
                 <div class="stat">
                   <span class="stat-value">{{ user()?._count?.friends ?? 0 }}</span>
                   <span class="stat-label">Vrienden</span>
@@ -116,7 +125,42 @@ import { db } from '../../../../core/firebase';
             </div>
           }
 
-          <!-- Tabs -->
+          <!-- Public profile tabs (friend view) -->
+          @if (!isOwnProfile()) {
+            <div class="profile-tabs mt-8">
+              <button class="profile-tab active">
+                <mat-icon>bookmark</mat-icon>
+                Watchlists ({{ publicWatchlists().length }})
+              </button>
+            </div>
+            <div class="tab-content mt-6">
+              @if (loadingFriendData()) {
+                <div class="empty-state">
+                  <mat-icon class="animate-spin">refresh</mat-icon>
+                  <p>Laden...</p>
+                </div>
+              } @else if (publicWatchlists().length === 0) {
+                <div class="empty-state">
+                  <mat-icon>bookmark_border</mat-icon>
+                  <p>Geen watchlists om weer te geven.</p>
+                </div>
+              } @else {
+                <div class="wl-grid">
+                  @for (wl of publicWatchlists(); track wl.id) {
+                    <div class="wl-card glass-card">
+                      <div class="wl-icon"><mat-icon>bookmark</mat-icon></div>
+                      <div>
+                        <p class="wl-name">{{ wl.name }}</p>
+                        <p class="wl-count">{{ wl._count?.movies ?? wl.movies.length }} films</p>
+                      </div>
+                    </div>
+                  }
+                </div>
+              }
+            </div>
+          }
+
+          <!-- Own profile tabs -->
           @if (isOwnProfile()) {
             <div class="profile-tabs mt-8">
               <button class="profile-tab" [class.active]="activeTab() === 'watched'" (click)="activeTab.set('watched')">
@@ -203,7 +247,7 @@ import { db } from '../../../../core/firebase';
     </div>
   `,
   styles: [`
-    .profile-page { min-height: calc(100vh - 64px); }
+    .profile-page { min-height: calc(100vh - 90px); }
 
     .profile-banner {
       height: 200px;
@@ -237,7 +281,8 @@ import { db } from '../../../../core/firebase';
     .profile-bio { font-size: 0.875rem; color: #94a3b8; margin: 0.5rem 0; }
 
     .profile-stats {
-      display: flex; gap: 2rem; margin-top: 0.75rem;
+      display: flex; gap: 1rem; margin-top: 0.75rem; flex-wrap: wrap;
+      @media (min-width: 640px) { gap: 2rem; }
       .stat { display: flex; flex-direction: column; align-items: center; gap: 0.125rem; }
       .stat-value { font-size: 1.25rem; font-weight: 700; color: #f1f5f9; }
       .stat-label { font-size: 0.75rem; color: #64748b; }
@@ -346,15 +391,28 @@ export class ProfileComponent implements OnInit {
   protected editDisplayName = '';
   protected editBio = '';
 
+  // Friend profile data
+  protected readonly friendProfileWatchlists = signal<Watchlist[]>([]);
+  protected readonly loadingFriendData = signal(false);
+
   protected readonly watchedCount = computed(() => this.library.watchedMovies().length);
   protected readonly ratedCount = computed(() => this.library.ratedMovies().length);
   protected readonly watchlistCount = computed(() => this.watchlistService.watchlists().length);
 
-  protected readonly displayWatchlistCount = computed(() =>
-    this.isOwnProfile()
-      ? this.watchlistService.watchlists().length
-      : (this.user()?._count?.watchlists ?? 0)
+  protected readonly publicWatchlists = computed(() =>
+    this.friendProfileWatchlists().filter(wl => wl.name !== 'Gezien')
   );
+
+  protected readonly friendWatchedCount = computed(() => {
+    const gezien = this.friendProfileWatchlists().find(wl => wl.name === 'Gezien');
+    return gezien?.movies?.length ?? gezien?._count?.movies ?? 0;
+  });
+
+  protected readonly displayWatchlistCount = computed(() => {
+    if (this.isOwnProfile()) return this.watchlistService.watchlists().filter(wl => wl.name !== 'Gezien').length;
+    if (!this.loadingFriendData() && this.friendProfileWatchlists().length > 0) return this.publicWatchlists().length;
+    return this.user()?._count?.watchlists ?? 0;
+  });
 
   protected readonly isFriend = computed(() => {
     const u = this.user();
@@ -387,9 +445,16 @@ export class ProfileComponent implements OnInit {
         } else {
           this.isOwnProfile.set(false);
           this.loading.set(true);
+          this.friendProfileWatchlists.set([]);
           getDocs(query(collection(db, 'users'), where('username', '==', username)))
             .then(snap => {
-              this.user.set(snap.empty ? null : { id: snap.docs[0].id, ...snap.docs[0].data() } as User);
+              if (snap.empty) {
+                this.user.set(null);
+              } else {
+                const userDoc = snap.docs[0];
+                this.user.set({ id: userDoc.id, ...userDoc.data() } as User);
+                this.loadFriendData(userDoc.id);
+              }
               this.loading.set(false);
             })
             .catch(err => {
@@ -399,6 +464,17 @@ export class ProfileComponent implements OnInit {
             });
         }
       });
+  }
+
+  private loadFriendData(userId: string): void {
+    this.loadingFriendData.set(true);
+    this.watchlistService.loadFriendWatchlists(userId).subscribe({
+      next: watchlists => {
+        this.friendProfileWatchlists.set(watchlists);
+        this.loadingFriendData.set(false);
+      },
+      error: () => this.loadingFriendData.set(false),
+    });
   }
 
   protected sendFriendRequest(): void {

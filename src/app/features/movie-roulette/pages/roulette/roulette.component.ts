@@ -13,7 +13,6 @@ import { UserLibraryService } from '../../../../core/services/user-library.servi
 import { NotificationService } from '../../../../core/services/notification.service';
 import { TmdbMovie } from '../../../../core/models/movie.model';
 import { Watchlist } from '../../../../core/models/watchlist.model';
-import { LoadingSpinnerComponent } from '../../../../shared/components/loading-spinner/loading-spinner.component';
 
 type RouletteMode = 'random' | 'watchlists' | 'recommended';
 
@@ -28,7 +27,7 @@ interface Genre {
 
 @Component({
   selector: 'app-roulette',
-  imports: [RouterLink, MatIcon, MatButton, MatSlider, MatSliderThumb, MatTab, MatTabGroup, FormsModule, DecimalPipe, LoadingSpinnerComponent],
+  imports: [RouterLink, MatIcon, MatButton, MatSlider, MatSliderThumb, MatTab, MatTabGroup, FormsModule, DecimalPipe],
   templateUrl: './roulette.component.html',
   styleUrl: './roulette.component.scss',
 })
@@ -93,7 +92,7 @@ export class RouletteComponent implements OnInit {
     const friendLists = friends.flatMap(f =>
       this.watchlistService.getWatchlistsForUser(f.id)
         .filter(wl => wl.name !== 'Gezien')
-        .map(wl => ({ ...wl, owner: f.displayName })),
+        .map(wl => ({ ...wl, owner: f.displayName || f.username || 'Vriend' })),
     );
     return [...own, ...friendLists];
   });

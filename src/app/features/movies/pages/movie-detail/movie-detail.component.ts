@@ -2,7 +2,6 @@ import { Component, computed, HostListener, inject, OnInit, signal } from '@angu
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { MatIcon } from '@angular/material/icon';
 import { MatButton, MatIconButton } from '@angular/material/button';
-import { MatTooltip } from '@angular/material/tooltip';
 import { DecimalPipe, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MovieService } from '../../services/movie.service';
@@ -24,7 +23,6 @@ import { Review } from '../../../../core/models/review.model';
     MatIcon,
     MatButton,
     MatIconButton,
-    MatTooltip,
     DecimalPipe,
     DatePipe,
     FormsModule,

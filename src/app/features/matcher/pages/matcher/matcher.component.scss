@@ -1,24 +1,28 @@
 .matcher-header {
   text-align: center;
-  padding: 3rem 0 2.5rem;
+  padding: 1.5rem 0 1.25rem;
+
+  @media (min-width: 640px) { padding: 3rem 0 2.5rem; }
 
   .header-icon {
-    width: 72px; height: 72px; border-radius: 20px;
+    width: 64px; height: 64px; border-radius: 18px;
     background: linear-gradient(135deg, #7c3aed, #a78bfa);
     display: flex; align-items: center; justify-content: center;
-    margin: 0 auto 1rem;
+    margin: 0 auto 0.875rem;
+    @media (min-width: 640px) { width: 72px; height: 72px; }
     mat-icon { color: white; font-size: 2rem; width: 2rem; height: 2rem; }
   }
 
   h1 {
-    font-size: 2.5rem; font-weight: 800; color: #f1f5f9;
+    font-size: 1.875rem; font-weight: 800; color: #f1f5f9;
     letter-spacing: -0.035em; margin: 0 0 0.5rem;
+    @media (min-width: 640px) { font-size: 2.5rem; }
   }
 
-  p { font-size: 1rem; color: #94a3b8; margin: 0; }
+  p { font-size: 0.9375rem; color: #94a3b8; margin: 0; }
 
   .header-sub {
-    font-size: 0.875rem; color: #64748b;
+    font-size: 0.8125rem; color: #64748b;
     margin: 0.5rem auto 0; max-width: 480px;
   }
 }

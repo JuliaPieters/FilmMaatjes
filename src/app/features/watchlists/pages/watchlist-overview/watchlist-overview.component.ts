@@ -51,7 +51,7 @@ import { NotificationService } from '../../../../core/services/notification.serv
               }
               <div class="flex items-center gap-2 text-xs text-text-muted">
                 <mat-icon style="font-size: 1rem; width: 1rem; height: 1rem;">movie</mat-icon>
-                <span>{{ (list.movies?.length ?? list._count?.movies ?? 0) }} films</span>
+                <span>{{ (list.movies.length || list._count?.movies || 0) }} films</span>
                 @if (list.isPublic) {
                   <span class="ml-auto flex items-center gap-1">
                     <mat-icon style="font-size: 0.875rem; width: 0.875rem; height: 0.875rem;">public</mat-icon>
