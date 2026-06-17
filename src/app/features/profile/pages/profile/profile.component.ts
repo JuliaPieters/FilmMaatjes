@@ -400,7 +400,7 @@ export class ProfileComponent implements OnInit {
   protected readonly watchlistCount = computed(() => this.watchlistService.watchlists().length);
 
   protected readonly publicWatchlists = computed(() =>
-    this.friendProfileWatchlists().filter(wl => wl.name !== 'Gezien')
+    this.friendProfileWatchlists()
   );
 
   protected readonly friendWatchedCount = computed(() => {
@@ -409,7 +409,7 @@ export class ProfileComponent implements OnInit {
   });
 
   protected readonly displayWatchlistCount = computed(() => {
-    if (this.isOwnProfile()) return this.watchlistService.watchlists().filter(wl => wl.name !== 'Gezien').length;
+    if (this.isOwnProfile()) return this.watchlistService.watchlists().length;
     if (!this.loadingFriendData() && this.friendProfileWatchlists().length > 0) return this.publicWatchlists().length;
     return this.user()?._count?.watchlists ?? 0;
   });
