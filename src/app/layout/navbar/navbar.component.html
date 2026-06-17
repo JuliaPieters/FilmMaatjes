@@ -19,12 +19,12 @@
     </nav>
 
     <div class="navbar-right">
-      <a mat-icon-button routerLink="/movies/search" matTooltip="Zoeken">
+      <a mat-icon-button routerLink="/movies/search" matTooltip="Zoeken" class="desktop-only">
         <mat-icon>search</mat-icon>
       </a>
 
       @if (authService.isAuthenticated()) {
-        <a mat-icon-button routerLink="/watchlists" matTooltip="Watchlists">
+        <a mat-icon-button routerLink="/watchlists" matTooltip="Watchlists" class="desktop-only">
           <mat-icon>bookmark</mat-icon>
         </a>
 
