@@ -128,6 +128,77 @@ import { db } from '../../../../core/firebase';
                 <button mat-stroked-button (click)="cancelEdit()">Annuleren</button>
               </div>
             </div>
+
+            <!-- E-mail wijzigen -->
+            <div class="edit-form glass-card p-6 mt-4">
+              <h3 class="settings-section-title">
+                <mat-icon>email</mat-icon>
+                E-mailadres wijzigen
+              </h3>
+              <p class="settings-section-desc">Je ontvangt een bevestigingsmail op het nieuwe adres.</p>
+              @if (emailChangeSuccess()) {
+                <div class="settings-success">
+                  <mat-icon>check_circle</mat-icon>
+                  Bevestigingsmail verstuurd naar {{ editNewEmail }}. Klik op de link om de wijziging door te voeren.
+                </div>
+              } @else {
+                <div class="edit-fields">
+                  <div class="field-group">
+                    <label class="field-label">Huidig wachtwoord</label>
+                    <input class="field-input" type="password" [(ngModel)]="emailCurrentPassword" placeholder="Ter bevestiging" />
+                  </div>
+                  <div class="field-group">
+                    <label class="field-label">Nieuw e-mailadres</label>
+                    <input class="field-input" type="email" [(ngModel)]="editNewEmail" placeholder="nieuw@email.nl" />
+                  </div>
+                </div>
+                @if (emailChangeError()) {
+                  <p class="settings-error">{{ emailChangeError() }}</p>
+                }
+                <div class="flex gap-2 mt-4">
+                  <button mat-flat-button color="primary" [disabled]="savingEmail()" (click)="saveEmail()">
+                    @if (savingEmail()) { Versturen... } @else { Bevestigingsmail sturen }
+                  </button>
+                </div>
+              }
+            </div>
+
+            <!-- Wachtwoord wijzigen -->
+            <div class="edit-form glass-card p-6 mt-4">
+              <h3 class="settings-section-title">
+                <mat-icon>lock</mat-icon>
+                Wachtwoord wijzigen
+              </h3>
+              @if (passwordChangeSuccess()) {
+                <div class="settings-success">
+                  <mat-icon>check_circle</mat-icon>
+                  Wachtwoord succesvol gewijzigd.
+                </div>
+              } @else {
+                <div class="edit-fields">
+                  <div class="field-group">
+                    <label class="field-label">Huidig wachtwoord</label>
+                    <input class="field-input" type="password" [(ngModel)]="passwordCurrent" placeholder="Huidig wachtwoord" />
+                  </div>
+                  <div class="field-group">
+                    <label class="field-label">Nieuw wachtwoord</label>
+                    <input class="field-input" type="password" [(ngModel)]="passwordNew" placeholder="Minimaal 6 tekens" />
+                  </div>
+                  <div class="field-group">
+                    <label class="field-label">Herhaal nieuw wachtwoord</label>
+                    <input class="field-input" type="password" [(ngModel)]="passwordConfirm" placeholder="Nogmaals nieuw wachtwoord" />
+                  </div>
+                </div>
+                @if (passwordChangeError()) {
+                  <p class="settings-error">{{ passwordChangeError() }}</p>
+                }
+                <div class="flex gap-2 mt-4">
+                  <button mat-flat-button color="primary" [disabled]="savingPassword()" (click)="savePassword()">
+                    @if (savingPassword()) { Opslaan... } @else { Wachtwoord wijzigen }
+                  </button>
+                </div>
+              }
+            </div>
           }
 
           <!-- Public profile tabs (friend view) -->
@@ -491,6 +562,18 @@ import { db } from '../../../../core/firebase';
       &::placeholder { color: #475569; }
     }
     .field-textarea { resize: vertical; line-height: 1.5; }
+    .settings-section-title {
+      display: flex; align-items: center; gap: 0.5rem;
+      font-size: 1rem; font-weight: 600; color: #f1f5f9; margin: 0 0 0.375rem;
+      mat-icon { font-size: 1.125rem; width: 1.125rem; height: 1.125rem; color: #a78bfa; }
+    }
+    .settings-section-desc { font-size: 0.8125rem; color: #64748b; margin: 0 0 1.25rem; }
+    .settings-error { font-size: 0.8125rem; color: #f87171; margin: 0.75rem 0 0; }
+    .settings-success {
+      display: flex; align-items: flex-start; gap: 0.5rem;
+      font-size: 0.875rem; color: #4ade80; line-height: 1.5;
+      mat-icon { font-size: 1.125rem; width: 1.125rem; height: 1.125rem; flex-shrink: 0; margin-top: 1px; }
+    }
   `],
 })
 export class ProfileComponent implements OnInit {
@@ -513,6 +596,21 @@ export class ProfileComponent implements OnInit {
   protected readonly editMode = signal(false);
   protected editDisplayName = '';
   protected editBio = '';
+
+  // Email change
+  protected emailCurrentPassword = '';
+  protected editNewEmail = '';
+  protected readonly savingEmail = signal(false);
+  protected readonly emailChangeError = signal('');
+  protected readonly emailChangeSuccess = signal(false);
+
+  // Password change
+  protected passwordCurrent = '';
+  protected passwordNew = '';
+  protected passwordConfirm = '';
+  protected readonly savingPassword = signal(false);
+  protected readonly passwordChangeError = signal('');
+  protected readonly passwordChangeSuccess = signal(false);
 
   // Friend profile data
   protected readonly friendProfileWatchlists = signal<Watchlist[]>([]);
@@ -655,11 +753,66 @@ export class ProfileComponent implements OnInit {
     const u = this.user();
     this.editDisplayName = u?.displayName ?? '';
     this.editBio = u?.bio ?? '';
+    this.emailCurrentPassword = '';
+    this.editNewEmail = '';
+    this.passwordCurrent = '';
+    this.passwordNew = '';
+    this.passwordConfirm = '';
+    this.emailChangeError.set('');
+    this.emailChangeSuccess.set(false);
+    this.passwordChangeError.set('');
+    this.passwordChangeSuccess.set(false);
     this.editMode.set(true);
   }
 
   protected cancelEdit(): void {
     this.editMode.set(false);
+  }
+
+  protected async saveEmail(): Promise<void> {
+    if (!this.emailCurrentPassword || !this.editNewEmail) {
+      this.emailChangeError.set('Vul alle velden in.');
+      return;
+    }
+    this.savingEmail.set(true);
+    this.emailChangeError.set('');
+    try {
+      await this.authService.changeEmail(this.emailCurrentPassword, this.editNewEmail);
+      this.emailChangeSuccess.set(true);
+      this.emailCurrentPassword = '';
+    } catch (e: unknown) {
+      this.emailChangeError.set(e instanceof Error ? e.message : 'Er is iets misgegaan.');
+    } finally {
+      this.savingEmail.set(false);
+    }
+  }
+
+  protected async savePassword(): Promise<void> {
+    if (!this.passwordCurrent || !this.passwordNew || !this.passwordConfirm) {
+      this.passwordChangeError.set('Vul alle velden in.');
+      return;
+    }
+    if (this.passwordNew !== this.passwordConfirm) {
+      this.passwordChangeError.set('Wachtwoorden komen niet overeen.');
+      return;
+    }
+    if (this.passwordNew.length < 6) {
+      this.passwordChangeError.set('Nieuw wachtwoord moet minimaal 6 tekens zijn.');
+      return;
+    }
+    this.savingPassword.set(true);
+    this.passwordChangeError.set('');
+    try {
+      await this.authService.changePassword(this.passwordCurrent, this.passwordNew);
+      this.passwordChangeSuccess.set(true);
+      this.passwordCurrent = '';
+      this.passwordNew = '';
+      this.passwordConfirm = '';
+    } catch (e: unknown) {
+      this.passwordChangeError.set(e instanceof Error ? e.message : 'Er is iets misgegaan.');
+    } finally {
+      this.savingPassword.set(false);
+    }
   }
 
   protected saveEdit(): void {

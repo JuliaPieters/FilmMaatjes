@@ -9,6 +9,10 @@ import {
   onAuthStateChanged,
   updateProfile,
   sendEmailVerification,
+  verifyBeforeUpdateEmail,
+  updatePassword,
+  reauthenticateWithCredential,
+  EmailAuthProvider,
 } from 'firebase/auth';
 import { doc, setDoc, getDoc, updateDoc } from 'firebase/firestore';
 import { auth, db } from '../../../core/firebase';
@@ -153,6 +157,30 @@ export class AuthService {
       ...current,
       displayName: updates.displayName ?? current.displayName,
       bio: updates.bio !== undefined ? updates.bio : current.bio,
+    });
+  }
+
+  async changeEmail(currentPassword: string, newEmail: string): Promise<void> {
+    const fbUser = auth.currentUser;
+    if (!fbUser || !fbUser.email) throw new Error('Niet ingelogd');
+    const credential = EmailAuthProvider.credential(fbUser.email, currentPassword);
+    await reauthenticateWithCredential(fbUser, credential).catch(err => {
+      throw new Error(this.mapError(err.code));
+    });
+    await verifyBeforeUpdateEmail(fbUser, newEmail).catch(err => {
+      throw new Error(this.mapError(err.code));
+    });
+  }
+
+  async changePassword(currentPassword: string, newPassword: string): Promise<void> {
+    const fbUser = auth.currentUser;
+    if (!fbUser || !fbUser.email) throw new Error('Niet ingelogd');
+    const credential = EmailAuthProvider.credential(fbUser.email, currentPassword);
+    await reauthenticateWithCredential(fbUser, credential).catch(err => {
+      throw new Error(this.mapError(err.code));
+    });
+    await updatePassword(fbUser, newPassword).catch(err => {
+      throw new Error(this.mapError(err.code));
     });
   }
 
