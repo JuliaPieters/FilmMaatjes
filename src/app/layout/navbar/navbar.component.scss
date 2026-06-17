@@ -32,17 +32,11 @@
 }
 
 .logo-img {
-  height: 54px;
+  height: 200px;
   width: auto;
-  max-width: 160px;
-  flex-shrink: 1;
+  max-width: 300px;
+  flex-shrink: 0;
   border-radius: 6px;
-
-  @media (min-width: 768px) {
-    height: 200px;
-    max-width: 300px;
-    flex-shrink: 0;
-  }
 }
 
 .navbar-center {
@@ -149,6 +143,8 @@
 }
 
 .mobile-menu {
+  width: 100%;
+  box-sizing: border-box;
   background: #1e1e2a;
   border-top: 1px solid rgba(255, 255, 255, 0.08);
   padding: 0.75rem;
