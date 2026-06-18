@@ -116,6 +116,7 @@ export class MatcherComponent implements OnInit {
     const params: Record<string, string | number> = {
       'vote_average.gte': 6,
       'vote_count.gte': 200,
+      'page': Math.ceil(Math.random() * 4),
     };
     if (topGenre) params['with_genres'] = String(topGenre);
 
@@ -137,15 +138,17 @@ export class MatcherComponent implements OnInit {
           .map(id => this.friends().find(f => f.id === id)?.displayName ?? 'vriend')
           .join(' & ');
 
-        // Best match — highest score
-        if (scored[0]) {
+        // Best match — pick randomly from top 5 so it varies each run
+        const topPool = scored.slice(0, Math.min(5, scored.length));
+        const best = topPool[Math.floor(Math.random() * topPool.length)];
+        if (best) {
           results.push({
             type: 'best',
             label: 'Beste Match',
             icon: 'auto_awesome',
-            movie: scored[0].movie,
-            matchScore: Math.min(99, Math.round(scored[0].score)),
-            reasons: this.buildReasons(scored[0].movie, sharedGenres, friendNames),
+            movie: best.movie,
+            matchScore: Math.min(99, Math.round(best.score)),
+            reasons: this.buildReasons(best.movie, sharedGenres, friendNames),
           });
         }
 
