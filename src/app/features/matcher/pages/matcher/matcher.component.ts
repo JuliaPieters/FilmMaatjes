@@ -178,27 +178,41 @@ export class MatcherComponent implements OnInit {
           });
         }
 
-        // Wildcard — different genre
-        const wildcard = candidates.find(m =>
-          !(m.genre_ids ?? []).some(g => sharedGenres.includes(g)) &&
-          m.vote_average >= 7 &&
-          results.every(r => r.movie.id !== m.id)
-        );
-        if (wildcard) {
-          results.push({
-            type: 'wildcard',
-            label: 'Wildcard',
-            icon: 'bolt',
-            movie: wildcard,
-            matchScore: Math.round(40 + Math.random() * 25),
-            reasons: [`Totaal nieuw genre voor jullie`, `Verrassende keuze met hoge score`],
-          });
-        }
-
-        this.results.set(results);
+        // Wildcard — fetch separately with genres excluded from sharedGenres
+        const wildcardParams: Record<string, string | number> = {
+          'vote_average.gte': 7,
+          'vote_count.gte': 200,
+          'without_genres': sharedGenres.join(','),
+        };
+        this.movieService.discoverMovies(wildcardParams).subscribe({
+          next: wildcardPage => {
+            const wildcardCandidate = wildcardPage.results.find(m =>
+              !watchedIds.has(m.id) &&
+              results.every(r => r.movie.id !== m.id)
+            );
+            if (wildcardCandidate) {
+              results.push({
+                type: 'wildcard',
+                label: 'Wildcard',
+                icon: 'bolt',
+                movie: wildcardCandidate,
+                matchScore: Math.round(40 + Math.random() * 25),
+                reasons: [`Totaal nieuw genre voor jullie`, `Verrassende keuze met hoge score`],
+              });
+            }
+            this.results.set(results);
+            this.loading.set(false);
+          },
+          error: () => {
+            this.results.set(results);
+            this.loading.set(false);
+          },
+        });
+      },
+      error: () => {
+        this.results.set([]);
         this.loading.set(false);
       },
-      error: () => this.loading.set(false),
     });
   }
 
