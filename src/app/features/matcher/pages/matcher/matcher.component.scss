@@ -115,9 +115,17 @@
   mat-icon { font-size: 1rem; width: 1rem; height: 1rem; }
 }
 
+.match-score-row {
+  display: flex; align-items: baseline; gap: 0.75rem; margin-bottom: 1rem; flex-wrap: wrap;
+}
+
 .match-score {
-  font-size: 2rem; font-weight: 800; letter-spacing: -0.04em;
-  margin-bottom: 1rem; line-height: 1;
+  font-size: 2rem; font-weight: 800; letter-spacing: -0.04em; line-height: 1;
+}
+
+.match-confidence {
+  font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em;
+  opacity: 0.85;
 }
 
 .result-movie {

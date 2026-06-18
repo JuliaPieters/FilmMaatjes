@@ -94,8 +94,13 @@
               {{ result.label }}
             </div>
 
-            <div class="match-score" [style.color]="getMatchColor(result.type)">
-              {{ result.matchScore }}% Match
+            <div class="match-score-row">
+              <div class="match-score" [style.color]="getMatchColor(result.type)">
+                {{ result.matchScore }}% Match
+              </div>
+              <div class="match-confidence" [style.color]="getConfidenceColor(result.confidence)">
+                {{ getConfidenceLabel(result.confidence) }}
+              </div>
             </div>
 
             <a class="result-movie" [routerLink]="['/movies', result.movie.id]">
