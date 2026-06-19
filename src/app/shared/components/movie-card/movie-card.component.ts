@@ -88,8 +88,8 @@ import { StarRatingComponent } from '../star-rating/star-rating.component';
     :host { display: block; min-width: 0; }
     .movie-card { width: 100%; transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1); }
     .movie-card:hover { transform: translateY(-4px); }
-    .poster-wrap { position: relative; width: 100%; overflow: hidden; background: #16162a; }
-    .poster-img { display: block; width: 100%; aspect-ratio: 2 / 3; object-fit: cover; }
+    .poster-wrap { position: relative; width: 100%; padding-bottom: 150%; height: 0; overflow: hidden; background: #16162a; }
+    .poster-img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
     .card-info { min-height: 2.75rem; overflow: hidden; }
     .action-icon-btn {
       width: 2rem; height: 2rem; border-radius: 50%;

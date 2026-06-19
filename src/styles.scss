@@ -118,7 +118,7 @@ img {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 1rem;
-  align-items: stretch;
+  align-items: start;
 
   @media (min-width: 640px) {
     grid-template-columns: repeat(3, 1fr);
