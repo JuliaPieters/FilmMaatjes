@@ -17,7 +17,7 @@ import { StarRatingComponent } from '../star-rating/star-rating.component';
   imports: [RouterLink, DecimalPipe, MatIcon, MatRipple, MatTooltip, StarRatingComponent],
   template: `
     <div
-      class="movie-card group relative cursor-pointer"
+      class="movie-card relative cursor-pointer"
       matRipple
       [matRippleColor]="'rgba(124, 58, 237, 0.1)'"
     >
@@ -26,13 +26,12 @@ import { StarRatingComponent } from '../star-rating/star-rating.component';
           <img
             [src]="posterUrl()"
             [alt]="movie().title"
-            class="poster-img transition-transform duration-500 group-hover:scale-105"
+            class="poster-img"
             loading="lazy"
             (error)="onImageError($event)"
           />
 
-          <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent
-                      opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-3">
+          <div class="poster-overlay absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent flex flex-col justify-end p-3">
             @if (movie().vote_average > 0) {
               <div class="flex items-center gap-1 mb-2">
                 <app-star-rating [value]="normalizedRating()" [readonly]="true" [size]="14" />
@@ -43,7 +42,7 @@ import { StarRatingComponent } from '../star-rating/star-rating.component';
           </div>
 
           @if (showActions()) {
-            <div class="absolute top-2 right-2 flex flex-col gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+            <div class="action-btns absolute top-2 right-2 flex flex-col gap-1.5">
               <button
                 type="button"
                 class="action-icon-btn"
@@ -87,12 +86,42 @@ import { StarRatingComponent } from '../star-rating/star-rating.component';
   styles: [`
     :host { display: block; min-width: 0; }
     .movie-card { width: 100%; }
+
+    .poster-wrap {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 2/3;
+      overflow: hidden;
+      background: #16162a;
+      transform: translateZ(0);
+    }
+
+    .poster-img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      transition: transform 0.5s ease;
+    }
+
+    .poster-overlay {
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    .action-btns {
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
     @media (hover: hover) {
       .movie-card { transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1); }
       .movie-card:hover { transform: translateY(-4px); }
+      .movie-card:hover .poster-img { transform: scale(1.05); }
+      .movie-card:hover .poster-overlay { opacity: 1; }
+      .movie-card:hover .action-btns { opacity: 1; }
     }
-    .poster-wrap { position: relative; width: 100%; padding-bottom: 150%; height: 0; overflow: hidden; background: #16162a; }
-    .poster-img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+
     .card-info { min-height: 2.75rem; overflow: hidden; }
     .action-icon-btn {
       width: 2rem; height: 2rem; border-radius: 50%;
