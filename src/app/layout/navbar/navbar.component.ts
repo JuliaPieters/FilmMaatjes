@@ -15,7 +15,6 @@ import { FriendActivityService } from '../../core/services/friend-activity.servi
   imports: [
     RouterLink,
     RouterLinkActive,
-    DatePipe,
     MatIcon,
     MatIconButton,
     MatButton,
@@ -26,6 +25,7 @@ import { FriendActivityService } from '../../core/services/friend-activity.servi
     MatTooltip,
     MatBadge,
   ],
+  providers: [DatePipe],
   templateUrl: './navbar.component.html',
   styleUrl: './navbar.component.scss',
 })
@@ -33,9 +33,22 @@ export class NavbarComponent {
   protected readonly authService = inject(AuthService);
   protected readonly activityService = inject(FriendActivityService);
   protected readonly mobileMenuOpen = signal(false);
+  private readonly datePipe = inject(DatePipe);
 
   protected markNotificationsSeen(): void {
     this.activityService.markAllSeen();
+  }
+
+  protected formatActivityTime(createdAt: string): string {
+    const date = new Date(createdAt);
+    const now = new Date();
+    const isToday = date.getFullYear() === now.getFullYear()
+      && date.getMonth() === now.getMonth()
+      && date.getDate() === now.getDate();
+
+    return isToday
+      ? `Vandaag, ${this.datePipe.transform(date, 'HH:mm')}`
+      : this.datePipe.transform(date, 'd MMM yyyy') ?? '';
   }
 
   protected toggleMobileMenu(): void {

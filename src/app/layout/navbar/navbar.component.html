@@ -58,12 +58,12 @@
                   <p class="notification-text">
                     <strong>{{ item.userName || 'Een vriend' }}</strong>
                     @if (item.type === 'review') {
-                      heeft <strong>{{ item.movieTitle }}</strong> gereviewd met {{ item.rating }} ster{{ item.rating === 1 ? '' : 'ren' }}
+                      heeft een review geplaatst bij <strong>{{ item.movieTitle }}</strong>
                     } @else {
                       heeft <strong>{{ item.movieTitle }}</strong> beoordeeld met {{ item.rating }} ster{{ item.rating === 1 ? '' : 'ren' }}
                     }
                   </p>
-                  <p class="notification-time">{{ item.createdAt | date: 'short' }}</p>
+                  <p class="notification-time">{{ formatActivityTime(item.createdAt) }}</p>
                 </div>
               </a>
             }
