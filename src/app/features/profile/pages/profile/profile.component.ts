@@ -1,6 +1,6 @@
 import { Component, computed, effect, inject, OnInit, signal, DestroyRef } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import { MatIcon } from '@angular/material/icon';
 import { MatButton } from '@angular/material/button';
 import { FormsModule } from '@angular/forms';
@@ -182,7 +182,7 @@ import { db } from '../../../../core/firebase';
                   </div>
                   <div class="field-group">
                     <label class="field-label">Nieuw wachtwoord</label>
-                    <input class="field-input" type="password" [(ngModel)]="passwordNew" placeholder="Minimaal 6 tekens" />
+                    <input class="field-input" type="password" [(ngModel)]="passwordNew" placeholder="Minimaal 8 tekens" />
                   </div>
                   <div class="field-group">
                     <label class="field-label">Herhaal nieuw wachtwoord</label>
@@ -579,7 +579,6 @@ import { db } from '../../../../core/firebase';
 export class ProfileComponent implements OnInit {
   private readonly authService = inject(AuthService);
   private readonly route = inject(ActivatedRoute);
-  private readonly router = inject(Router);
   private readonly destroyRef = inject(DestroyRef);
   private readonly notifications = inject(NotificationService);
   protected readonly friendsService = inject(FriendsService);
@@ -688,7 +687,7 @@ export class ProfileComponent implements OnInit {
               }
               this.loading.set(false);
             })
-            .catch(err => {
+            .catch(() => {
               this.user.set(null);
               this.loading.set(false);
             });
@@ -796,8 +795,8 @@ export class ProfileComponent implements OnInit {
       this.passwordChangeError.set('Wachtwoorden komen niet overeen.');
       return;
     }
-    if (this.passwordNew.length < 6) {
-      this.passwordChangeError.set('Nieuw wachtwoord moet minimaal 6 tekens zijn.');
+    if (this.passwordNew.length < 8) {
+      this.passwordChangeError.set('Nieuw wachtwoord moet minimaal 8 tekens zijn.');
       return;
     }
     this.savingPassword.set(true);
@@ -818,8 +817,12 @@ export class ProfileComponent implements OnInit {
   protected saveEdit(): void {
     const u = this.user();
     if (!u) return;
+    if (!this.editDisplayName.trim()) {
+      this.notifications.error('Naam mag niet leeg zijn.');
+      return;
+    }
     this.authService.updateProfileData({
-      displayName: this.editDisplayName.trim() || u.displayName,
+      displayName: this.editDisplayName.trim(),
       bio: this.editBio.trim() || undefined,
     }).then(() => {
       this.user.set(this.authService.user());

@@ -25,18 +25,21 @@
       <form [formGroup]="form" (ngSubmit)="onSubmit()" class="auth-form">
         <mat-form-field appearance="fill">
           <mat-label>Naam</mat-label>
-          <input matInput formControlName="displayName" autocomplete="name" placeholder="Jouw naam" />
+          <input matInput formControlName="displayName" autocomplete="name" placeholder="Jouw naam" maxlength="50" />
           @if (form.controls.displayName.hasError('required') && form.controls.displayName.touched) {
             <mat-error>Naam is verplicht</mat-error>
           }
           @if (form.controls.displayName.hasError('minlength') && form.controls.displayName.touched) {
             <mat-error>Naam moet minimaal 2 tekens bevatten</mat-error>
           }
+          @if (form.controls.displayName.hasError('maxlength') && form.controls.displayName.touched) {
+            <mat-error>Naam mag maximaal 50 tekens bevatten</mat-error>
+          }
         </mat-form-field>
 
         <mat-form-field appearance="fill">
           <mat-label>Gebruikersnaam</mat-label>
-          <input matInput formControlName="username" autocomplete="username" placeholder="jouwgebruikersnaam" />
+          <input matInput formControlName="username" autocomplete="username" placeholder="jouwgebruikersnaam" maxlength="30" />
           <mat-hint>Alleen letters, cijfers en underscores</mat-hint>
           @if (form.controls.username.hasError('required') && form.controls.username.touched) {
             <mat-error>Gebruikersnaam is verplicht</mat-error>
@@ -46,6 +49,9 @@
           }
           @if (form.controls.username.hasError('minlength') && form.controls.username.touched) {
             <mat-error>Gebruikersnaam moet minimaal 3 tekens bevatten</mat-error>
+          }
+          @if (form.controls.username.hasError('maxlength') && form.controls.username.touched) {
+            <mat-error>Gebruikersnaam mag maximaal 30 tekens bevatten</mat-error>
           }
         </mat-form-field>
 

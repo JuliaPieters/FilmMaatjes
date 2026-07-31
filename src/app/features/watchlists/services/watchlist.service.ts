@@ -23,13 +23,18 @@ export class WatchlistService {
   private readonly _friendWatchlists = signal<Map<string, Watchlist[]>>(new Map());
   readonly friendWatchlists = this._friendWatchlists.asReadonly();
 
+  private lastLoadedUserId: string | null = null;
+
   constructor() {
     effect(() => {
       const user = this.authService.user();
-      this._loaded.set(false);
       if (user) {
+        if (user.id === this.lastLoadedUserId) return;
+        this.lastLoadedUserId = user.id;
+        this._loaded.set(false);
         this.loadAll(user.id).then(() => this._loaded.set(true));
       } else {
+        this.lastLoadedUserId = null;
         this._watchlists.set([]);
         this._friendWatchlists.set(new Map());
         this._loaded.set(true);

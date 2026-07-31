@@ -105,7 +105,18 @@ export class AuthService {
         localStorage.setItem(`displayName_${cred.user.uid}`, data.displayName);
         await updateProfile(cred.user, { displayName: data.displayName });
         sendEmailVerification(cred.user);
-        // User doc wordt aangemaakt door onAuthStateChanged zodra auth token klaar is
+        // Written directly (not left to onAuthStateChanged) so the chosen username/displayName
+        // can never lose a race against the auth-state listener's email-derived fallback.
+        await setDoc(doc(db, 'users', cred.user.uid), {
+          username: data.username,
+          usernameLower: data.username.toLowerCase(),
+          displayName: data.displayName,
+          displayNameLower: data.displayName.toLowerCase(),
+          email: data.email,
+          bio: null,
+          createdAt,
+          _count: { watchlists: 0, reviews: 0, friends: 0 },
+        });
         this._user.set({
           id: cred.user.uid,
           email: data.email,

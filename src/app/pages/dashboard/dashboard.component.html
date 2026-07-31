@@ -71,7 +71,13 @@
         <div class="flex items-center justify-between mb-4">
           <div>
             <h2 class="section-title mb-0">Aanbevolen voor jou</h2>
-            <p class="text-text-muted text-sm mt-0.5">Op basis van jouw beoordelingen</p>
+            <p class="text-text-muted text-sm mt-0.5">
+              @if (hasPersonalizedRecommendations()) {
+                Op basis van jouw beoordelingen
+              } @else {
+                Populair onder filmliefhebbers
+              }
+            </p>
           </div>
           <a routerLink="/recommendations" class="see-all-link">Alles zien</a>
         </div>

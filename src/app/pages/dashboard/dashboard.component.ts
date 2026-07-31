@@ -34,6 +34,9 @@ export class DashboardComponent implements OnInit {
   protected readonly ratedCount = computed(() => this.library.ratedMovies().length);
   protected readonly watchlistCount = computed(() => this.watchlistService.watchlists().length);
   protected readonly friendsCount = computed(() => this.friendsService.friends().length);
+  protected readonly hasPersonalizedRecommendations = computed(() =>
+    this.library.ratedMovies().some(e => e.rating >= 4),
+  );
 
   ngOnInit(): void {
     this.friendsService.getMyFriends().subscribe();

@@ -27,7 +27,13 @@ const GENRE_NAMES: Record<number, string> = {
     <div class="page-container">
       <div class="mb-8">
         <h1 class="text-3xl font-bold text-text-primary tracking-tight">Aanbevolen voor jou</h1>
-        <p class="text-text-muted mt-1">Op basis van jouw kijkgeschiedenis en beoordelingen</p>
+        <p class="text-text-muted mt-1">
+          @if (topGenres().length > 0) {
+            Op basis van jouw kijkgeschiedenis en beoordelingen
+          } @else {
+            Populair onder filmliefhebbers
+          }
+        </p>
       </div>
 
       @if (loading()) {
@@ -69,7 +75,7 @@ export class RecommendationsComponent {
   protected readonly loading = signal(true);
   protected readonly groups = signal<RecommendationGroup[]>([]);
 
-  private readonly topGenres = computed(() => {
+  protected readonly topGenres = computed(() => {
     const rated = this.library.ratedMovies().filter(e => e.rating >= 4);
     const freq: Record<number, number> = {};
     for (const entry of rated) {
