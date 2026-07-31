@@ -2,7 +2,7 @@ import { Component, computed, HostListener, inject, OnInit, signal } from '@angu
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { MatIcon } from '@angular/material/icon';
 import { MatButton, MatIconButton } from '@angular/material/button';
-import { DecimalPipe, DatePipe } from '@angular/common';
+import { DecimalPipe, DatePipe, Location } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MovieService } from '../../services/movie.service';
 import { TmdbMovie, TmdbMovieDetail, TmdbCastMember } from '../../../../core/models/movie.model';
@@ -36,6 +36,7 @@ import { Review } from '../../../../core/models/review.model';
 export class MovieDetailComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
+  private readonly location = inject(Location);
   protected readonly movieService = inject(MovieService);
   protected readonly authService = inject(AuthService);
   private readonly notifications = inject(NotificationService);
@@ -227,6 +228,15 @@ export class MovieDetailComponent implements OnInit {
     if (!m) return;
     this.libraryService.setRating(m as unknown as TmdbMovie, rating);
     this.notifications.success(rating > 0 ? `${rating} ster${rating === 1 ? '' : 'ren'} opgeslagen!` : 'Beoordeling verwijderd');
+  }
+
+  protected goBack(): void {
+    const state = this.location.getState() as { navigationId?: number };
+    if (state?.navigationId && state.navigationId > 1) {
+      this.location.back();
+    } else {
+      this.router.navigate(['/movies']);
+    }
   }
 
   protected openTrailer(): void {

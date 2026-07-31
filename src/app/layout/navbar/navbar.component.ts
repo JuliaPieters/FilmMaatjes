@@ -1,17 +1,21 @@
 import { Component, inject, signal } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
+import { DatePipe } from '@angular/common';
 import { MatIcon } from '@angular/material/icon';
 import { MatIconButton, MatButton } from '@angular/material/button';
 import { MatMenu, MatMenuTrigger, MatMenuItem } from '@angular/material/menu';
 import { MatDivider } from '@angular/material/divider';
 import { MatTooltip } from '@angular/material/tooltip';
+import { MatBadge } from '@angular/material/badge';
 import { AuthService } from '../../features/auth/services/auth.service';
+import { FriendActivityService } from '../../core/services/friend-activity.service';
 
 @Component({
   selector: 'app-navbar',
   imports: [
     RouterLink,
     RouterLinkActive,
+    DatePipe,
     MatIcon,
     MatIconButton,
     MatButton,
@@ -20,13 +24,19 @@ import { AuthService } from '../../features/auth/services/auth.service';
     MatMenuItem,
     MatDivider,
     MatTooltip,
+    MatBadge,
   ],
   templateUrl: './navbar.component.html',
   styleUrl: './navbar.component.scss',
 })
 export class NavbarComponent {
   protected readonly authService = inject(AuthService);
+  protected readonly activityService = inject(FriendActivityService);
   protected readonly mobileMenuOpen = signal(false);
+
+  protected markNotificationsSeen(): void {
+    this.activityService.markAllSeen();
+  }
 
   protected toggleMobileMenu(): void {
     this.mobileMenuOpen.update(v => !v);

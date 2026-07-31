@@ -30,6 +30,48 @@
 
         <button
           mat-icon-button
+          [matMenuTriggerFor]="notificationsMenu"
+          matTooltip="Meldingen"
+          class="notification-btn"
+        >
+          <mat-icon
+            [matBadge]="activityService.unreadCount()"
+            [matBadgeHidden]="activityService.unreadCount() === 0"
+            matBadgeColor="warn"
+            matBadgeSize="small"
+          >notifications</mat-icon>
+        </button>
+
+        <mat-menu #notificationsMenu="matMenu" class="notifications-menu" (closed)="markNotificationsSeen()">
+          <div class="notifications-header">Vriendenactiviteit</div>
+          <mat-divider />
+          @if (activityService.activity().length === 0) {
+            <div class="notifications-empty">
+              <mat-icon>notifications_none</mat-icon>
+              <p>Nog geen activiteit van vrienden.</p>
+            </div>
+          } @else {
+            @for (item of activityService.activity(); track item.id) {
+              <a mat-menu-item class="notification-item" [routerLink]="['/movies', item.movieId]">
+                <div class="notification-avatar">{{ (item.userName || '?').charAt(0).toUpperCase() }}</div>
+                <div class="notification-body">
+                  <p class="notification-text">
+                    <strong>{{ item.userName || 'Een vriend' }}</strong>
+                    @if (item.type === 'review') {
+                      heeft <strong>{{ item.movieTitle }}</strong> gereviewd met {{ item.rating }} ster{{ item.rating === 1 ? '' : 'ren' }}
+                    } @else {
+                      heeft <strong>{{ item.movieTitle }}</strong> beoordeeld met {{ item.rating }} ster{{ item.rating === 1 ? '' : 'ren' }}
+                    }
+                  </p>
+                  <p class="notification-time">{{ item.createdAt | date: 'short' }}</p>
+                </div>
+              </a>
+            }
+          }
+        </mat-menu>
+
+        <button
+          mat-icon-button
           [matMenuTriggerFor]="userMenu"
           class="avatar-btn"
         >

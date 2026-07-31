@@ -20,6 +20,7 @@ interface RatingEntry {
   movie: TmdbMovie;
   rating: number;
   ratedAt: string | null;
+  userId?: string;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -146,8 +147,8 @@ export class UserLibraryService {
 
     // Optimistic local update
     if (rating > 0) {
-      this._ratings.update(r => ({ ...r, [id]: { movieId: movie.id, movie, rating, ratedAt } }));
-      setDoc(doc(db, 'users', user.id, 'ratings', id), { movieId: movie.id, movie, rating, ratedAt }).catch(() => {
+      this._ratings.update(r => ({ ...r, [id]: { movieId: movie.id, movie, rating, ratedAt, userId: user.id } }));
+      setDoc(doc(db, 'users', user.id, 'ratings', id), { movieId: movie.id, movie, rating, ratedAt, userId: user.id }).catch(() => {
         // Revert on Firestore failure
         this._ratings.update(r => { const n = { ...r }; delete n[id]; return n; });
       });

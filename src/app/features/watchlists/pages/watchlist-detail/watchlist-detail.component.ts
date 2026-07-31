@@ -1,5 +1,6 @@
 import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { Location } from '@angular/common';
 import { MatIcon } from '@angular/material/icon';
 import { MatButton, MatIconButton } from '@angular/material/button';
 import { WatchlistService } from '../../services/watchlist.service';
@@ -14,9 +15,9 @@ import { NotificationService } from '../../../../core/services/notification.serv
   template: `
     <div class="page-container">
       <div class="flex items-center gap-3 mb-6">
-        <a mat-icon-button routerLink="/watchlists">
+        <button mat-icon-button (click)="goBack()">
           <mat-icon>arrow_back</mat-icon>
-        </a>
+        </button>
         <div class="flex-1 min-w-0">
           <h1 class="text-3xl font-bold text-text-primary tracking-tight truncate">
             {{ watchlist()?.name ?? 'Watchlist' }}
@@ -93,6 +94,7 @@ import { NotificationService } from '../../../../core/services/notification.serv
 export class WatchlistDetailComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
+  private readonly location = inject(Location);
   private readonly watchlistService = inject(WatchlistService);
   private readonly notifications = inject(NotificationService);
 
@@ -111,6 +113,15 @@ export class WatchlistDetailComponent implements OnInit {
       return;
     }
     this.id.set(id);
+  }
+
+  protected goBack(): void {
+    const state = this.location.getState() as { navigationId?: number };
+    if (state?.navigationId && state.navigationId > 1) {
+      this.location.back();
+    } else {
+      this.router.navigate(['/watchlists']);
+    }
   }
 
   protected removeMovie(movieId: number): void {
