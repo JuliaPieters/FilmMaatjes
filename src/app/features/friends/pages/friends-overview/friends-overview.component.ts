@@ -34,7 +34,7 @@ import { NotificationService } from '../../../../core/services/notification.serv
     <div class="page-container">
       <h1 class="text-3xl font-bold text-text-primary tracking-tight mb-6">Vrienden</h1>
 
-      <mat-tab-group animationDuration="200ms">
+      <mat-tab-group animationDuration="200ms" class="friends-tabs">
         <mat-tab label="Mijn vrienden">
           @if (loadingFriends()) {
             <app-loading-spinner message="Vrienden laden..." />
@@ -56,8 +56,8 @@ import { NotificationService } from '../../../../core/services/notification.serv
                     }
                   </div>
                   <div class="flex-1 min-w-0">
-                    <p class="text-text-primary font-semibold truncate">{{ friend.displayName }}</p>
-                    <p class="text-text-muted text-sm truncate">&#64;{{ friend.username }}</p>
+                    <p class="friend-name text-text-primary font-semibold truncate">{{ friend.displayName }}</p>
+                    <p class="friend-username text-text-muted text-sm truncate">&#64;{{ friend.username }}</p>
                   </div>
                   <mat-icon class="text-text-muted">chevron_right</mat-icon>
                 </a>
@@ -89,14 +89,14 @@ import { NotificationService } from '../../../../core/services/notification.serv
                       <span>{{ req.sender?.displayName?.charAt(0)?.toUpperCase() }}</span>
                     </div>
                     <div class="flex-1 min-w-0">
-                      <p class="text-text-primary font-semibold">{{ req.sender?.displayName }}</p>
-                      <p class="text-text-muted text-sm">&#64;{{ req.sender?.username }}</p>
+                      <p class="friend-name text-text-primary font-semibold">{{ req.sender?.displayName }}</p>
+                      <p class="friend-username text-text-muted text-sm">&#64;{{ req.sender?.username }}</p>
                     </div>
                     <div class="flex gap-2">
-                      <button mat-icon-button color="primary" (click)="acceptRequest(req.id)" title="Accepteren">
+                      <button mat-icon-button color="primary" class="request-accept-btn" (click)="acceptRequest(req.id)" title="Accepteren">
                         <mat-icon>check</mat-icon>
                       </button>
-                      <button mat-icon-button (click)="declineRequest(req.id)" title="Weigeren">
+                      <button mat-icon-button class="request-decline-btn" (click)="declineRequest(req.id)" title="Weigeren">
                         <mat-icon>close</mat-icon>
                       </button>
                     </div>
@@ -109,7 +109,7 @@ import { NotificationService } from '../../../../core/services/notification.serv
 
         <mat-tab label="Gebruikers zoeken">
           <div class="mt-6">
-            <mat-form-field appearance="fill" class="w-full max-w-md">
+            <mat-form-field appearance="fill" class="friends-search-field w-full max-w-md">
               <mat-label>Zoek op naam of gebruikersnaam</mat-label>
               <input matInput [formControl]="searchControl" placeholder="Bijv. filmfan123" />
               <mat-icon matSuffix>search</mat-icon>
@@ -132,21 +132,21 @@ import { NotificationService } from '../../../../core/services/notification.serv
                         <span>{{ user.displayName.charAt(0).toUpperCase() }}</span>
                       </div>
                       <div class="min-w-0">
-                        <p class="text-text-primary font-semibold truncate">{{ user.displayName }}</p>
-                        <p class="text-text-muted text-sm truncate">&#64;{{ user.username }}</p>
+                        <p class="friend-name text-text-primary font-semibold truncate">{{ user.displayName }}</p>
+                        <p class="friend-username text-text-muted text-sm truncate">&#64;{{ user.username }}</p>
                       </div>
                     </a>
                     @if (friendIds().has(user.id)) {
-                      <button mat-icon-button disabled title="Al vrienden">
+                      <button mat-icon-button disabled class="status-btn" title="Al vrienden">
                         <mat-icon style="color: #4ade80">people</mat-icon>
                       </button>
                     } @else if (sentRequestIds().has(user.id)) {
-                      <button mat-icon-button disabled title="Verzoek verstuurd">
+                      <button mat-icon-button disabled class="status-btn" title="Verzoek verstuurd">
                         <mat-icon style="color: #a78bfa">hourglass_empty</mat-icon>
                       </button>
                     } @else {
-                      <button mat-icon-button color="primary" (click)="sendRequest(user.id)" title="Vriendschapsverzoek sturen">
-                        <mat-icon>person_add</mat-icon>
+                      <button mat-icon-button color="primary" class="status-btn" (click)="sendRequest(user.id)" title="Vriendschapsverzoek sturen">
+                        <mat-icon class="status-icon-add">person_add</mat-icon>
                       </button>
                     }
                   </div>
@@ -164,7 +164,7 @@ import { NotificationService } from '../../../../core/services/notification.serv
       grid-template-columns: repeat(1, 1fr);
       gap: 0.75rem;
 
-      @media (min-width: 640px) {
+      @media (min-width: 768px) {
         grid-template-columns: repeat(2, 1fr);
       }
 
@@ -206,6 +206,102 @@ import { NotificationService } from '../../../../core/services/notification.serv
       font-size: 0.6875rem;
       font-weight: 700;
       margin-left: 0.375rem;
+    }
+
+    /* Mobile (<768px) — scrollable tab row, list-style cards, larger touch targets.
+       Desktop (>=768px) styling above is left untouched. */
+    @media (max-width: 767px) {
+      ::ng-deep .friends-tabs .mat-mdc-tab-header {
+        border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+      }
+
+      ::ng-deep .friends-tabs .mat-mdc-tab-labels {
+        overflow-x: auto;
+        scrollbar-width: none;
+      }
+
+      ::ng-deep .friends-tabs .mat-mdc-tab-labels::-webkit-scrollbar {
+        display: none;
+      }
+
+      ::ng-deep .friends-tabs .mdc-tab {
+        min-width: auto;
+        padding: 0 12px;
+        height: auto;
+      }
+
+      ::ng-deep .friends-tabs .mdc-tab__content {
+        padding: 14px 0;
+      }
+
+      ::ng-deep .friends-tabs .mdc-tab__text-label {
+        font-size: 14px !important;
+        font-weight: 500 !important;
+        color: #64748b !important;
+        letter-spacing: normal !important;
+      }
+
+      ::ng-deep .friends-tabs .mdc-tab--active .mdc-tab__text-label {
+        color: #a78bfa !important;
+      }
+
+      ::ng-deep .friends-tabs .mdc-tab-indicator__content--underline {
+        border-color: #7c3aed !important;
+        border-top-width: 2px !important;
+      }
+
+      .friend-name {
+        font-size: 15px;
+        font-weight: 600;
+      }
+
+      .friend-username {
+        font-size: 13px;
+        color: #475569;
+      }
+
+      .request-accept-btn,
+      .request-decline-btn,
+      .status-btn {
+        width: 44px !important;
+        height: 44px !important;
+        line-height: 44px !important;
+        padding: 0 !important;
+      }
+
+      .request-accept-btn {
+        background: rgba(124, 58, 237, 0.15) !important;
+        border-radius: 50%;
+      }
+
+      .request-accept-btn mat-icon {
+        color: #a78bfa !important;
+      }
+
+      .request-decline-btn mat-icon {
+        color: #94a3b8 !important;
+      }
+
+      .status-icon-add {
+        color: #a78bfa !important;
+      }
+
+      ::ng-deep .friends-search-field .mdc-text-field--filled {
+        border-radius: 8px 8px 0 0;
+      }
+
+      ::ng-deep .friends-search-field .mat-mdc-form-field-flex {
+        height: 52px;
+        align-items: center;
+      }
+
+      ::ng-deep .friends-search-field .mat-mdc-form-field-infix {
+        min-height: 52px;
+        padding-top: 0;
+        padding-bottom: 0;
+        display: flex;
+        align-items: center;
+      }
     }
   `],
 })
