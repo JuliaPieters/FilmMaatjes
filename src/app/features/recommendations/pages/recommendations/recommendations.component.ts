@@ -27,7 +27,7 @@ const GENRE_NAMES: Record<number, string> = {
     <div class="page-container">
       <div class="mb-8">
         <h1 class="text-3xl font-bold text-text-primary tracking-tight">Aanbevolen voor jou</h1>
-        <p class="text-text-muted mt-1">
+        <p class="text-text-muted mt-1 rec-subtitle">
           @if (topGenres().length > 0) {
             Op basis van jouw kijkgeschiedenis en beoordelingen
           } @else {
@@ -67,6 +67,14 @@ const GENRE_NAMES: Record<number, string> = {
       }
     </div>
   `,
+  styles: [`
+    @media (max-width: 767px) {
+      .rec-subtitle {
+        font-size: 14px;
+        color: #64748b;
+      }
+    }
+  `],
 })
 export class RecommendationsComponent {
   private readonly movieService = inject(MovieService);
