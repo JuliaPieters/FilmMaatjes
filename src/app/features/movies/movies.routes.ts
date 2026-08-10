@@ -8,8 +8,8 @@ export const moviesRoutes: Routes = [
   },
   {
     path: 'search',
-    loadComponent: () =>
-      import('./pages/search/search.component').then(c => c.SearchComponent),
+    redirectTo: '',
+    pathMatch: 'full',
   },
   {
     path: ':id',

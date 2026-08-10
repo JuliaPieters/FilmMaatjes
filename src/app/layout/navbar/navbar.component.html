@@ -20,62 +20,6 @@
     </nav>
 
     <div class="navbar-right">
-      <div class="search-widget desktop-only">
-        @if (searchOpen()) {
-          <div class="search-overlay">
-            <mat-icon class="search-overlay-icon">search</mat-icon>
-            <input
-              type="text"
-              class="search-input"
-              placeholder="Zoek een film..."
-              autofocus
-              [value]="searchQuery()"
-              (input)="onSearchInput($event)"
-              (keydown.enter)="submitSearch()"
-              (keydown.escape)="closeSearch()"
-            />
-          </div>
-
-          @if (searchQuery().trim().length >= 2) {
-            <div class="search-dropdown">
-              @if (searchLoading()) {
-                <div class="search-dropdown-message">Zoeken...</div>
-              } @else if (searchResults().length === 0) {
-                <div class="search-dropdown-message">Geen films gevonden voor &quot;{{ searchQuery() }}&quot;</div>
-              } @else {
-                @for (movie of searchResults(); track movie.id) {
-                  <button type="button" class="search-result-item" (click)="goToResult(movie.id)">
-                    <img
-                      [src]="movieService.getPosterUrl(movie.poster_path, 'w185')"
-                      [alt]="movie.title"
-                      class="search-result-poster"
-                      (error)="onPosterError($event)"
-                    />
-                    <div class="search-result-info">
-                      <span class="search-result-title">{{ movie.title }}</span>
-                      <span class="search-result-year">{{ movieService.formatYear(movie.release_date) }}</span>
-                    </div>
-                  </button>
-                }
-                <button type="button" class="search-view-all" (click)="submitSearch()">
-                  Alle {{ searchTotalResults() }} resultaten bekijken
-                  <mat-icon>arrow_forward</mat-icon>
-                </button>
-              }
-            </div>
-          }
-        }
-        <button
-          type="button"
-          mat-icon-button
-          (click)="toggleSearch()"
-          matTooltip="Zoeken"
-          class="search-toggle-btn"
-        >
-          <mat-icon>{{ searchOpen() ? 'close' : 'search' }}</mat-icon>
-        </button>
-      </div>
-
       @if (authService.isAuthenticated()) {
         <a mat-icon-button routerLink="/watchlists" matTooltip="Watchlists" class="desktop-only">
           <mat-icon>bookmark</mat-icon>

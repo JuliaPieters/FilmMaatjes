@@ -32,7 +32,7 @@ import { MatIcon } from '@angular/material/icon';
       backdrop-filter: blur(12px);
       border-top: 1px solid rgba(255, 255, 255, 0.06);
       padding: 6px 4px calc(6px + env(safe-area-inset-bottom));
-      grid-template-columns: repeat(6, 1fr);
+      grid-template-columns: repeat(5, 1fr);
 
       @media (max-width: 767px) {
         display: grid;
@@ -54,14 +54,14 @@ import { MatIcon } from '@angular/material/icon';
     }
 
     .tab-icon {
-      font-size: 21px;
-      width: 21px;
-      height: 21px;
+      font-size: 22px;
+      width: 22px;
+      height: 22px;
       font-variation-settings: 'FILL' 0;
     }
 
     .tab-label {
-      font-size: 9.5px;
+      font-size: 10px;
       font-weight: 500;
       letter-spacing: -0.01em;
       white-space: nowrap;
@@ -82,7 +82,6 @@ export class BottomTabBarComponent {
     { label: 'Films', icon: 'movie', route: '/movies', exact: false },
     { label: 'Roulette', icon: 'casino', route: '/roulette', exact: false },
     { label: 'Matcher', icon: 'favorite', route: '/matcher', exact: false },
-    { label: 'Zoeken', icon: 'search', route: '/movies/search', exact: false },
     { label: 'Lijsten', icon: 'bookmark', route: '/watchlists', exact: false },
     { label: 'Vrienden', icon: 'people', route: '/friends', exact: false },
   ];

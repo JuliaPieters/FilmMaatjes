@@ -1,5 +1,5 @@
-import { Component, DestroyRef, inject, signal } from '@angular/core';
-import { Router, RouterLink, RouterLinkActive } from '@angular/router';
+import { Component, inject } from '@angular/core';
+import { RouterLink, RouterLinkActive } from '@angular/router';
 import { DatePipe } from '@angular/common';
 import { MatIcon } from '@angular/material/icon';
 import { MatIconButton, MatButton } from '@angular/material/button';
@@ -9,8 +9,6 @@ import { MatTooltip } from '@angular/material/tooltip';
 import { MatBadge } from '@angular/material/badge';
 import { AuthService } from '../../features/auth/services/auth.service';
 import { FriendActivityService } from '../../core/services/friend-activity.service';
-import { MovieService } from '../../features/movies/services/movie.service';
-import { TmdbMovie } from '../../core/models/movie.model';
 
 @Component({
   selector: 'app-navbar',
@@ -34,75 +32,7 @@ import { TmdbMovie } from '../../core/models/movie.model';
 export class NavbarComponent {
   protected readonly authService = inject(AuthService);
   protected readonly activityService = inject(FriendActivityService);
-  protected readonly movieService = inject(MovieService);
   private readonly datePipe = inject(DatePipe);
-  private readonly router = inject(Router);
-  private readonly destroyRef = inject(DestroyRef);
-
-  protected readonly searchOpen = signal(false);
-  protected readonly searchQuery = signal('');
-  protected readonly searchResults = signal<TmdbMovie[]>([]);
-  protected readonly searchTotalResults = signal(0);
-  protected readonly searchLoading = signal(false);
-  private searchDebounceTimer: ReturnType<typeof setTimeout> | undefined;
-
-  constructor() {
-    this.destroyRef.onDestroy(() => clearTimeout(this.searchDebounceTimer));
-  }
-
-  protected toggleSearch(): void {
-    this.searchOpen() ? this.closeSearch() : this.searchOpen.set(true);
-  }
-
-  protected closeSearch(): void {
-    this.searchOpen.set(false);
-    this.searchQuery.set('');
-    this.searchResults.set([]);
-  }
-
-  protected onSearchInput(event: Event): void {
-    const value = (event.target as HTMLInputElement).value;
-    this.searchQuery.set(value);
-    clearTimeout(this.searchDebounceTimer);
-
-    const query = value.trim();
-    if (query.length < 2) {
-      this.searchResults.set([]);
-      this.searchLoading.set(false);
-      return;
-    }
-
-    this.searchLoading.set(true);
-    this.searchDebounceTimer = setTimeout(() => {
-      this.movieService.search(query).subscribe({
-        next: result => {
-          this.searchResults.set(result.results.slice(0, 5));
-          this.searchTotalResults.set(result.total_results);
-          this.searchLoading.set(false);
-        },
-        error: () => {
-          this.searchResults.set([]);
-          this.searchLoading.set(false);
-        },
-      });
-    }, 350);
-  }
-
-  protected onPosterError(event: Event): void {
-    (event.target as HTMLImageElement).src = '/assets/movie-placeholder.svg';
-  }
-
-  protected goToResult(movieId: number): void {
-    this.router.navigate(['/movies', movieId]);
-    this.closeSearch();
-  }
-
-  protected submitSearch(): void {
-    const query = this.searchQuery().trim();
-    if (!query) return;
-    this.router.navigate(['/movies/search'], { queryParams: { q: query } });
-    this.closeSearch();
-  }
 
   protected markNotificationsSeen(): void {
     this.activityService.markAllSeen();

@@ -1,10 +1,28 @@
 <div class="page-container">
-  <div class="page-header flex items-center justify-between mb-6">
+  <div class="page-header flex items-center justify-between mb-4">
     <h1 class="page-title text-3xl font-bold text-text-primary tracking-tight">Films</h1>
-    <div class="sort-pill">
-      {{ tabs[selectedTab()].label }}
-      <mat-icon>expand_more</mat-icon>
-    </div>
+    @if (!isSearching()) {
+      <div class="sort-pill">
+        {{ tabs[selectedTab()].label }}
+        <mat-icon>expand_more</mat-icon>
+      </div>
+    }
+  </div>
+
+  <div class="movies-search-field">
+    <mat-icon class="movies-search-icon">search</mat-icon>
+    <input
+      type="text"
+      class="movies-search-input"
+      placeholder="Zoek een filmtitel..."
+      [value]="searchQuery()"
+      (input)="onSearchInput($event)"
+    />
+    @if (searchQuery()) {
+      <button type="button" class="movies-search-clear" (click)="clearSearch()">
+        <mat-icon>close</mat-icon>
+      </button>
+    }
   </div>
 
   @if (!hasApiKey) {
@@ -16,6 +34,26 @@
         <code class="bg-surface-50 px-2 py-0.5 rounded text-accent-light">src/environments/environment.ts</code>.
       </p>
     </div>
+  } @else if (isSearching()) {
+    @if (searchLoading() && searchResults().length === 0) {
+      <app-loading-spinner message="Zoeken..." [minHeight]="'300px'" />
+    } @else if (hasSearched() && searchResults().length === 0) {
+      <app-empty-state
+        icon="search_off"
+        title="Geen resultaten gevonden"
+        [description]="'Geen films gevonden voor &quot;' + searchQuery() + '&quot;. Probeer andere zoektermen.'"
+      />
+    } @else if (searchResults().length > 0) {
+      <p class="results-summary text-text-muted mb-4 mt-4">
+        {{ searchTotalResults() }} {{ searchTotalResults() === 1 ? 'resultaat' : 'resultaten' }} voor
+        <span class="text-text-secondary">&quot;{{ searchQuery() }}&quot;</span>
+      </p>
+      <div class="card-grid">
+        @for (movie of searchResults(); track movie.id) {
+          <app-movie-card [movie]="movie" [showActions]="true" />
+        }
+      </div>
+    }
   } @else {
     <div class="tab-bar" #tabBar>
       @for (tab of tabs; track tab.category) {

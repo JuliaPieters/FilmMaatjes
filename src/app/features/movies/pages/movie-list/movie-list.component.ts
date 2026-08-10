@@ -1,7 +1,9 @@
 import { Component, computed, DestroyRef, ElementRef, inject, NgZone, signal, viewChild, viewChildren } from '@angular/core';
+import { ActivatedRoute, Router } from '@angular/router';
 import { MatIcon } from '@angular/material/icon';
 import { MovieCardComponent } from '../../../../shared/components/movie-card/movie-card.component';
 import { LoadingSpinnerComponent } from '../../../../shared/components/loading-spinner/loading-spinner.component';
+import { EmptyStateComponent } from '../../../../shared/components/empty-state/empty-state.component';
 import { MovieService } from '../../services/movie.service';
 import { TmdbMovie, MovieCategory } from '../../../../core/models/movie.model';
 
@@ -13,7 +15,7 @@ interface CategoryTab {
 
 @Component({
   selector: 'app-movie-list',
-  imports: [MatIcon, MovieCardComponent, LoadingSpinnerComponent],
+  imports: [MatIcon, MovieCardComponent, LoadingSpinnerComponent, EmptyStateComponent],
   templateUrl: './movie-list.component.html',
   styleUrl: './movie-list.component.scss',
 })
@@ -21,6 +23,8 @@ export class MovieListComponent {
   private readonly movieService = inject(MovieService);
   private readonly zone = inject(NgZone);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
 
   protected readonly tabs: CategoryTab[] = [
     { label: 'Trending', category: 'trending', icon: 'trending_up' },
@@ -39,12 +43,27 @@ export class MovieListComponent {
   protected readonly totalPages = signal(1);
   protected readonly hasApiKey = this.movieService.hasApiKey();
 
+  protected readonly searchQuery = signal('');
+  protected readonly isSearching = computed(() => this.searchQuery().trim().length >= 2);
+  protected readonly searchResults = signal<TmdbMovie[]>([]);
+  protected readonly searchTotalResults = signal(0);
+  protected readonly searchLoading = signal(false);
+  protected readonly hasSearched = signal(false);
+  private searchDebounceTimer: ReturnType<typeof setTimeout> | undefined;
+
   private readonly tabBarEl = viewChild<ElementRef<HTMLElement>>('tabBar');
   private readonly tabButtonEls = viewChildren<ElementRef<HTMLButtonElement>>('tabBtn');
 
   constructor() {
-    this.loadMovies();
+    const initialQuery = this.route.snapshot.queryParamMap.get('q');
+    if (initialQuery && initialQuery.trim().length >= 2) {
+      this.searchQuery.set(initialQuery);
+      this.performSearch(initialQuery);
+    } else {
+      this.loadMovies();
+    }
     this.setupScrollListener();
+    this.destroyRef.onDestroy(() => clearTimeout(this.searchDebounceTimer));
   }
 
   private setupScrollListener(): void {
@@ -87,7 +106,7 @@ export class MovieListComponent {
   }
 
   private loadMoreIfPossible(): void {
-    if (this.loading() || this.page() >= this.totalPages()) return;
+    if (this.isSearching() || this.loading() || this.page() >= this.totalPages()) return;
     this.page.update(p => p + 1);
     this.loadMovies();
   }
@@ -114,5 +133,55 @@ export class MovieListComponent {
         this.loading.set(false);
       },
     });
+  }
+
+  protected onSearchInput(event: Event): void {
+    const value = (event.target as HTMLInputElement).value;
+    this.searchQuery.set(value);
+    this.updateQueryParam(value);
+    clearTimeout(this.searchDebounceTimer);
+
+    const query = value.trim();
+    if (query.length < 2) {
+      this.searchResults.set([]);
+      this.hasSearched.set(false);
+      this.searchLoading.set(false);
+      return;
+    }
+
+    this.searchDebounceTimer = setTimeout(() => this.performSearch(query), 400);
+  }
+
+  private performSearch(query: string): void {
+    this.searchLoading.set(true);
+    this.hasSearched.set(true);
+
+    this.movieService.search(query).subscribe({
+      next: result => {
+        this.searchResults.set(result.results);
+        this.searchTotalResults.set(result.total_results);
+        this.searchLoading.set(false);
+      },
+      error: () => {
+        this.searchResults.set([]);
+        this.searchLoading.set(false);
+      },
+    });
+  }
+
+  private updateQueryParam(query: string): void {
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: { q: query.trim() || null },
+      queryParamsHandling: 'merge',
+      replaceUrl: true,
+    });
+  }
+
+  protected clearSearch(): void {
+    this.searchQuery.set('');
+    this.searchResults.set([]);
+    this.hasSearched.set(false);
+    this.updateQueryParam('');
   }
 }
