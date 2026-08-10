@@ -1,7 +1,7 @@
 <header class="navbar">
   <div class="navbar-inner">
     <div class="navbar-left">
-      <a routerLink="/" class="logo" (click)="closeMobileMenu()">
+      <a routerLink="/" class="logo">
         <img src="favicon.svg" class="logo-icon" alt="" />
         <span class="logo-text">FilmMaatjes</span>
       </a>
@@ -115,64 +115,6 @@
           Aanmelden
         </a>
       }
-
-      <button
-        mat-icon-button
-        class="mobile-menu-btn"
-        (click)="toggleMobileMenu()"
-        [attr.aria-expanded]="mobileMenuOpen()"
-      >
-        <mat-icon>{{ mobileMenuOpen() ? 'close' : 'menu' }}</mat-icon>
-      </button>
     </div>
   </div>
-
-  @if (mobileMenuOpen()) {
-    <div class="mobile-menu">
-
-      @if (authService.isAuthenticated()) {
-        <div class="mobile-user-header">
-          <div class="mobile-avatar">
-            @if (authService.user()?.avatar) {
-              <img [src]="authService.user()!.avatar" [alt]="authService.user()!.displayName" />
-            } @else {
-              <span>{{ authService.user()?.displayName?.charAt(0)?.toUpperCase() }}</span>
-            }
-          </div>
-          <div>
-            <p class="mobile-user-name">{{ authService.user()?.displayName }}</p>
-            <p class="mobile-user-handle">&#64;{{ authService.user()?.username }}</p>
-          </div>
-        </div>
-        <hr class="mobile-divider" />
-      }
-
-      @if (authService.isAuthenticated()) {
-        <a routerLink="/dashboard" routerLinkActive="mobile-link-active" class="mobile-link" (click)="closeMobileMenu()">
-          <mat-icon>dashboard</mat-icon>
-          Dashboard
-        </a>
-        <a routerLink="/roulette" routerLinkActive="mobile-link-active" class="mobile-link" (click)="closeMobileMenu()">
-          <mat-icon>casino</mat-icon>
-          Film Roulette
-        </a>
-        <a routerLink="/matcher" routerLinkActive="mobile-link-active" class="mobile-link" (click)="closeMobileMenu()">
-          <mat-icon>favorite</mat-icon>
-          Film Matcher
-        </a>
-        <hr class="mobile-divider" />
-        <button class="mobile-link mobile-link-logout" (click)="logout()">
-          <mat-icon>logout</mat-icon>
-          Uitloggen
-        </button>
-      } @else {
-        <hr class="mobile-divider" />
-        <div class="mobile-auth-btns">
-          <a mat-stroked-button routerLink="/auth/login" (click)="closeMobileMenu()">Inloggen</a>
-          <a mat-flat-button color="primary" routerLink="/auth/register" (click)="closeMobileMenu()">Aanmelden</a>
-        </div>
-      }
-
-    </div>
-  }
 </header>

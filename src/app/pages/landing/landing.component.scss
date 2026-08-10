@@ -2,6 +2,20 @@
   overflow: hidden;
 }
 
+.landing-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 1rem;
+
+  @media (min-width: 768px) {
+    padding: 0 2rem;
+  }
+
+  @media (min-width: 1024px) {
+    padding: 0 3rem;
+  }
+}
+
 .hero {
   position: relative;
   min-height: calc(100vh - 80px);

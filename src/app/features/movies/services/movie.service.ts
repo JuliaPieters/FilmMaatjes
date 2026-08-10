@@ -58,14 +58,14 @@ export class MovieService {
   getUpcoming(page = 1): Observable<TmdbPage<TmdbMovie>> {
     return this.http.get<TmdbPage<TmdbMovie>>(
       `${this.base}/movie/upcoming`,
-      this.buildOptions({ page }),
+      this.buildOptions({ page, region: 'NL' }),
     );
   }
 
   getNowPlaying(page = 1): Observable<TmdbPage<TmdbMovie>> {
     return this.http.get<TmdbPage<TmdbMovie>>(
       `${this.base}/movie/now_playing`,
-      this.buildOptions({ page }),
+      this.buildOptions({ page, region: 'NL' }),
     );
   }
 

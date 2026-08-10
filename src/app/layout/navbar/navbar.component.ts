@@ -1,4 +1,4 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { DatePipe } from '@angular/common';
 import { MatIcon } from '@angular/material/icon';
@@ -32,7 +32,6 @@ import { FriendActivityService } from '../../core/services/friend-activity.servi
 export class NavbarComponent {
   protected readonly authService = inject(AuthService);
   protected readonly activityService = inject(FriendActivityService);
-  protected readonly mobileMenuOpen = signal(false);
   private readonly datePipe = inject(DatePipe);
 
   protected markNotificationsSeen(): void {
@@ -51,17 +50,8 @@ export class NavbarComponent {
       : this.datePipe.transform(date, 'd MMM yyyy') ?? '';
   }
 
-  protected toggleMobileMenu(): void {
-    this.mobileMenuOpen.update(v => !v);
-  }
-
-  protected closeMobileMenu(): void {
-    this.mobileMenuOpen.set(false);
-  }
-
   protected logout(): void {
     this.authService.logout();
-    this.closeMobileMenu();
   }
 
   protected readonly navLinks = [
