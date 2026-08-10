@@ -35,9 +35,15 @@
         </div>
 
         <div class="movie-info">
-          <div class="flex flex-wrap gap-2 mb-3">
+          <div class="header-meta flex flex-wrap gap-2 mb-3">
             @for (genre of movie()!.genres; track genre.id) {
               <span class="genre-chip">{{ genre.name }}</span>
+            }
+            @if (movie()!.vote_average > 0) {
+              <span class="score-badge">
+                <mat-icon class="text-gold">star</mat-icon>
+                {{ movie()!.vote_average | number:'1.1-1' }}
+              </span>
             }
           </div>
 
@@ -61,7 +67,7 @@
               </span>
             }
             @if (movie()!.vote_average > 0) {
-              <span class="meta-item rating">
+              <span class="meta-item rating desktop-rating-item">
                 <mat-icon class="text-gold">star</mat-icon>
                 {{ movie()!.vote_average | number:'1.1-1' }}
                 <span class="text-text-muted text-xs">({{ movie()!.vote_count | number }} stemmen)</span>
@@ -73,23 +79,24 @@
 
           <div class="action-row">
             @if (trailerKey()) {
-              <button mat-flat-button color="primary" class="action-btn" (click)="openTrailer()">
+              <button mat-flat-button color="primary" class="action-btn trailer-btn" (click)="openTrailer()">
                 <mat-icon>play_circle</mat-icon>
-                Trailer
+                <span class="btn-label">Trailer</span>
               </button>
             }
 
-            <!-- Watchlist picker -->
+            <!-- Watchlist picker (desktop: inline dropdown; mobile: MatBottomSheet, see openWatchlistPicker()) -->
             <div class="watchlist-anchor" style="position: relative; z-index: 50">
               <button
                 mat-stroked-button
-                class="action-btn"
+                class="action-btn watchlist-btn"
                 [class.active]="isInAnyWatchlist()"
+                [attr.aria-label]="isInAnyWatchlist() ? 'In watchlist' : 'Toevoegen aan watchlist'"
                 (click)="openWatchlistPicker($event)"
               >
                 <mat-icon>{{ isInAnyWatchlist() ? 'bookmark' : 'bookmark_border' }}</mat-icon>
-                {{ isInAnyWatchlist() ? 'In watchlist' : 'Toevoegen' }}
-                <mat-icon style="font-size: 1rem; width: 1rem; height: 1rem; margin-left: 2px">
+                <span class="btn-label">{{ isInAnyWatchlist() ? 'In watchlist' : 'Toevoegen' }}</span>
+                <mat-icon class="chevron-icon" style="font-size: 1rem; width: 1rem; height: 1rem; margin-left: 2px">
                   {{ showWatchlistPicker() ? 'expand_less' : 'expand_more' }}
                 </mat-icon>
               </button>
@@ -123,23 +130,27 @@
 
             <button
               mat-stroked-button
-              class="action-btn"
+              class="action-btn watched-btn"
               [class.active-green]="watched()"
+              [attr.aria-label]="watched() ? 'Gezien' : 'Markeer als gezien'"
               (click)="toggleWatched()"
             >
               <mat-icon>{{ watched() ? 'check_circle' : 'radio_button_unchecked' }}</mat-icon>
-              {{ watched() ? 'Gezien' : 'Markeer gezien' }}
+              <span class="btn-label">{{ watched() ? 'Gezien' : 'Markeer gezien' }}</span>
             </button>
           </div>
 
           <div class="rating-section">
-            <p class="text-sm text-text-secondary mb-2">Jouw beoordeling:</p>
+            <p class="rating-label text-sm text-text-secondary mb-2">Jouw beoordeling:</p>
             <app-star-rating
               [(value)]="userRating"
               [size]="28"
               [showValue]="true"
               (ratingChange)="onRate($event)"
             />
+            @if (userRating() > 0) {
+              <p class="rating-value-text">{{ userRating() }}/5 · {{ ratingLabelFor(userRating()) }}</p>
+            }
           </div>
         </div>
       </div>
@@ -170,7 +181,7 @@
         <div class="flex items-center justify-between mb-4">
           <h2 class="section-title mb-0">Reviews</h2>
           @if (authService.isAuthenticated() && !showReviewForm()) {
-            <button mat-stroked-button (click)="openReviewForm()">
+            <button mat-stroked-button class="review-btn" (click)="openReviewForm()">
               <mat-icon>{{ reviewService.getUserReviewForMovie(movie()!.id) ? 'edit' : 'rate_review' }}</mat-icon>
               {{ reviewService.getUserReviewForMovie(movie()!.id) ? 'Review bewerken' : 'Review schrijven' }}
             </button>
@@ -193,10 +204,10 @@
               rows="4"
             ></textarea>
             <div class="flex gap-2 mt-3">
-              <button mat-flat-button color="primary" (click)="submitReview()" [disabled]="reviewSubmitting() || !reviewTextModel.trim()">
+              <button mat-flat-button color="primary" class="submit-btn" (click)="submitReview()" [disabled]="reviewSubmitting() || !reviewTextModel.trim()">
                 {{ reviewSubmitting() ? 'Opslaan...' : (editingReview() ? 'Bijwerken' : 'Plaatsen') }}
               </button>
-              <button mat-stroked-button (click)="cancelReview()">Annuleren</button>
+              <button mat-stroked-button class="cancel-btn" (click)="cancelReview()">Annuleren</button>
             </div>
           </div>
         }

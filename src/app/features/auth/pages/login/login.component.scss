@@ -143,3 +143,61 @@
     }
   }
 }
+
+.auth-logo-mobile {
+  display: none;
+}
+
+@media (max-width: 767px) {
+  .auth-page {
+    align-items: center;
+    padding: 5rem 1.25rem 2.5rem;
+  }
+
+  .auth-backdrop {
+    background: radial-gradient(400px 260px at 50% 8%, rgba(124, 58, 237, 0.24), transparent 72%);
+  }
+
+  .auth-logo {
+    display: none;
+  }
+
+  .auth-logo-mobile {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    text-decoration: none;
+
+    img {
+      width: 30px;
+      height: 30px;
+      border-radius: 7px;
+    }
+
+    span {
+      font-size: 17px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: #f1f5f9;
+    }
+  }
+
+  .auth-card {
+    background: rgba(26, 26, 36, 0.8);
+    padding: 1.5rem;
+  }
+
+  .auth-header h1 {
+    font-size: 1.5rem;
+  }
+
+  .submit-btn {
+    height: 50px;
+    border-radius: 999px;
+  }
+
+  ::ng-deep .auth-form button.mat-mdc-icon-button {
+    width: 44px;
+    height: 44px;
+  }
+}

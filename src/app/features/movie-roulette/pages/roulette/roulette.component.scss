@@ -593,3 +593,198 @@
     line-height: 1.5;
   }
 }
+
+// Mobile-only filter summary row that opens the bottom sheet (hidden on desktop)
+.mobile-only-filters {
+  display: none;
+}
+
+.filters-summary-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+  padding: 0.75rem;
+  margin-top: 1rem;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  background: rgba(255, 255, 255, 0.03);
+  color: inherit;
+  cursor: pointer;
+  text-align: left;
+}
+
+.filters-summary-icon {
+  color: #a78bfa;
+  font-size: 1.25rem;
+  width: 1.25rem;
+  height: 1.25rem;
+  flex-shrink: 0;
+}
+
+.filters-summary-text {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+}
+
+.filters-summary-title {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #f1f5f9;
+}
+
+.filters-summary-value {
+  font-size: 0.75rem;
+  color: #64748b;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.filters-summary-chevron {
+  color: #64748b;
+  font-size: 1.25rem;
+  width: 1.25rem;
+  height: 1.25rem;
+  flex-shrink: 0;
+}
+
+// -----------------------------------------------------------------------
+// Mobile (<768px) overrides — desktop (>=768px) styles above stay untouched
+// -----------------------------------------------------------------------
+@media (max-width: 767.98px) {
+  .roulette-header {
+    .header-icon {
+      width: 56px;
+      height: 56px;
+      border-radius: 14px;
+      background: rgba(236, 72, 153, 0.15);
+      border: 1px solid rgba(236, 72, 153, 0.25);
+      animation: none;
+
+      mat-icon {
+        color: #ec4899;
+        font-size: 1.75rem;
+        width: 1.75rem;
+        height: 1.75rem;
+      }
+    }
+
+    h1 {
+      font-size: 28px;
+      font-weight: 800;
+    }
+
+    p {
+      font-size: 15px;
+    }
+  }
+
+  // Segmented control mode switcher
+  .mode-selector {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    flex-direction: unset;
+    gap: 0;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 12px;
+    padding: 4px;
+  }
+
+  .mode-btn {
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.25rem;
+    width: auto;
+    padding: 0.5rem 0.25rem;
+    border: none;
+    border-radius: 9px;
+    text-align: center;
+
+    mat-icon {
+      font-size: 20px;
+      width: 20px;
+      height: 20px;
+    }
+
+    span {
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    &:hover {
+      background: rgba(124, 58, 237, 0.12);
+      border-color: transparent;
+    }
+
+    &.active {
+      background: rgba(124, 58, 237, 0.18);
+      border-color: transparent;
+      color: #a78bfa;
+    }
+  }
+
+  // Replace the desktop filters sidebar with the summary row + bottom sheet
+  .desktop-only-filters {
+    display: none;
+  }
+
+  .mobile-only-filters {
+    display: flex;
+  }
+
+  // Restore natural document order (filters panel before result/spin area)
+  .roulette-main {
+    order: 0;
+  }
+
+  // Centered result card
+  .result-card {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+
+  .result-poster-wrapper,
+  .result-poster {
+    width: 180px;
+  }
+
+  .result-badge {
+    background: #7c3aed;
+    height: 28px;
+    padding: 0 0.75rem;
+  }
+
+  .result-title {
+    font-size: 24px;
+    font-weight: 800;
+  }
+
+  .result-overview {
+    font-size: 14px;
+  }
+
+  .result-actions {
+    flex-wrap: nowrap;
+    justify-content: center;
+    width: 100%;
+
+    a, button {
+      flex: 1;
+    }
+  }
+
+  // Spin button pinned at the bottom of the content (not viewport-fixed)
+  .spin-btn {
+    width: 100%;
+    max-width: none;
+    height: 54px;
+    background: #7c3aed;
+    box-shadow: 0 0 40px rgba(124, 58, 237, 0.3) !important;
+  }
+}

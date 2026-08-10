@@ -396,11 +396,15 @@ import { db } from '../../../../core/firebase';
         inset: 0;
         background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%237c3aed' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
       }
+      @media (max-width: 767px) {
+        height: 150px;
+        &::after { display: none; }
+      }
     }
 
     .profile-header {
       display: flex; flex-direction: column; gap: 1.25rem; margin-top: -48px; position: relative;
-      @media (min-width: 640px) { flex-direction: row; align-items: flex-end; gap: 1.5rem; }
+      @media (min-width: 768px) { flex-direction: row; align-items: flex-end; gap: 1.5rem; }
     }
 
     .profile-avatar {
@@ -418,14 +422,19 @@ import { db } from '../../../../core/firebase';
     .profile-bio { font-size: 0.875rem; color: #94a3b8; margin: 0.5rem 0; }
 
     .profile-stats {
-      display: flex; gap: 1rem; margin-top: 0.75rem; flex-wrap: wrap;
-      @media (min-width: 640px) { gap: 2rem; }
+      display: flex; gap: 1.5rem; margin-top: 0.75rem; flex-wrap: wrap;
+      @media (min-width: 768px) { gap: 2rem; }
       .stat { display: flex; flex-direction: column; align-items: center; gap: 0.125rem; }
       .stat-value { font-size: 1.25rem; font-weight: 700; color: #f1f5f9; }
       .stat-label { font-size: 0.75rem; color: #64748b; }
     }
 
-    .profile-actions { flex-shrink: 0; }
+    .profile-actions {
+      flex-shrink: 0;
+      @media (max-width: 767px) {
+        button { height: 44px; }
+      }
+    }
 
     .profile-tabs {
       display: flex; gap: 0.5rem; overflow-x: auto;
@@ -442,6 +451,7 @@ import { db } from '../../../../core/firebase';
       mat-icon { font-size: 1rem; width: 1rem; height: 1rem; }
       &:hover { color: #94a3b8; }
       &.active { color: #a78bfa; border-bottom-color: #7c3aed; }
+      @media (max-width: 767px) { padding: 0.5rem 0.75rem; font-size: 0.8125rem; }
     }
 
     .empty-state {
@@ -478,18 +488,21 @@ import { db } from '../../../../core/firebase';
       grid-template-columns: 1fr;
       @media (min-width: 640px) { grid-template-columns: repeat(2, 1fr); }
       @media (min-width: 1024px) { grid-template-columns: repeat(3, 1fr); }
+      @media (max-width: 767px) { grid-template-columns: 1fr; gap: 0.625rem; }
     }
 
     .wl-card {
       display: flex; align-items: center; gap: 1rem; padding: 1rem;
       text-decoration: none; cursor: pointer;
       &:hover { border-color: rgba(124,58,237,0.3) !important; }
+      @media (max-width: 767px) { padding: 0.75rem 0.875rem; gap: 0.75rem; }
     }
 
     .wl-icon {
       width: 44px; height: 44px; border-radius: 10px; background: rgba(124,58,237,0.2);
       display: flex; align-items: center; justify-content: center; flex-shrink: 0;
       mat-icon { color: #a78bfa; }
+      @media (max-width: 767px) { width: 40px; height: 40px; }
     }
 
     .wl-name { font-size: 0.9375rem; font-weight: 600; color: #f1f5f9; margin: 0; }
@@ -504,6 +517,7 @@ import { db } from '../../../../core/firebase';
       width: 100%; border: none; cursor: pointer; text-align: left;
       transition: border-color 0.15s;
       &:hover { border-color: rgba(124,58,237,0.3) !important; }
+      @media (max-width: 767px) { padding: 0.75rem 0.875rem; gap: 0.75rem; }
     }
 
     .wl-chevron {

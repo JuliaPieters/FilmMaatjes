@@ -89,17 +89,19 @@
       <div class="results-grid">
         @for (result of results(); track result.type) {
           <div class="result-card glass-card">
-            <div class="result-badge" [style.background]="getMatchColor(result.type) + '22'" [style.color]="getMatchColor(result.type)">
-              <mat-icon>{{ result.icon }}</mat-icon>
-              {{ result.label }}
-            </div>
-
-            <div class="match-score-row">
-              <div class="match-score" [style.color]="getMatchColor(result.type)">
-                {{ result.matchScore }}% Match
+            <div class="badge-score-row">
+              <div class="result-badge" [style.background]="getMatchColor(result.type) + '22'" [style.color]="getMatchColor(result.type)">
+                <mat-icon>{{ result.icon }}</mat-icon>
+                {{ result.label }}
               </div>
-              <div class="match-confidence" [style.color]="getConfidenceColor(result.confidence)">
-                {{ getConfidenceLabel(result.confidence) }}
+
+              <div class="match-score-row">
+                <div class="match-score" [style.color]="getMatchColor(result.type)">
+                  {{ result.matchScore }}% Match
+                </div>
+                <div class="match-confidence" [style.color]="getConfidenceColor(result.confidence)">
+                  {{ getConfidenceLabel(result.confidence) }}
+                </div>
               </div>
             </div>
 

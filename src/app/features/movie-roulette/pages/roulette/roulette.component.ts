@@ -3,6 +3,7 @@ import { RouterLink } from '@angular/router';
 import { MatIcon } from '@angular/material/icon';
 import { MatButton } from '@angular/material/button';
 import { MatSlider, MatSliderThumb } from '@angular/material/slider';
+import { MatBottomSheet } from '@angular/material/bottom-sheet';
 import { FormsModule } from '@angular/forms';
 import { DecimalPipe } from '@angular/common';
 import { MovieService } from '../../../movies/services/movie.service';
@@ -12,6 +13,7 @@ import { UserLibraryService } from '../../../../core/services/user-library.servi
 import { NotificationService } from '../../../../core/services/notification.service';
 import { TmdbMovie } from '../../../../core/models/movie.model';
 import { Watchlist } from '../../../../core/models/watchlist.model';
+import { RouletteFilterSheetComponent, RouletteFilterSheetData } from './roulette-filter-sheet.component';
 
 type RouletteMode = 'random' | 'watchlists' | 'recommended';
 
@@ -36,6 +38,7 @@ export class RouletteComponent implements OnInit {
   private readonly friendsService = inject(FriendsService);
   private readonly libraryService = inject(UserLibraryService);
   private readonly notifications = inject(NotificationService);
+  private readonly bottomSheet = inject(MatBottomSheet);
 
   protected readonly spinning = signal(false);
   protected readonly result = signal<TmdbMovie | null>(null);
@@ -314,6 +317,39 @@ export class RouletteComponent implements OnInit {
     this.minRating.set(0);
     this.yearFrom.set(null);
     this.yearTo.set(null);
+  }
+
+  // Mobile filter summary + bottom sheet
+  protected readonly filtersSummary = computed(() => {
+    const parts: string[] = [];
+    const genreNames = this.selectedGenreIds()
+      .map(id => this.genres.find(g => g.id === id)?.name)
+      .filter((name): name is string => !!name);
+    if (genreNames.length > 0) {
+      parts.push(genreNames.length > 2
+        ? `${genreNames.slice(0, 2).join(', ')} +${genreNames.length - 2}`
+        : genreNames.join(', '));
+    }
+    const decade = this.decadeOptions.find(d => (d.from ?? null) === this.yearFrom());
+    if (decade?.from) parts.push(decade.label);
+    if (this.minRating() > 0) parts.push(`vanaf ${this.minRating()}/10`);
+    return parts.length > 0 ? parts.join(' · ') : 'Geen filters actief';
+  });
+
+  protected openFilterSheet(): void {
+    const data: RouletteFilterSheetData = {
+      genres: this.genres,
+      decadeOptions: this.decadeOptions,
+      selectedGenreIds: () => this.selectedGenreIds(),
+      minRating: () => this.minRating(),
+      yearFrom: () => this.yearFrom(),
+      isGenreSelected: (genreId: number) => this.isGenreSelected(genreId),
+      toggleGenre: (genreId: number) => this.toggleGenre(genreId),
+      setDecade: (option: { from?: number; to?: number }) => this.setDecade(option),
+      setMinRating: (value: number) => this.minRating.set(value),
+      clearFilters: () => this.clearFilters(),
+    };
+    this.bottomSheet.open(RouletteFilterSheetComponent, { data });
   }
 
   protected spinAgain(): void {

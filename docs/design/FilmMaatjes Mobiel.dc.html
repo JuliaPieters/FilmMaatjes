@@ -1,0 +1,1062 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,400,0..1,0">
+<script src="./image-slot.js"></script>
+<style>
+  body { margin: 0; background: #0a0a0e; }
+  a { color: #a78bfa; text-decoration: none; }
+  a:hover { color: #c4b5fd; }
+  .ms { font-family: 'Material Symbols Outlined'; font-weight: normal; font-style: normal; line-height: 1; letter-spacing: normal; text-transform: none; display: inline-block; white-space: nowrap; direction: ltr; -webkit-font-feature-settings: 'liga'; -webkit-font-smoothing: antialiased; }
+  .msf { font-variation-settings: 'FILL' 1; }
+  .noscroll::-webkit-scrollbar { display: none; }
+  div::-webkit-scrollbar { width: 0; height: 0; }
+</style>
+</helmet>
+
+<section style="font-family: Inter, system-ui, sans-serif; background: #0a0a0e; color: #f1f5f9; padding: 48px 56px 88px; display: flex; flex-direction: column; gap: 28px; align-items: flex-start; box-sizing: border-box">
+
+  <div style="display: flex; flex-direction: column; gap: 10px; max-width: 720px">
+    <div style="font-size: 12px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: #7c3aed">Mobiel · 402 × 874 · alle pagina's</div>
+    <h2 style="font-size: 34px; font-weight: 800; letter-spacing: -0.03em; line-height: 1.15; margin: 0">FilmMaatjes op mobiel</h2>
+    <p style="font-size: 15px; line-height: 1.65; color: #94a3b8; margin: 0; text-wrap: pretty">Dezelfde pagina's als op laptop, maar met een onderbalk in plaats van het hamburgermenu, één kolom, 44px raakvlakken en filters in een sheet. Kies links een pagina.</p>
+  </div>
+
+  <div style="display: flex; gap: 32px; align-items: flex-start">
+
+    <div style="width: 232px; flex: 0 0 auto; display: flex; flex-direction: column; gap: 6px; position: sticky; top: 32px">
+      <div style="font-size: 11px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: #475569; padding: 0 12px 8px">Pagina's</div>
+      <sc-for list="{{ pages }}" as="p" hint-placeholder-count="15">
+        <div onClick="{{ p.select }}" style="display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 10px; cursor: pointer; font-size: 14px; font-weight: 500; color: {{ p.color }}; background: {{ p.background }}">
+          <span class="ms" style="font-size: 18px">{{ p.icon }}</span>
+          <span style="flex: 1">{{ p.label }}</span>
+          <span style="font-size: 11px; color: #475569">{{ p.route }}</span>
+        </div>
+      </sc-for>
+    </div>
+
+    <x-import component-from-global-scope="IOSDevice" from="./ios-frame.jsx" dark="{{ true }}" hint-size="402px,874px">
+      <div style="background: #0f0f13; min-height: 100%; display: flex; flex-direction: column; font-family: Inter, system-ui, sans-serif; color: #f1f5f9">
+
+        <sc-if value="{{ showHeader }}" hint-placeholder-val="{{ true }}">
+          <div style="position: sticky; top: 0; z-index: 20; background: rgba(15,15,19,0.92); backdrop-filter: blur(12px); border-bottom: 1px solid rgba(255,255,255,0.06); padding: 58px 16px 12px; display: flex; align-items: center; justify-content: space-between; gap: 10px">
+            <div style="display: flex; align-items: center; gap: 10px; min-width: 0">
+              <sc-if value="{{ showBack }}" hint-placeholder-val="{{ false }}">
+                <div onClick="{{ goBack }}" style="width: 40px; height: 40px; margin-left: -8px; border-radius: 999px; display: grid; place-items: center; cursor: pointer; flex: 0 0 auto"><span class="ms" style="font-size: 22px">arrow_back</span></div>
+              </sc-if>
+              <sc-if value="{{ showBrand }}" hint-placeholder-val="{{ true }}">
+                <div onClick="{{ goLanding }}" style="display: flex; align-items: center; gap: 8px; cursor: pointer">
+                  <img src="public/favicon.svg" alt="FilmMaatjes" style="width: 30px; height: 30px; display: block; border-radius: 7px">
+                  <span style="font-size: 17px; font-weight: 700; letter-spacing: -0.02em">FilmMaatjes</span>
+                </div>
+              </sc-if>
+              <sc-if value="{{ showPageTitle }}" hint-placeholder-val="{{ false }}">
+                <span style="font-size: 19px; font-weight: 700; letter-spacing: -0.025em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">{{ pageTitle }}</span>
+              </sc-if>
+            </div>
+            <div style="display: flex; align-items: center; gap: 2px; flex: 0 0 auto">
+              <div onClick="{{ goSearch }}" style="width: 44px; height: 44px; border-radius: 999px; display: grid; place-items: center; cursor: pointer"><span class="ms" style="font-size: 22px">search</span></div>
+              <div onClick="{{ toggleNotifications }}" style="position: relative; width: 44px; height: 44px; border-radius: 999px; display: grid; place-items: center; cursor: pointer">
+                <span class="ms" style="font-size: 22px">notifications</span>
+                <span style="position: absolute; top: 8px; right: 8px; min-width: 16px; height: 16px; border-radius: 999px; background: #f59e0b; color: #0f0f13; font-size: 10px; font-weight: 700; display: grid; place-items: center; padding: 0 4px">3</span>
+              </div>
+              <div onClick="{{ goProfile }}" style="width: 32px; height: 32px; margin-left: 4px; border-radius: 999px; background: linear-gradient(135deg, #7c3aed, #a78bfa); display: grid; place-items: center; font-size: 14px; font-weight: 600; color: #fff; cursor: pointer">J</div>
+            </div>
+          </div>
+          <sc-if value="{{ notificationsOpen }}" hint-placeholder-val="{{ false }}">
+            <div style="margin: 8px 16px 0; border-radius: 12px; background: #1a1a24; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 8px 32px rgba(0,0,0,0.5); overflow: hidden">
+              <div style="padding: 12px 16px 10px; font-size: 14px; font-weight: 600; border-bottom: 1px solid rgba(255,255,255,0.06)">Vriendenactiviteit</div>
+              <div onClick="{{ goDetail }}" style="display: flex; align-items: flex-start; gap: 10px; padding: 10px 16px; cursor: pointer">
+                <div style="width: 28px; height: 28px; border-radius: 999px; background: linear-gradient(135deg, #7c3aed, #a78bfa); display: grid; place-items: center; font-size: 12px; font-weight: 600; color: #fff; flex: 0 0 auto; margin-top: 2px">S</div>
+                <div><div style="font-size: 13px; line-height: 1.35; color: #e2e8f0"><span style="font-weight: 700">Sanne de Vries</span> heeft een review geplaatst bij <span style="font-weight: 700">Anatomy of a Fall</span></div><div style="font-size: 11px; color: #94a3b8; margin-top: 2px">Vandaag, 21:14</div></div>
+              </div>
+              <div style="display: flex; align-items: flex-start; gap: 10px; padding: 10px 16px 14px">
+                <div style="width: 28px; height: 28px; border-radius: 999px; background: linear-gradient(135deg, #7c3aed, #a78bfa); display: grid; place-items: center; font-size: 12px; font-weight: 600; color: #fff; flex: 0 0 auto; margin-top: 2px">J</div>
+                <div><div style="font-size: 13px; line-height: 1.35; color: #e2e8f0"><span style="font-weight: 700">Joris Bakker</span> heeft <span style="font-weight: 700">Past Lives</span> beoordeeld met 4 sterren</div><div style="font-size: 11px; color: #94a3b8; margin-top: 2px">Vandaag, 19:02</div></div>
+              </div>
+            </div>
+          </sc-if>
+        </sc-if>
+
+        <sc-if value="{{ isLanding }}" hint-placeholder-val="{{ true }}">
+          <div>
+            <div style="padding: 40px 20px 32px; display: flex; flex-direction: column; align-items: center; gap: 18px; text-align: center; background: radial-gradient(500px 300px at 50% 0%, rgba(124,58,237,0.28) 0%, rgba(15,15,19,0) 72%)">
+              <div style="display: inline-flex; align-items: center; gap: 8px; height: 32px; padding: 0 14px; border-radius: 999px; background: rgba(124,58,237,0.15); border: 1px solid rgba(124,58,237,0.3); color: #c4b5fd; font-size: 12px; font-weight: 500"><span class="ms msf" style="font-size: 15px">auto_awesome</span>Jouw filmwereld begint hier</div>
+              <h1 style="font-size: 38px; font-weight: 900; line-height: 1.08; letter-spacing: -0.035em; margin: 0">Ontdek films.<br><span style="background: linear-gradient(135deg, #a78bfa 0%, #7c3aed 55%, #5b21b6 100%); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent">Deel verhalen.</span><br>Vind jouw favoriet.</h1>
+              <p style="font-size: 16px; line-height: 1.6; color: #94a3b8; margin: 0">Het sociale filmplatform voor filmliefhebbers. Beoordeel films, maak watchlists en ontdek nieuwe favorieten met vrienden.</p>
+              <div style="width: 100%; display: flex; flex-direction: column; gap: 10px; margin-top: 4px">
+                <div onClick="{{ goRegister }}" style="height: 52px; border-radius: 999px; background: #7c3aed; color: #fff; font-size: 16px; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer; box-shadow: 0 0 40px rgba(124,58,237,0.3)"><span class="ms" style="font-size: 20px">person_add</span>Gratis aanmelden</div>
+                <div onClick="{{ goMovies }}" style="height: 52px; border-radius: 999px; border: 1px solid rgba(255,255,255,0.2); font-size: 16px; display: flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer"><span class="ms" style="font-size: 20px">explore</span>Films ontdekken</div>
+              </div>
+              <p style="font-size: 12px; color: #475569; margin: 0">Helemaal gratis &bull; Geen creditcard nodig</p>
+            </div>
+            <div class="noscroll" style="display: flex; gap: 10px; padding: 0 20px 32px; overflow-x: auto">
+              <div style="width: 108px; height: 162px; flex: 0 0 auto; border-radius: 10px; overflow: hidden; background: #16162a"><image-slot id="m-strip-1" shape="rounded" radius="10" placeholder="Poster"></image-slot></div>
+              <div style="width: 108px; height: 162px; flex: 0 0 auto; border-radius: 10px; overflow: hidden; background: #16162a"><image-slot id="m-strip-2" shape="rounded" radius="10" placeholder="Poster"></image-slot></div>
+              <div style="width: 108px; height: 162px; flex: 0 0 auto; border-radius: 10px; overflow: hidden; background: #16162a"><image-slot id="m-strip-3" shape="rounded" radius="10" placeholder="Poster"></image-slot></div>
+              <div style="width: 108px; height: 162px; flex: 0 0 auto; border-radius: 10px; overflow: hidden; background: #16162a"><image-slot id="m-strip-4" shape="rounded" radius="10" placeholder="Poster"></image-slot></div>
+            </div>
+            <div style="padding: 8px 20px 40px; display: flex; flex-direction: column; gap: 20px">
+              <div style="display: flex; flex-direction: column; gap: 8px">
+                <h2 style="font-size: 26px; font-weight: 700; letter-spacing: -0.03em; margin: 0">Alles wat je nodig hebt als filmliefhebber</h2>
+                <p style="font-size: 15px; color: #94a3b8; margin: 0">Van beoordelingen tot watchlists en de unieke Film Roulette.</p>
+              </div>
+              <div style="display: flex; flex-direction: column; gap: 12px">
+                <div style="padding: 20px; border-radius: 12px; background: rgba(26,26,36,0.8); border: 1px solid rgba(255,255,255,0.06); display: flex; gap: 14px">
+                  <div style="width: 44px; height: 44px; flex: 0 0 auto; border-radius: 11px; background: rgba(245,158,11,0.13); border: 1px solid rgba(245,158,11,0.19); display: grid; place-items: center"><span class="ms msf" style="font-size: 22px; color: #f59e0b">star</span></div>
+                  <div><div style="font-size: 16px; font-weight: 600">Beoordeel films</div><div style="font-size: 14px; line-height: 1.55; color: #94a3b8; margin-top: 4px">Geef je mening met 1 tot 5 sterren en schrijf uitgebreide reviews.</div></div>
+                </div>
+                <div style="padding: 20px; border-radius: 12px; background: rgba(26,26,36,0.8); border: 1px solid rgba(255,255,255,0.06); display: flex; gap: 14px">
+                  <div style="width: 44px; height: 44px; flex: 0 0 auto; border-radius: 11px; background: rgba(124,58,237,0.13); border: 1px solid rgba(124,58,237,0.19); display: grid; place-items: center"><span class="ms msf" style="font-size: 22px; color: #7c3aed">bookmark</span></div>
+                  <div><div style="font-size: 16px; font-weight: 600">Watchlists</div><div style="font-size: 14px; line-height: 1.55; color: #94a3b8; margin-top: 4px">Maak lijsten voor films die je wilt kijken of al hebt gezien.</div></div>
+                </div>
+                <div style="padding: 20px; border-radius: 12px; background: rgba(26,26,36,0.8); border: 1px solid rgba(255,255,255,0.06); display: flex; gap: 14px">
+                  <div style="width: 44px; height: 44px; flex: 0 0 auto; border-radius: 11px; background: rgba(6,182,212,0.13); border: 1px solid rgba(6,182,212,0.19); display: grid; place-items: center"><span class="ms msf" style="font-size: 22px; color: #06b6d4">people</span></div>
+                  <div><div style="font-size: 16px; font-weight: 600">Vrienden</div><div style="font-size: 14px; line-height: 1.55; color: #94a3b8; margin-top: 4px">Volg vrienden, bekijk hun beoordelingen en ontdek films samen.</div></div>
+                </div>
+                <div style="padding: 20px; border-radius: 12px; background: rgba(26,26,36,0.8); border: 1px solid rgba(255,255,255,0.06); display: flex; gap: 14px">
+                  <div style="width: 44px; height: 44px; flex: 0 0 auto; border-radius: 11px; background: rgba(236,72,153,0.13); border: 1px solid rgba(236,72,153,0.19); display: grid; place-items: center"><span class="ms msf" style="font-size: 22px; color: #ec4899">casino</span></div>
+                  <div><div style="font-size: 16px; font-weight: 600">Film Roulette</div><div style="font-size: 14px; line-height: 1.55; color: #94a3b8; margin-top: 4px">Geen idee wat je wilt kijken? Laat ons kiezen.</div></div>
+                </div>
+              </div>
+            </div>
+            <div style="padding: 0 20px 40px; display: flex; flex-direction: column; gap: 16px">
+              <div style="display: flex; align-items: center; justify-content: space-between">
+                <h2 style="font-size: 20px; font-weight: 700; letter-spacing: -0.025em; margin: 0">Trending deze week</h2>
+                <div onClick="{{ goMovies }}" style="font-size: 14px; color: #a78bfa; cursor: pointer">Alle films →</div>
+              </div>
+              <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px">
+                <div onClick="{{ goDetail }}" style="cursor: pointer; display: flex; flex-direction: column; gap: 8px">
+                  <div style="width: 100%; aspect-ratio: 2/3; border-radius: 12px; overflow: hidden; background: #16162a"><image-slot id="m-lt-1" shape="rounded" radius="12" placeholder="Poster"></image-slot></div>
+                  <div><div style="font-size: 14px; font-weight: 500">Anatomy of a Fall</div><div style="font-size: 12px; color: #475569">2023</div></div>
+                </div>
+                <div style="display: flex; flex-direction: column; gap: 8px">
+                  <div style="width: 100%; aspect-ratio: 2/3; border-radius: 12px; overflow: hidden; background: #16162a"><image-slot id="m-lt-2" shape="rounded" radius="12" placeholder="Poster"></image-slot></div>
+                  <div><div style="font-size: 14px; font-weight: 500">Past Lives</div><div style="font-size: 12px; color: #475569">2023</div></div>
+                </div>
+              </div>
+            </div>
+            <div style="padding: 0 20px 40px">
+              <div style="border-radius: 16px; padding: 32px 24px; background: linear-gradient(135deg, rgba(124,58,237,0.22) 0%, rgba(26,26,36,0.9) 65%); border: 1px solid rgba(124,58,237,0.25); display: flex; flex-direction: column; align-items: center; gap: 14px; text-align: center">
+                <div style="width: 52px; height: 52px; border-radius: 14px; background: rgba(124,58,237,0.25); display: grid; place-items: center"><span class="ms msf" style="font-size: 26px; color: #c4b5fd">local_movies</span></div>
+                <h2 style="font-size: 24px; font-weight: 700; letter-spacing: -0.03em; margin: 0">Klaar om te beginnen?</h2>
+                <p style="font-size: 15px; color: #94a3b8; margin: 0">Sluit je aan bij duizenden filmliefhebbers.</p>
+                <div onClick="{{ goRegister }}" style="width: 100%; height: 48px; border-radius: 999px; background: #7c3aed; color: #fff; font-size: 15px; font-weight: 600; display: grid; place-items: center; cursor: pointer; margin-top: 4px">Maak een gratis account aan</div>
+              </div>
+            </div>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ isDashboard }}" hint-placeholder-val="{{ false }}">
+          <div style="padding: 20px 20px 28px; display: flex; flex-direction: column; gap: 26px">
+            <div style="display: flex; flex-direction: column; gap: 4px">
+              <h1 style="font-size: 28px; font-weight: 800; letter-spacing: -0.03em; margin: 0">Hoi, <span style="background: linear-gradient(135deg, #a78bfa 0%, #7c3aed 100%); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent">Julia</span>!</h1>
+              <p style="font-size: 15px; color: #94a3b8; margin: 0">Wat ga je vandaag kijken?</p>
+            </div>
+            <div class="noscroll" style="display: flex; gap: 8px; overflow-x: auto; margin: 0 -20px; padding: 0 20px">
+              <div onClick="{{ goRoulette }}" style="flex: 0 0 auto; height: 44px; padding: 0 16px; border-radius: 999px; background: #7c3aed; color: #fff; font-size: 14px; font-weight: 600; display: flex; align-items: center; gap: 8px; cursor: pointer"><span class="ms" style="font-size: 18px">casino</span>Film Roulette</div>
+              <div onClick="{{ goSearch }}" style="flex: 0 0 auto; height: 44px; padding: 0 16px; border-radius: 999px; border: 1px solid rgba(255,255,255,0.2); font-size: 14px; display: flex; align-items: center; gap: 8px; cursor: pointer"><span class="ms" style="font-size: 18px">search</span>Zoeken</div>
+              <div onClick="{{ goMatcher }}" style="flex: 0 0 auto; height: 44px; padding: 0 16px; border-radius: 999px; border: 1px solid rgba(255,255,255,0.2); font-size: 14px; display: flex; align-items: center; gap: 8px; cursor: pointer"><span class="ms" style="font-size: 18px">people</span>Film Matcher</div>
+            </div>
+            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px">
+              <div onClick="{{ goWatchlists }}" style="display: flex; align-items: center; gap: 12px; padding: 16px; border-radius: 12px; background: rgba(26,26,36,0.8); border: 1px solid rgba(255,255,255,0.06); cursor: pointer">
+                <span class="ms msf" style="font-size: 26px; color: #7c3aed">bookmark</span>
+                <div><div style="font-size: 22px; font-weight: 700">3</div><div style="font-size: 12px; color: #64748b">Watchlists</div></div>
+              </div>
+              <div onClick="{{ goProfile }}" style="display: flex; align-items: center; gap: 12px; padding: 16px; border-radius: 12px; background: rgba(26,26,36,0.8); border: 1px solid rgba(255,255,255,0.06); cursor: pointer">
+                <span class="ms msf" style="font-size: 26px; color: #06b6d4">check_circle</span>
+                <div><div style="font-size: 22px; font-weight: 700">248</div><div style="font-size: 12px; color: #64748b">Gezien</div></div>
+              </div>
+              <div onClick="{{ goFriends }}" style="display: flex; align-items: center; gap: 12px; padding: 16px; border-radius: 12px; background: rgba(26,26,36,0.8); border: 1px solid rgba(255,255,255,0.06); cursor: pointer">
+                <span class="ms msf" style="font-size: 26px; color: #ec4899">people</span>
+                <div><div style="font-size: 22px; font-weight: 700">12</div><div style="font-size: 12px; color: #64748b">Vrienden</div></div>
+              </div>
+              <div onClick="{{ goProfile }}" style="display: flex; align-items: center; gap: 12px; padding: 16px; border-radius: 12px; background: rgba(26,26,36,0.8); border: 1px solid rgba(255,255,255,0.06); cursor: pointer">
+                <span class="ms msf" style="font-size: 26px; color: #f59e0b">star</span>
+                <div><div style="font-size: 22px; font-weight: 700">31</div><div style="font-size: 12px; color: #64748b">Beoordeeld</div></div>
+              </div>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 14px">
+              <div style="display: flex; align-items: flex-end; justify-content: space-between">
+                <div><h2 style="font-size: 19px; font-weight: 700; letter-spacing: -0.025em; margin: 0">Aanbevolen voor jou</h2><p style="font-size: 12px; color: #64748b; margin: 3px 0 0">Op basis van jouw beoordelingen</p></div>
+                <div onClick="{{ goRecommendations }}" style="font-size: 13px; color: #a78bfa; cursor: pointer">Alles zien</div>
+              </div>
+              <div class="noscroll" style="display: flex; gap: 12px; overflow-x: auto; margin: 0 -20px; padding: 0 20px 4px">
+                <div onClick="{{ goDetail }}" style="flex: 0 0 132px; cursor: pointer; display: flex; flex-direction: column; gap: 8px">
+                  <div style="width: 132px; height: 198px; border-radius: 12px; overflow: hidden; background: #16162a"><image-slot id="m-db-1" shape="rounded" radius="12" placeholder="Poster"></image-slot></div>
+                  <div><div style="font-size: 13px; font-weight: 500">Anatomy of a Fall</div><div style="font-size: 12px; color: #475569">2023</div></div>
+                </div>
+                <div style="flex: 0 0 132px; display: flex; flex-direction: column; gap: 8px">
+                  <div style="width: 132px; height: 198px; border-radius: 12px; overflow: hidden; background: #16162a"><image-slot id="m-db-2" shape="rounded" radius="12" placeholder="Poster"></image-slot></div>
+                  <div><div style="font-size: 13px; font-weight: 500">Aftersun</div><div style="font-size: 12px; color: #475569">2022</div></div>
+                </div>
+                <div style="flex: 0 0 132px; display: flex; flex-direction: column; gap: 8px">
+                  <div style="width: 132px; height: 198px; border-radius: 12px; overflow: hidden; background: #16162a"><image-slot id="m-db-3" shape="rounded" radius="12" placeholder="Poster"></image-slot></div>
+                  <div><div style="font-size: 13px; font-weight: 500">Perfect Days</div><div style="font-size: 12px; color: #475569">2023</div></div>
+                </div>
+                <div style="flex: 0 0 132px; display: flex; flex-direction: column; gap: 8px">
+                  <div style="width: 132px; height: 198px; border-radius: 12px; overflow: hidden; background: #16162a"><image-slot id="m-db-4" shape="rounded" radius="12" placeholder="Poster"></image-slot></div>
+                  <div><div style="font-size: 13px; font-weight: 500">Close</div><div style="font-size: 12px; color: #475569">2022</div></div>
+                </div>
+              </div>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 14px">
+              <div style="display: flex; align-items: center; justify-content: space-between">
+                <h2 style="font-size: 19px; font-weight: 700; letter-spacing: -0.025em; margin: 0">Trending deze week</h2>
+                <div onClick="{{ goMovies }}" style="font-size: 13px; color: #a78bfa; cursor: pointer">Alles</div>
+              </div>
+              <div class="noscroll" style="display: flex; gap: 12px; overflow-x: auto; margin: 0 -20px; padding: 0 20px 4px">
+                <div style="flex: 0 0 132px; display: flex; flex-direction: column; gap: 8px">
+                  <div style="width: 132px; height: 198px; border-radius: 12px; overflow: hidden; background: #16162a"><image-slot id="m-db-5" shape="rounded" radius="12" placeholder="Poster"></image-slot></div>
+                  <div><div style="font-size: 13px; font-weight: 500">Oppenheimer</div><div style="font-size: 12px; color: #475569">2023</div></div>
+                </div>
+                <div style="flex: 0 0 132px; display: flex; flex-direction: column; gap: 8px">
+                  <div style="width: 132px; height: 198px; border-radius: 12px; overflow: hidden; background: #16162a"><image-slot id="m-db-6" shape="rounded" radius="12" placeholder="Poster"></image-slot></div>
+                  <div><div style="font-size: 13px; font-weight: 500">Past Lives</div><div style="font-size: 12px; color: #475569">2023</div></div>
+                </div>
+                <div style="flex: 0 0 132px; display: flex; flex-direction: column; gap: 8px">
+                  <div style="width: 132px; height: 198px; border-radius: 12px; overflow: hidden; background: #16162a"><image-slot id="m-db-7" shape="rounded" radius="12" placeholder="Poster"></image-slot></div>
+                  <div><div style="font-size: 13px; font-weight: 500">The Zone of Interest</div><div style="font-size: 12px; color: #475569">2023</div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ isMovies }}" hint-placeholder-val="{{ false }}">
+          <div style="display: flex; flex-direction: column">
+            <div style="padding: 18px 20px 10px; display: flex; flex-direction: column; gap: 14px">
+              <div style="display: flex; align-items: flex-end; justify-content: space-between">
+                <h1 style="font-size: 28px; font-weight: 700; letter-spacing: -0.025em; margin: 0">Films</h1>
+                <div style="display: flex; align-items: center; gap: 6px; height: 34px; padding: 0 12px; border-radius: 999px; border: 1px solid rgba(255,255,255,0.14); font-size: 13px; color: #94a3b8">Populair<span class="ms" style="font-size: 14px">expand_more</span></div>
+              </div>
+              <div class="noscroll" style="display: flex; gap: 8px; overflow-x: auto; margin: 0 -20px; padding: 0 20px 2px">
+                <sc-for list="{{ tabs }}" as="t" hint-placeholder-count="5">
+                  <div onClick="{{ t.select }}" style="flex: 0 0 auto; display: inline-flex; align-items: center; gap: 6px; height: 36px; padding: 0 16px; border-radius: 999px; font-size: 14px; font-weight: 500; white-space: nowrap; cursor: pointer; border: 1px solid {{ t.borderColor }}; background: {{ t.background }}; color: {{ t.color }}">
+                    <span class="ms" style="font-size: 16px">{{ t.icon }}</span>{{ t.label }}
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+            <div style="padding: 8px 20px 24px; display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; align-items: start">
+              <div onClick="{{ goDetail }}" style="cursor: pointer; display: flex; flex-direction: column; gap: 8px">
+                <div style="position: relative; width: 100%; aspect-ratio: 2/3; border-radius: 12px; overflow: hidden; background: #16162a">
+                  <image-slot id="m-mv-1" shape="rounded" radius="12" placeholder="Poster"></image-slot>
+                  <div style="position: absolute; top: 8px; left: 8px; display: flex; align-items: center; gap: 2px; background: rgba(0,0,0,0.7); border-radius: 999px; padding: 2px 8px; pointer-events: none"><span class="ms msf" style="font-size: 12px; color: #f59e0b">star</span><span style="font-size: 12px; font-weight: 500; color: #fff">8.3</span></div>
+                  <div style="position: absolute; top: 8px; right: 8px; width: 32px; height: 32px; border-radius: 999px; background: rgba(0,0,0,0.6); display: grid; place-items: center; color: #fff"><span class="ms" style="font-size: 16px">bookmark_add</span></div>
+                </div>
+                <div><div style="font-size: 14px; font-weight: 500">Anatomy of a Fall</div><div style="font-size: 12px; color: #475569">2023</div></div>
+              </div>
+              <div style="display: flex; flex-direction: column; gap: 8px">
+                <div style="position: relative; width: 100%; aspect-ratio: 2/3; border-radius: 12px; overflow: hidden; background: #16162a">
+                  <image-slot id="m-mv-2" shape="rounded" radius="12" placeholder="Poster"></image-slot>
+                  <div style="position: absolute; top: 8px; left: 8px; display: flex; align-items: center; gap: 2px; background: rgba(0,0,0,0.7); border-radius: 999px; padding: 2px 8px; pointer-events: none"><span class="ms msf" style="font-size: 12px; color: #f59e0b">star</span><span style="font-size: 12px; font-weight: 500; color: #fff">7.9</span></div>
+                  <div style="position: absolute; top: 8px; right: 8px; width: 32px; height: 32px; border-radius: 999px; background: rgba(124,58,237,0.8); display: grid; place-items: center; color: #fff"><span class="ms msf" style="font-size: 16px">bookmark</span></div>
+                </div>
+                <div><div style="font-size: 14px; font-weight: 500">Past Lives</div><div style="font-size: 12px; color: #475569">2023</div></div>
+              </div>
+              <div style="display: flex; flex-direction: column; gap: 8px">
+                <div style="position: relative; width: 100%; aspect-ratio: 2/3; border-radius: 12px; overflow: hidden; background: #16162a">
+                  <image-slot id="m-mv-3" shape="rounded" radius="12" placeholder="Poster"></image-slot>
+                  <div style="position: absolute; top: 8px; left: 8px; display: flex; align-items: center; gap: 2px; background: rgba(0,0,0,0.7); border-radius: 999px; padding: 2px 8px; pointer-events: none"><span class="ms msf" style="font-size: 12px; color: #f59e0b">star</span><span style="font-size: 12px; font-weight: 500; color: #fff">8.1</span></div>
+                  <div style="position: absolute; top: 8px; right: 8px; width: 32px; height: 32px; border-radius: 999px; background: rgba(0,0,0,0.6); display: grid; place-items: center; color: #fff"><span class="ms" style="font-size: 16px">bookmark_add</span></div>
+                </div>
+                <div><div style="font-size: 14px; font-weight: 500">Perfect Days</div><div style="font-size: 12px; color: #475569">2023</div></div>
+              </div>
+              <div style="display: flex; flex-direction: column; gap: 8px">
+                <div style="position: relative; width: 100%; aspect-ratio: 2/3; border-radius: 12px; overflow: hidden; background: #16162a">
+                  <image-slot id="m-mv-4" shape="rounded" radius="12" placeholder="Poster"></image-slot>
+                  <div style="position: absolute; top: 8px; left: 8px; display: flex; align-items: center; gap: 2px; background: rgba(0,0,0,0.7); border-radius: 999px; padding: 2px 8px; pointer-events: none"><span class="ms msf" style="font-size: 12px; color: #f59e0b">star</span><span style="font-size: 12px; font-weight: 500; color: #fff">8.6</span></div>
+                  <div style="position: absolute; top: 8px; right: 8px; width: 32px; height: 32px; border-radius: 999px; background: rgba(0,0,0,0.6); display: grid; place-items: center; color: #fff"><span class="ms" style="font-size: 16px">bookmark_add</span></div>
+                </div>
+                <div><div style="font-size: 14px; font-weight: 500">Oppenheimer</div><div style="font-size: 12px; color: #475569">2023</div></div>
+              </div>
+              <div style="display: flex; flex-direction: column; gap: 8px">
+                <div style="position: relative; width: 100%; aspect-ratio: 2/3; border-radius: 12px; overflow: hidden; background: #16162a">
+                  <image-slot id="m-mv-5" shape="rounded" radius="12" placeholder="Poster"></image-slot>
+                  <div style="position: absolute; top: 8px; left: 8px; display: flex; align-items: center; gap: 2px; background: rgba(0,0,0,0.7); border-radius: 999px; padding: 2px 8px; pointer-events: none"><span class="ms msf" style="font-size: 12px; color: #f59e0b">star</span><span style="font-size: 12px; font-weight: 500; color: #fff">7.4</span></div>
+                </div>
+                <div><div style="font-size: 14px; font-weight: 500">Close</div><div style="font-size: 12px; color: #475569">2022</div></div>
+              </div>
+              <div style="display: flex; flex-direction: column; gap: 8px">
+                <div style="position: relative; width: 100%; aspect-ratio: 2/3; border-radius: 12px; overflow: hidden; background: #16162a">
+                  <image-slot id="m-mv-6" shape="rounded" radius="12" placeholder="Poster"></image-slot>
+                  <div style="position: absolute; top: 8px; right: 8px; width: 32px; height: 32px; border-radius: 999px; background: rgba(74,222,128,0.25); display: grid; place-items: center; color: #4ade80"><span class="ms msf" style="font-size: 16px">check_circle</span></div>
+                </div>
+                <div><div style="font-size: 14px; font-weight: 500">The Zone of Interest</div><div style="font-size: 12px; color: #475569">2023</div></div>
+              </div>
+            </div>
+            <div style="display: flex; justify-content: center; padding: 0 0 24px"><div style="width: 28px; height: 28px; border-radius: 999px; border: 3px solid rgba(124,58,237,0.25); border-top-color: #7c3aed"></div></div>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ isDetail }}" hint-placeholder-val="{{ false }}">
+          <div>
+            <div style="position: relative; height: 400px; flex: 0 0 auto; background: #16162a; margin-top: -114px">
+              <image-slot id="m-dt-backdrop" shape="rect" placeholder="Backdrop"></image-slot>
+              <div style="position: absolute; inset: 0; background: linear-gradient(to bottom, rgba(15,15,19,0.5) 0%, rgba(15,15,19,0.35) 40%, rgba(15,15,19,1) 100%); pointer-events: none"></div>
+              <div onClick="{{ goMovies }}" style="position: absolute; top: 58px; left: 16px; width: 40px; height: 40px; border-radius: 999px; background: rgba(0,0,0,0.5); backdrop-filter: blur(8px); display: grid; place-items: center; cursor: pointer"><span class="ms" style="font-size: 22px">arrow_back</span></div>
+            </div>
+            <div style="margin-top: -120px; position: relative; padding: 0 20px 24px; display: flex; flex-direction: column; gap: 20px">
+              <div style="display: flex; gap: 14px; align-items: flex-end">
+                <div style="width: 116px; flex: 0 0 auto; aspect-ratio: 2/3; border-radius: 12px; overflow: hidden; box-shadow: 0 20px 60px rgba(0,0,0,0.6); background: #16162a"><image-slot id="m-dt-poster" shape="rounded" radius="12" placeholder="Poster"></image-slot></div>
+                <div style="display: flex; flex-direction: column; gap: 8px; padding-bottom: 4px">
+                  <div style="display: flex; flex-wrap: wrap; gap: 6px">
+                    <span style="padding: 3px 10px; border-radius: 100px; font-size: 11px; font-weight: 500; background: rgba(124,58,237,0.2); border: 1px solid rgba(124,58,237,0.3); color: #c4b5fd">Drama</span>
+                    <span style="padding: 3px 10px; border-radius: 100px; font-size: 11px; font-weight: 500; background: rgba(124,58,237,0.2); border: 1px solid rgba(124,58,237,0.3); color: #c4b5fd">Thriller</span>
+                  </div>
+                  <div style="display: flex; align-items: center; gap: 4px"><span class="ms msf" style="font-size: 16px; color: #f59e0b">star</span><span style="font-size: 14px; font-weight: 600">8.3</span><span style="font-size: 12px; color: #475569">(4.212)</span></div>
+                </div>
+              </div>
+              <div style="display: flex; flex-direction: column; gap: 8px">
+                <h1 style="font-size: 28px; font-weight: 800; letter-spacing: -0.03em; line-height: 1.1; margin: 0">Anatomy of a Fall</h1>
+                <p style="font-size: 14px; font-style: italic; color: #94a3b8; margin: 0">"De waarheid heeft meer dan één versie."</p>
+                <div style="display: flex; flex-wrap: wrap; gap: 14px; margin-top: 2px">
+                  <span style="display: flex; align-items: center; gap: 5px; color: #94a3b8; font-size: 13px"><span class="ms" style="font-size: 15px">calendar_today</span>2023</span>
+                  <span style="display: flex; align-items: center; gap: 5px; color: #94a3b8; font-size: 13px"><span class="ms" style="font-size: 15px">schedule</span>2u 32m</span>
+                  <span style="display: flex; align-items: center; gap: 5px; color: #94a3b8; font-size: 13px"><span class="ms" style="font-size: 15px">language</span>Frans</span>
+                </div>
+              </div>
+              <p style="font-size: 14px; line-height: 1.7; color: #cbd5e1; margin: 0">Een schrijfster wordt verdacht van de moord op haar man. Hun blinde zoon is de enige getuige, en de rechtszaal wordt langzaam een ontleding van een huwelijk.</p>
+              <div style="display: flex; gap: 8px">
+                <div style="flex: 1; height: 44px; border-radius: 999px; background: #7c3aed; color: #fff; font-size: 14px; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 6px; cursor: pointer"><span class="ms msf" style="font-size: 18px">play_circle</span>Trailer</div>
+                <div style="width: 44px; height: 44px; border-radius: 999px; border: 1px solid rgba(255,255,255,0.2); display: grid; place-items: center; cursor: pointer"><span class="ms" style="font-size: 18px">bookmark_border</span></div>
+                <div style="width: 44px; height: 44px; border-radius: 999px; border: 1px solid rgba(255,255,255,0.2); display: grid; place-items: center; cursor: pointer"><span class="ms" style="font-size: 18px">radio_button_unchecked</span></div>
+              </div>
+              <div style="padding: 14px 16px; background: rgba(26,26,36,0.6); border: 1px solid rgba(255,255,255,0.06); border-radius: 12px; display: flex; flex-direction: column; gap: 8px">
+                <div style="font-size: 13px; color: #94a3b8">Jouw beoordeling:</div>
+                <div style="display: flex; align-items: center; gap: 2px">
+                  <sc-for list="{{ stars }}" as="s" hint-placeholder-count="5">
+                    <div onClick="{{ s.select }}" style="width: 44px; height: 44px; display: grid; place-items: center; cursor: pointer"><span class="ms {{ s.fillClass }}" style="font-size: 28px; color: {{ s.color }}">{{ s.icon }}</span></div>
+                  </sc-for>
+                </div>
+                <div style="font-size: 13px; font-weight: 500; color: #94a3b8">{{ ratingText }}</div>
+              </div>
+              <div style="display: flex; flex-direction: column; gap: 14px">
+                <div style="display: flex; align-items: center; justify-content: space-between">
+                  <h2 style="font-size: 20px; font-weight: 700; letter-spacing: -0.025em; margin: 0">Cast</h2>
+                </div>
+                <div class="noscroll" style="display: flex; gap: 12px; overflow-x: auto; margin: 0 -20px; padding: 0 20px 4px">
+                  <div style="flex: 0 0 96px; display: flex; flex-direction: column; gap: 8px; text-align: center">
+                    <div style="width: 96px; height: 144px; border-radius: 8px; overflow: hidden; background: #1a1a24"><image-slot id="m-cast-1" shape="rounded" radius="8" placeholder="Foto"></image-slot></div>
+                    <div><div style="font-size: 13px; font-weight: 600">Sandra Hüller</div><div style="font-size: 12px; color: #64748b">Sandra Voyter</div></div>
+                  </div>
+                  <div style="flex: 0 0 96px; display: flex; flex-direction: column; gap: 8px; text-align: center">
+                    <div style="width: 96px; height: 144px; border-radius: 8px; overflow: hidden; background: #1a1a24"><image-slot id="m-cast-2" shape="rounded" radius="8" placeholder="Foto"></image-slot></div>
+                    <div><div style="font-size: 13px; font-weight: 600">Swann Arlaud</div><div style="font-size: 12px; color: #64748b">Vincent Renzi</div></div>
+                  </div>
+                  <div style="flex: 0 0 96px; display: flex; flex-direction: column; gap: 8px; text-align: center">
+                    <div style="width: 96px; height: 144px; border-radius: 8px; overflow: hidden; background: #1a1a24"><image-slot id="m-cast-3" shape="rounded" radius="8" placeholder="Foto"></image-slot></div>
+                    <div><div style="font-size: 13px; font-weight: 600">Milo M.-Graner</div><div style="font-size: 12px; color: #64748b">Daniel</div></div>
+                  </div>
+                  <div style="flex: 0 0 96px; display: flex; flex-direction: column; gap: 8px; text-align: center">
+                    <div style="width: 96px; height: 144px; border-radius: 8px; overflow: hidden; background: #1a1a24"><image-slot id="m-cast-4" shape="rounded" radius="8" placeholder="Foto"></image-slot></div>
+                    <div><div style="font-size: 13px; font-weight: 600">Antoine Reinartz</div><div style="font-size: 12px; color: #64748b">Aanklager</div></div>
+                  </div>
+                </div>
+              </div>
+              <div style="display: flex; flex-direction: column; gap: 14px">
+                <div style="display: flex; align-items: center; justify-content: space-between">
+                  <h2 style="font-size: 20px; font-weight: 700; letter-spacing: -0.025em; margin: 0">Reviews</h2>
+                  <div onClick="{{ toggleReview }}" style="height: 36px; padding: 0 14px; border-radius: 999px; border: 1px solid rgba(255,255,255,0.2); font-size: 13px; display: flex; align-items: center; gap: 6px; cursor: pointer"><span class="ms" style="font-size: 16px">rate_review</span>{{ reviewButtonLabel }}</div>
+                </div>
+                <sc-if value="{{ reviewOpen }}" hint-placeholder-val="{{ false }}">
+                  <div style="padding: 16px; border-radius: 12px; background: rgba(26,26,36,0.8); border: 1px solid rgba(124,58,237,0.3); display: flex; flex-direction: column; gap: 12px">
+                    <div style="font-size: 15px; font-weight: 600">Review schrijven</div>
+                    <div style="display: flex; gap: 2px">
+                      <sc-for list="{{ stars }}" as="s" hint-placeholder-count="5">
+                        <div onClick="{{ s.select }}" style="width: 40px; height: 40px; display: grid; place-items: center; cursor: pointer"><span class="ms {{ s.fillClass }}" style="font-size: 24px; color: {{ s.color }}">{{ s.icon }}</span></div>
+                      </sc-for>
+                    </div>
+                    <div style="min-height: 84px; padding: 12px; border-radius: 8px; background: rgba(255,255,255,0.04); border: 1px solid rgba(124,58,237,0.5); color: #475569; font-size: 15px; line-height: 1.6">Wat vond je van deze film?</div>
+                    <div style="display: flex; gap: 8px">
+                      <div style="height: 44px; padding: 0 20px; border-radius: 999px; background: #7c3aed; color: #fff; font-size: 14px; font-weight: 600; display: grid; place-items: center; cursor: pointer">Plaatsen</div>
+                      <div onClick="{{ toggleReview }}" style="height: 44px; padding: 0 18px; border-radius: 999px; border: 1px solid rgba(255,255,255,0.2); color: #94a3b8; font-size: 14px; display: grid; place-items: center; cursor: pointer">Annuleren</div>
+                    </div>
+                  </div>
+                </sc-if>
+                <div style="display: flex; flex-direction: column; gap: 10px">
+                  <div style="padding: 16px; border-radius: 12px; background: rgba(26,26,36,0.8); border: 1px solid rgba(255,255,255,0.06); display: flex; flex-direction: column; gap: 10px">
+                    <div style="display: flex; align-items: center; gap: 10px">
+                      <div style="width: 36px; height: 36px; border-radius: 999px; background: linear-gradient(135deg, #7c3aed, #a78bfa); display: grid; place-items: center; font-size: 14px; font-weight: 700; color: #fff; flex: 0 0 auto">S</div>
+                      <div style="flex: 1; min-width: 0"><div style="font-size: 15px; font-weight: 600">Sanne de Vries</div><div style="font-size: 12px; color: #64748b">14 maart 2026</div></div>
+                      <div style="display: flex; gap: 1px"><span class="ms msf" style="font-size: 14px; color: #f59e0b">star</span><span class="ms msf" style="font-size: 14px; color: #f59e0b">star</span><span class="ms msf" style="font-size: 14px; color: #f59e0b">star</span><span class="ms msf" style="font-size: 14px; color: #f59e0b">star</span><span class="ms msf" style="font-size: 14px; color: #f59e0b">star</span></div>
+                    </div>
+                    <p style="font-size: 14px; line-height: 1.7; color: #cbd5e1; margin: 0">Twee en een half uur en geen minuut te lang. Die hond verdient een prijs.</p>
+                  </div>
+                  <div style="padding: 16px; border-radius: 12px; background: rgba(26,26,36,0.8); border: 1px solid rgba(255,255,255,0.06); display: flex; flex-direction: column; gap: 10px">
+                    <div style="display: flex; align-items: center; gap: 10px">
+                      <div style="width: 36px; height: 36px; border-radius: 999px; background: linear-gradient(135deg, #7c3aed, #a78bfa); display: grid; place-items: center; font-size: 14px; font-weight: 700; color: #fff; flex: 0 0 auto">J</div>
+                      <div style="flex: 1; min-width: 0"><div style="font-size: 15px; font-weight: 600">Joris Bakker</div><div style="font-size: 12px; color: #64748b">9 maart 2026</div></div>
+                      <div style="display: flex; gap: 1px"><span class="ms msf" style="font-size: 14px; color: #f59e0b">star</span><span class="ms msf" style="font-size: 14px; color: #f59e0b">star</span><span class="ms msf" style="font-size: 14px; color: #f59e0b">star</span><span class="ms msf" style="font-size: 14px; color: #f59e0b">star</span><span class="ms" style="font-size: 14px; color: #475569">star_border</span></div>
+                    </div>
+                    <p style="font-size: 14px; line-height: 1.7; color: #cbd5e1; margin: 0">Sandra Hüller doet iets wat ik nog nooit zo heb gezien.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ isSearch }}" hint-placeholder-val="{{ false }}">
+          <div style="padding: 4px 20px 24px; display: flex; flex-direction: column; gap: 20px">
+            <div style="display: flex; align-items: center; gap: 10px; height: 52px; padding: 0 14px; border-radius: 8px 8px 0 0; background: #16161f; border-bottom: 2px solid #7c3aed">
+              <span class="ms" style="font-size: 20px; color: #475569">search</span>
+              <div style="display: flex; flex-direction: column; flex: 1; min-width: 0">
+                <span style="font-size: 11px; color: #a78bfa">Zoek op filmtitel...</span>
+                <div style="display: flex; align-items: center; gap: 1px"><span style="font-size: 15px">{{ searchQuery }}</span><span style="width: 1.5px; height: 17px; background: #a78bfa"></span></div>
+              </div>
+              <span onClick="{{ clearSearch }}" class="ms" style="font-size: 20px; color: #94a3b8; cursor: pointer">close</span>
+            </div>
+            <sc-if value="{{ noQuery }}" hint-placeholder-val="{{ false }}">
+              <div style="display: flex; flex-direction: column; gap: 16px">
+                <h2 style="font-size: 20px; font-weight: 700; letter-spacing: -0.025em; margin: 0">Populaire zoekopdrachten</h2>
+                <div style="display: flex; flex-wrap: wrap; gap: 10px">
+                  <sc-for list="{{ suggestions }}" as="q" hint-placeholder-count="8">
+                    <div onClick="{{ q.pick }}" style="padding: 9px 16px; border-radius: 100px; background: rgba(26,26,36,0.8); border: 1px solid rgba(255,255,255,0.08); color: #94a3b8; font-size: 14px; cursor: pointer">{{ q.label }}</div>
+                  </sc-for>
+                </div>
+              </div>
+            </sc-if>
+            <sc-if value="{{ hasResults }}" hint-placeholder-val="{{ true }}">
+              <div style="display: flex; flex-direction: column; gap: 16px">
+                <div style="font-size: 13px; color: #475569">12 resultaten voor <span style="color: #94a3b8">"{{ searchQuery }}"</span></div>
+                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px">
+                  <div onClick="{{ goDetail }}" style="cursor: pointer; display: flex; flex-direction: column; gap: 8px">
+                    <div style="position: relative; width: 100%; aspect-ratio: 2/3; border-radius: 12px; overflow: hidden; background: #16162a">
+                      <image-slot id="m-sr-1" shape="rounded" radius="12" placeholder="Poster"></image-slot>
+                      <div style="position: absolute; top: 8px; left: 8px; display: flex; align-items: center; gap: 2px; background: rgba(0,0,0,0.7); border-radius: 999px; padding: 2px 8px; pointer-events: none"><span class="ms msf" style="font-size: 12px; color: #f59e0b">star</span><span style="font-size: 12px; font-weight: 500; color: #fff">8.3</span></div>
+                    </div>
+                    <div><div style="font-size: 14px; font-weight: 500">Anatomy of a Fall</div><div style="font-size: 12px; color: #475569">2023</div></div>
+                  </div>
+                  <div style="display: flex; flex-direction: column; gap: 8px">
+                    <div style="width: 100%; aspect-ratio: 2/3; border-radius: 12px; overflow: hidden; background: #16162a"><image-slot id="m-sr-2" shape="rounded" radius="12" placeholder="Poster"></image-slot></div>
+                    <div><div style="font-size: 14px; font-weight: 500">Anatomy of a Murder</div><div style="font-size: 12px; color: #475569">1959</div></div>
+                  </div>
+                  <div style="display: flex; flex-direction: column; gap: 8px">
+                    <div style="width: 100%; aspect-ratio: 2/3; border-radius: 12px; overflow: hidden; background: #16162a"><image-slot id="m-sr-3" shape="rounded" radius="12" placeholder="Poster"></image-slot></div>
+                    <div><div style="font-size: 14px; font-weight: 500">Anatomie van een moord</div><div style="font-size: 12px; color: #475569">2019</div></div>
+                  </div>
+                  <div style="display: flex; flex-direction: column; gap: 8px">
+                    <div style="width: 100%; aspect-ratio: 2/3; border-radius: 12px; overflow: hidden; background: #16162a"><image-slot id="m-sr-4" shape="rounded" radius="12" placeholder="Poster"></image-slot></div>
+                    <div><div style="font-size: 14px; font-weight: 500">Anatomy of Hell</div><div style="font-size: 12px; color: #475569">2004</div></div>
+                  </div>
+                </div>
+              </div>
+            </sc-if>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ isWatchlists }}" hint-placeholder-val="{{ false }}">
+          <div style="padding: 16px 20px 24px; display: flex; flex-direction: column; gap: 14px">
+            <div onClick="{{ goWatchlistDetail }}" style="padding: 18px; border-radius: 12px; background: rgba(26,26,36,0.8); border: 1px solid rgba(255,255,255,0.06); display: flex; flex-direction: column; gap: 14px; cursor: pointer">
+              <div style="display: flex; align-items: flex-start; justify-content: space-between">
+                <div style="width: 44px; height: 44px; border-radius: 10px; background: rgba(124,58,237,0.2); display: grid; place-items: center"><span class="ms msf" style="font-size: 22px; color: #a78bfa">bookmark</span></div>
+                <span class="ms" style="font-size: 20px; color: #475569">delete_outline</span>
+              </div>
+              <div><div style="font-size: 17px; font-weight: 600">Zondagavond</div><div style="font-size: 14px; color: #64748b; margin-top: 4px">Rustige films voor als de week nog moet beginnen.</div></div>
+              <div style="display: flex; align-items: center; gap: 8px; font-size: 13px; color: #64748b"><span class="ms" style="font-size: 16px">movie</span>14 films<span style="margin-left: auto; display: flex; align-items: center; gap: 4px"><span class="ms" style="font-size: 14px">public</span>Publiek</span></div>
+              <div style="display: flex; gap: 6px">
+                <div style="width: 48px; height: 72px; border-radius: 6px; overflow: hidden; background: #16162a"><image-slot id="m-wl-1a" shape="rounded" radius="6" placeholder=" "></image-slot></div>
+                <div style="width: 48px; height: 72px; border-radius: 6px; overflow: hidden; background: #16162a"><image-slot id="m-wl-1b" shape="rounded" radius="6" placeholder=" "></image-slot></div>
+                <div style="width: 48px; height: 72px; border-radius: 6px; overflow: hidden; background: #16162a"><image-slot id="m-wl-1c" shape="rounded" radius="6" placeholder=" "></image-slot></div>
+                <div style="width: 48px; height: 72px; border-radius: 6px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); display: grid; place-items: center; font-size: 12px; color: #94a3b8">+11</div>
+              </div>
+            </div>
+            <div style="padding: 18px; border-radius: 12px; background: rgba(26,26,36,0.8); border: 1px solid rgba(255,255,255,0.06); display: flex; flex-direction: column; gap: 14px">
+              <div style="display: flex; align-items: flex-start; justify-content: space-between">
+                <div style="width: 44px; height: 44px; border-radius: 10px; background: rgba(124,58,237,0.2); display: grid; place-items: center"><span class="ms msf" style="font-size: 22px; color: #a78bfa">bookmark</span></div>
+                <span class="ms" style="font-size: 20px; color: #475569">delete_outline</span>
+              </div>
+              <div><div style="font-size: 17px; font-weight: 600">Kijken met Joris</div><div style="font-size: 14px; color: #64748b; margin-top: 4px">Alles wat we elkaar hebben aangeraden.</div></div>
+              <div style="display: flex; align-items: center; gap: 8px; font-size: 13px; color: #64748b"><span class="ms" style="font-size: 16px">movie</span>7 films</div>
+            </div>
+            <div style="padding: 18px; border-radius: 12px; background: rgba(26,26,36,0.8); border: 1px solid rgba(255,255,255,0.06); display: flex; flex-direction: column; gap: 14px">
+              <div style="display: flex; align-items: flex-start; justify-content: space-between">
+                <div style="width: 44px; height: 44px; border-radius: 10px; background: rgba(124,58,237,0.2); display: grid; place-items: center"><span class="ms msf" style="font-size: 22px; color: #a78bfa">bookmark</span></div>
+                <span class="ms" style="font-size: 20px; color: #475569">delete_outline</span>
+              </div>
+              <div><div style="font-size: 17px; font-weight: 600">Ooit nog eens</div><div style="font-size: 14px; color: #64748b; margin-top: 4px">Klassiekers die ik echt nog moet zien.</div></div>
+              <div style="display: flex; align-items: center; gap: 8px; font-size: 13px; color: #64748b"><span class="ms" style="font-size: 16px">movie</span>32 films</div>
+            </div>
+            <div style="position: fixed; right: 20px; bottom: 108px; width: 56px; height: 56px; border-radius: 999px; background: #7c3aed; display: grid; place-items: center; box-shadow: 0 8px 30px rgba(124,58,237,0.45); cursor: pointer"><span class="ms" style="font-size: 26px; color: #fff">add</span></div>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ isWatchlistDetail }}" hint-placeholder-val="{{ false }}">
+          <div style="padding: 12px 20px 24px; display: flex; flex-direction: column; gap: 18px">
+            <div>
+              <p style="font-size: 14px; color: #94a3b8; margin: 0">Rustige films voor als de week nog moet beginnen.</p>
+              <p style="font-size: 13px; color: #64748b; margin: 6px 0 0">14 films</p>
+            </div>
+            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px">
+              <div onClick="{{ goDetail }}" style="cursor: pointer; display: flex; flex-direction: column; gap: 8px">
+                <div style="position: relative; width: 100%; aspect-ratio: 2/3; border-radius: 12px; overflow: hidden; background: #16162a">
+                  <image-slot id="m-wd-1" shape="rounded" radius="12" placeholder="Poster"></image-slot>
+                  <div style="position: absolute; top: 8px; left: 8px; width: 32px; height: 32px; border-radius: 999px; background: rgba(0,0,0,0.7); display: grid; place-items: center"><span class="ms" style="font-size: 16px">close</span></div>
+                </div>
+                <div><div style="font-size: 14px; font-weight: 500">Perfect Days</div><div style="font-size: 12px; color: #475569">2023</div></div>
+              </div>
+              <div style="display: flex; flex-direction: column; gap: 8px">
+                <div style="position: relative; width: 100%; aspect-ratio: 2/3; border-radius: 12px; overflow: hidden; background: #16162a">
+                  <image-slot id="m-wd-2" shape="rounded" radius="12" placeholder="Poster"></image-slot>
+                  <div style="position: absolute; top: 8px; left: 8px; width: 32px; height: 32px; border-radius: 999px; background: rgba(0,0,0,0.7); display: grid; place-items: center"><span class="ms" style="font-size: 16px">close</span></div>
+                </div>
+                <div><div style="font-size: 14px; font-weight: 500">Aftersun</div><div style="font-size: 12px; color: #475569">2022</div></div>
+              </div>
+              <div style="display: flex; flex-direction: column; gap: 8px">
+                <div style="width: 100%; aspect-ratio: 2/3; border-radius: 12px; overflow: hidden; background: #16162a"><image-slot id="m-wd-3" shape="rounded" radius="12" placeholder="Poster"></image-slot></div>
+                <div><div style="font-size: 14px; font-weight: 500">Columbus</div><div style="font-size: 12px; color: #475569">2017</div></div>
+              </div>
+              <div style="display: flex; flex-direction: column; gap: 8px">
+                <div style="width: 100%; aspect-ratio: 2/3; border-radius: 12px; overflow: hidden; background: #16162a"><image-slot id="m-wd-4" shape="rounded" radius="12" placeholder="Poster"></image-slot></div>
+                <div><div style="font-size: 14px; font-weight: 500">Paterson</div><div style="font-size: 12px; color: #475569">2016</div></div>
+              </div>
+            </div>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ isFriends }}" hint-placeholder-val="{{ false }}">
+          <div style="display: flex; flex-direction: column">
+            <div class="noscroll" style="display: flex; gap: 2px; overflow-x: auto; padding: 0 20px; border-bottom: 1px solid rgba(255,255,255,0.06)">
+              <sc-for list="{{ friendTabs }}" as="ft" hint-placeholder-count="3">
+                <div onClick="{{ ft.select }}" style="flex: 0 0 auto; padding: 14px 12px; font-size: 14px; font-weight: 500; white-space: nowrap; cursor: pointer; border-bottom: 2px solid {{ ft.borderColor }}; color: {{ ft.color }}">{{ ft.label }}</div>
+              </sc-for>
+            </div>
+            <sc-if value="{{ friendTabIsList }}" hint-placeholder-val="{{ true }}">
+              <div style="padding: 20px; display: flex; flex-direction: column; gap: 12px">
+                <div style="display: flex; align-items: center; gap: 12px; padding: 16px; border-radius: 12px; background: rgba(26,26,36,0.8); border: 1px solid rgba(255,255,255,0.06)">
+                  <div style="width: 44px; height: 44px; border-radius: 999px; background: linear-gradient(135deg, #7c3aed, #a78bfa); display: grid; place-items: center; font-size: 18px; font-weight: 700; color: #fff">S</div>
+                  <div style="flex: 1; min-width: 0"><div style="font-size: 15px; font-weight: 600">Sanne de Vries</div><div style="font-size: 13px; color: #475569">&#64;sannedv</div></div>
+                  <span class="ms" style="font-size: 22px; color: #475569">chevron_right</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 12px; padding: 16px; border-radius: 12px; background: rgba(26,26,36,0.8); border: 1px solid rgba(255,255,255,0.06)">
+                  <div style="width: 44px; height: 44px; border-radius: 999px; background: linear-gradient(135deg, #7c3aed, #a78bfa); display: grid; place-items: center; font-size: 18px; font-weight: 700; color: #fff">J</div>
+                  <div style="flex: 1; min-width: 0"><div style="font-size: 15px; font-weight: 600">Joris Bakker</div><div style="font-size: 13px; color: #475569">&#64;jorisb</div></div>
+                  <span class="ms" style="font-size: 22px; color: #475569">chevron_right</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 12px; padding: 16px; border-radius: 12px; background: rgba(26,26,36,0.8); border: 1px solid rgba(255,255,255,0.06)">
+                  <div style="width: 44px; height: 44px; border-radius: 999px; background: linear-gradient(135deg, #7c3aed, #a78bfa); display: grid; place-items: center; font-size: 18px; font-weight: 700; color: #fff">M</div>
+                  <div style="flex: 1; min-width: 0"><div style="font-size: 15px; font-weight: 600">Maud Hendriks</div><div style="font-size: 13px; color: #475569">&#64;maudh</div></div>
+                  <span class="ms" style="font-size: 22px; color: #475569">chevron_right</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 12px; padding: 16px; border-radius: 12px; background: rgba(26,26,36,0.8); border: 1px solid rgba(255,255,255,0.06)">
+                  <div style="width: 44px; height: 44px; border-radius: 999px; background: linear-gradient(135deg, #7c3aed, #a78bfa); display: grid; place-items: center; font-size: 18px; font-weight: 700; color: #fff">T</div>
+                  <div style="flex: 1; min-width: 0"><div style="font-size: 15px; font-weight: 600">Tim Jansen</div><div style="font-size: 13px; color: #475569">&#64;timj</div></div>
+                  <span class="ms" style="font-size: 22px; color: #475569">chevron_right</span>
+                </div>
+              </div>
+            </sc-if>
+            <sc-if value="{{ friendTabIsRequests }}" hint-placeholder-val="{{ false }}">
+              <div style="padding: 20px; display: flex; flex-direction: column; gap: 12px">
+                <div style="display: flex; align-items: center; justify-content: space-between">
+                  <div style="font-size: 13px; color: #475569">2 openstaande verzoeken</div>
+                  <div style="height: 36px; padding: 0 12px; border-radius: 999px; border: 1px solid rgba(255,255,255,0.2); font-size: 13px; display: flex; align-items: center; gap: 6px"><span class="ms" style="font-size: 16px">refresh</span>Vernieuwen</div>
+                </div>
+                <div style="display: flex; align-items: center; gap: 12px; padding: 16px; border-radius: 12px; background: rgba(26,26,36,0.8); border: 1px solid rgba(255,255,255,0.06)">
+                  <div style="width: 44px; height: 44px; border-radius: 999px; background: linear-gradient(135deg, #7c3aed, #a78bfa); display: grid; place-items: center; font-size: 18px; font-weight: 700; color: #fff">L</div>
+                  <div style="flex: 1; min-width: 0"><div style="font-size: 15px; font-weight: 600">Lotte Visser</div><div style="font-size: 13px; color: #475569">&#64;lottev</div></div>
+                  <div style="display: flex; gap: 4px">
+                    <div style="width: 44px; height: 44px; border-radius: 999px; background: rgba(124,58,237,0.15); display: grid; place-items: center; color: #a78bfa"><span class="ms" style="font-size: 20px">check</span></div>
+                    <div style="width: 44px; height: 44px; border-radius: 999px; display: grid; place-items: center; color: #94a3b8"><span class="ms" style="font-size: 20px">close</span></div>
+                  </div>
+                </div>
+                <div style="display: flex; align-items: center; gap: 12px; padding: 16px; border-radius: 12px; background: rgba(26,26,36,0.8); border: 1px solid rgba(255,255,255,0.06)">
+                  <div style="width: 44px; height: 44px; border-radius: 999px; background: linear-gradient(135deg, #7c3aed, #a78bfa); display: grid; place-items: center; font-size: 18px; font-weight: 700; color: #fff">D</div>
+                  <div style="flex: 1; min-width: 0"><div style="font-size: 15px; font-weight: 600">Daan Smit</div><div style="font-size: 13px; color: #475569">&#64;daansmit</div></div>
+                  <div style="display: flex; gap: 4px">
+                    <div style="width: 44px; height: 44px; border-radius: 999px; background: rgba(124,58,237,0.15); display: grid; place-items: center; color: #a78bfa"><span class="ms" style="font-size: 20px">check</span></div>
+                    <div style="width: 44px; height: 44px; border-radius: 999px; display: grid; place-items: center; color: #94a3b8"><span class="ms" style="font-size: 20px">close</span></div>
+                  </div>
+                </div>
+              </div>
+            </sc-if>
+            <sc-if value="{{ friendTabIsSearch }}" hint-placeholder-val="{{ false }}">
+              <div style="padding: 20px; display: flex; flex-direction: column; gap: 16px">
+                <div style="display: flex; align-items: center; gap: 10px; height: 52px; padding: 0 14px; border-radius: 8px 8px 0 0; background: #16161f; border-bottom: 2px solid #7c3aed">
+                  <div style="display: flex; flex-direction: column; flex: 1; min-width: 0">
+                    <span style="font-size: 11px; color: #a78bfa">Zoek op naam of gebruikersnaam</span>
+                    <div style="display: flex; align-items: center; gap: 1px"><span style="font-size: 15px">filmfan</span><span style="width: 1.5px; height: 17px; background: #a78bfa"></span></div>
+                  </div>
+                  <span class="ms" style="font-size: 20px; color: #94a3b8">search</span>
+                </div>
+                <div style="display: flex; flex-direction: column; gap: 12px">
+                  <div style="display: flex; align-items: center; gap: 12px; padding: 16px; border-radius: 12px; background: rgba(26,26,36,0.8); border: 1px solid rgba(255,255,255,0.06)">
+                    <div style="width: 44px; height: 44px; border-radius: 999px; background: linear-gradient(135deg, #7c3aed, #a78bfa); display: grid; place-items: center; font-size: 18px; font-weight: 700; color: #fff">F</div>
+                    <div style="flex: 1; min-width: 0"><div style="font-size: 15px; font-weight: 600">Femke Dekker</div><div style="font-size: 13px; color: #475569">&#64;filmfan123</div></div>
+                    <div style="width: 44px; height: 44px; border-radius: 999px; display: grid; place-items: center; color: #a78bfa"><span class="ms" style="font-size: 20px">person_add</span></div>
+                  </div>
+                  <div style="display: flex; align-items: center; gap: 12px; padding: 16px; border-radius: 12px; background: rgba(26,26,36,0.8); border: 1px solid rgba(255,255,255,0.06)">
+                    <div style="width: 44px; height: 44px; border-radius: 999px; background: linear-gradient(135deg, #7c3aed, #a78bfa); display: grid; place-items: center; font-size: 18px; font-weight: 700; color: #fff">R</div>
+                    <div style="flex: 1; min-width: 0"><div style="font-size: 15px; font-weight: 600">Ruben Groot</div><div style="font-size: 13px; color: #475569">&#64;filmfanatic</div></div>
+                    <div style="width: 44px; height: 44px; border-radius: 999px; display: grid; place-items: center; color: #a78bfa"><span class="ms" style="font-size: 20px">hourglass_empty</span></div>
+                  </div>
+                </div>
+              </div>
+            </sc-if>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ isProfile }}" hint-placeholder-val="{{ false }}">
+          <div>
+            <div style="height: 150px; margin-top: -114px; background: linear-gradient(135deg, #1a0533 0%, #12121a 40%, #0f0f13 100%)"></div>
+            <div style="padding: 0 20px 24px; display: flex; flex-direction: column; gap: 20px">
+              <div style="margin-top: -48px; display: flex; flex-direction: column; gap: 14px">
+                <div style="width: 96px; height: 96px; border-radius: 999px; border: 4px solid #0f0f13; background: linear-gradient(135deg, #7c3aed, #a78bfa); display: grid; place-items: center; font-size: 40px; font-weight: 700; color: #fff; box-sizing: border-box">J</div>
+                <div>
+                  <h1 style="font-size: 28px; font-weight: 800; letter-spacing: -0.03em; margin: 0">Julia Pieters</h1>
+                  <div style="font-size: 14px; color: #64748b; margin: 4px 0">&#64;juliapieters</div>
+                  <div style="font-size: 14px; color: #94a3b8">Kijkt het liefst iets Frans met ondertiteling.</div>
+                </div>
+                <div style="display: flex; gap: 24px">
+                  <div style="display: flex; flex-direction: column; align-items: center"><span style="font-size: 20px; font-weight: 700">3</span><span style="font-size: 12px; color: #64748b">Watchlists</span></div>
+                  <div style="display: flex; flex-direction: column; align-items: center"><span style="font-size: 20px; font-weight: 700">31</span><span style="font-size: 12px; color: #64748b">Reviews</span></div>
+                  <div style="display: flex; flex-direction: column; align-items: center"><span style="font-size: 20px; font-weight: 700">12</span><span style="font-size: 12px; color: #64748b">Vrienden</span></div>
+                </div>
+                <div style="height: 44px; padding: 0 18px; align-self: flex-start; border-radius: 999px; border: 1px solid rgba(255,255,255,0.2); font-size: 14px; font-weight: 500; display: flex; align-items: center; gap: 8px; cursor: pointer"><span class="ms" style="font-size: 18px">edit</span>Profiel bewerken</div>
+              </div>
+              <div class="noscroll" style="display: flex; gap: 2px; overflow-x: auto; margin: 0 -20px; padding: 0 20px; border-bottom: 1px solid rgba(255,255,255,0.06)">
+                <sc-for list="{{ profileTabs }}" as="pt" hint-placeholder-count="3">
+                  <div onClick="{{ pt.select }}" style="flex: 0 0 auto; display: inline-flex; align-items: center; gap: 6px; padding: 12px; font-size: 14px; font-weight: 500; white-space: nowrap; cursor: pointer; border-bottom: 2px solid {{ pt.borderColor }}; color: {{ pt.color }}">
+                    <span class="ms" style="font-size: 16px">{{ pt.icon }}</span>{{ pt.label }}
+                  </div>
+                </sc-for>
+              </div>
+              <sc-if value="{{ profileTabIsWatched }}" hint-placeholder-val="{{ true }}">
+                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px">
+                  <div onClick="{{ goDetail }}" style="cursor: pointer; display: flex; flex-direction: column; gap: 8px"><div style="width: 100%; aspect-ratio: 2/3; border-radius: 12px; overflow: hidden; background: #16162a"><image-slot id="m-pf-1" shape="rounded" radius="12" placeholder="Poster"></image-slot></div><div><div style="font-size: 14px; font-weight: 500">Anatomy of a Fall</div><div style="font-size: 12px; color: #475569">2023</div></div></div>
+                  <div style="display: flex; flex-direction: column; gap: 8px"><div style="width: 100%; aspect-ratio: 2/3; border-radius: 12px; overflow: hidden; background: #16162a"><image-slot id="m-pf-2" shape="rounded" radius="12" placeholder="Poster"></image-slot></div><div><div style="font-size: 14px; font-weight: 500">Perfect Days</div><div style="font-size: 12px; color: #475569">2023</div></div></div>
+                  <div style="display: flex; flex-direction: column; gap: 8px"><div style="width: 100%; aspect-ratio: 2/3; border-radius: 12px; overflow: hidden; background: #16162a"><image-slot id="m-pf-3" shape="rounded" radius="12" placeholder="Poster"></image-slot></div><div><div style="font-size: 14px; font-weight: 500">Close</div><div style="font-size: 12px; color: #475569">2022</div></div></div>
+                  <div style="display: flex; flex-direction: column; gap: 8px"><div style="width: 100%; aspect-ratio: 2/3; border-radius: 12px; overflow: hidden; background: #16162a"><image-slot id="m-pf-4" shape="rounded" radius="12" placeholder="Poster"></image-slot></div><div><div style="font-size: 14px; font-weight: 500">Past Lives</div><div style="font-size: 12px; color: #475569">2023</div></div></div>
+                </div>
+              </sc-if>
+              <sc-if value="{{ profileTabIsRated }}" hint-placeholder-val="{{ false }}">
+                <div style="display: flex; flex-direction: column; gap: 12px">
+                  <div style="display: flex; align-items: center; gap: 14px; padding: 12px; border-radius: 10px; background: rgba(26,26,36,0.6); border: 1px solid rgba(255,255,255,0.06)">
+                    <div style="width: 48px; height: 72px; border-radius: 6px; overflow: hidden; flex: 0 0 auto; background: #16162a"><image-slot id="m-rt-1" shape="rounded" radius="6" placeholder=" "></image-slot></div>
+                    <div style="flex: 1; min-width: 0"><div style="font-size: 14px; font-weight: 600; margin-bottom: 6px">Anatomy of a Fall</div><div style="display: flex; gap: 1px"><span class="ms msf" style="font-size: 16px; color: #f59e0b">star</span><span class="ms msf" style="font-size: 16px; color: #f59e0b">star</span><span class="ms msf" style="font-size: 16px; color: #f59e0b">star</span><span class="ms msf" style="font-size: 16px; color: #f59e0b">star</span><span class="ms" style="font-size: 16px; color: #475569">star_border</span></div></div>
+                  </div>
+                  <div style="display: flex; align-items: center; gap: 14px; padding: 12px; border-radius: 10px; background: rgba(26,26,36,0.6); border: 1px solid rgba(255,255,255,0.06)">
+                    <div style="width: 48px; height: 72px; border-radius: 6px; overflow: hidden; flex: 0 0 auto; background: #16162a"><image-slot id="m-rt-2" shape="rounded" radius="6" placeholder=" "></image-slot></div>
+                    <div style="flex: 1; min-width: 0"><div style="font-size: 14px; font-weight: 600; margin-bottom: 6px">Perfect Days</div><div style="display: flex; gap: 1px"><span class="ms msf" style="font-size: 16px; color: #f59e0b">star</span><span class="ms msf" style="font-size: 16px; color: #f59e0b">star</span><span class="ms msf" style="font-size: 16px; color: #f59e0b">star</span><span class="ms msf" style="font-size: 16px; color: #f59e0b">star</span><span class="ms msf" style="font-size: 16px; color: #f59e0b">star</span></div></div>
+                  </div>
+                  <div style="display: flex; align-items: center; gap: 14px; padding: 12px; border-radius: 10px; background: rgba(26,26,36,0.6); border: 1px solid rgba(255,255,255,0.06)">
+                    <div style="width: 48px; height: 72px; border-radius: 6px; overflow: hidden; flex: 0 0 auto; background: #16162a"><image-slot id="m-rt-3" shape="rounded" radius="6" placeholder=" "></image-slot></div>
+                    <div style="flex: 1; min-width: 0"><div style="font-size: 14px; font-weight: 600; margin-bottom: 6px">Close</div><div style="display: flex; gap: 1px"><span class="ms msf" style="font-size: 16px; color: #f59e0b">star</span><span class="ms msf" style="font-size: 16px; color: #f59e0b">star</span><span class="ms msf" style="font-size: 16px; color: #f59e0b">star</span><span class="ms" style="font-size: 16px; color: #475569">star_border</span><span class="ms" style="font-size: 16px; color: #475569">star_border</span></div></div>
+                  </div>
+                </div>
+              </sc-if>
+              <sc-if value="{{ profileTabIsLists }}" hint-placeholder-val="{{ false }}">
+                <div style="display: flex; flex-direction: column; gap: 12px">
+                  <div onClick="{{ goWatchlistDetail }}" style="display: flex; align-items: center; gap: 14px; padding: 16px; border-radius: 12px; background: rgba(26,26,36,0.8); border: 1px solid rgba(255,255,255,0.06); cursor: pointer">
+                    <div style="width: 44px; height: 44px; border-radius: 10px; background: rgba(124,58,237,0.2); display: grid; place-items: center"><span class="ms msf" style="font-size: 22px; color: #a78bfa">bookmark</span></div>
+                    <div><div style="font-size: 15px; font-weight: 600">Zondagavond</div><div style="font-size: 13px; color: #64748b">14 films</div></div>
+                  </div>
+                  <div style="display: flex; align-items: center; gap: 14px; padding: 16px; border-radius: 12px; background: rgba(26,26,36,0.8); border: 1px solid rgba(255,255,255,0.06)">
+                    <div style="width: 44px; height: 44px; border-radius: 10px; background: rgba(124,58,237,0.2); display: grid; place-items: center"><span class="ms msf" style="font-size: 22px; color: #a78bfa">bookmark</span></div>
+                    <div><div style="font-size: 15px; font-weight: 600">Kijken met Joris</div><div style="font-size: 13px; color: #64748b">7 films</div></div>
+                  </div>
+                  <div style="display: flex; align-items: center; gap: 14px; padding: 16px; border-radius: 12px; background: rgba(26,26,36,0.8); border: 1px solid rgba(255,255,255,0.06)">
+                    <div style="width: 44px; height: 44px; border-radius: 10px; background: rgba(124,58,237,0.2); display: grid; place-items: center"><span class="ms msf" style="font-size: 22px; color: #a78bfa">bookmark</span></div>
+                    <div><div style="font-size: 15px; font-weight: 600">Ooit nog eens</div><div style="font-size: 13px; color: #64748b">32 films</div></div>
+                  </div>
+                </div>
+              </sc-if>
+            </div>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ isRoulette }}" hint-placeholder-val="{{ false }}">
+          <div style="padding: 20px 20px 24px; display: flex; flex-direction: column; gap: 22px">
+            <div style="display: flex; flex-direction: column; align-items: center; gap: 10px; text-align: center">
+              <div style="width: 56px; height: 56px; border-radius: 16px; background: rgba(236,72,153,0.15); border: 1px solid rgba(236,72,153,0.25); display: grid; place-items: center"><span class="ms msf" style="font-size: 28px; color: #ec4899">casino</span></div>
+              <h1 style="font-size: 28px; font-weight: 800; letter-spacing: -0.03em; margin: 0">Film Roulette</h1>
+              <p style="font-size: 15px; color: #94a3b8; margin: 0">Geen idee wat je wilt kijken? Laat het lot beslissen.</p>
+            </div>
+            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; padding: 4px; border-radius: 12px; background: rgba(255,255,255,0.03)">
+              <div style="display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 12px 4px; border-radius: 9px; background: rgba(124,58,237,0.18); color: #a78bfa; font-size: 12px; font-weight: 600; cursor: pointer"><span class="ms" style="font-size: 20px">shuffle</span>Willekeurig</div>
+              <div style="display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 12px 4px; border-radius: 9px; color: #94a3b8; font-size: 12px; cursor: pointer"><span class="ms" style="font-size: 20px">bookmark</span>Watchlists</div>
+              <div style="display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 12px 4px; border-radius: 9px; color: #94a3b8; font-size: 12px; cursor: pointer"><span class="ms" style="font-size: 20px">recommend</span>Aanbevolen</div>
+            </div>
+            <div style="display: flex; align-items: center; justify-content: space-between; padding: 14px 16px; border-radius: 12px; background: rgba(26,26,36,0.8); border: 1px solid rgba(255,255,255,0.06); cursor: pointer">
+              <div style="display: flex; align-items: center; gap: 10px"><span class="ms" style="font-size: 20px; color: #a78bfa">tune</span><div><div style="font-size: 15px; font-weight: 600">Filters</div><div style="font-size: 12px; color: #64748b">Drama · vanaf 7/10</div></div></div>
+              <span class="ms" style="font-size: 22px; color: #475569">chevron_right</span>
+            </div>
+            <div style="padding: 20px; border-radius: 16px; background: rgba(26,26,36,0.6); border: 1px solid rgba(255,255,255,0.06); display: flex; flex-direction: column; gap: 16px; align-items: center">
+              <div style="position: relative; width: 180px">
+                <div style="width: 180px; aspect-ratio: 2/3; border-radius: 12px; overflow: hidden; background: #16162a"><image-slot id="m-rl-poster" shape="rounded" radius="12" placeholder="Poster"></image-slot></div>
+                <div style="position: absolute; top: 10px; left: 10px; display: flex; align-items: center; gap: 5px; height: 28px; padding: 0 10px; border-radius: 999px; background: #7c3aed; color: #fff; font-size: 11px; font-weight: 600"><span class="ms msf" style="font-size: 14px">auto_awesome</span>Jouw film!</div>
+              </div>
+              <div style="display: flex; flex-direction: column; gap: 8px; align-items: center; text-align: center">
+                <h2 style="font-size: 24px; font-weight: 800; letter-spacing: -0.03em; margin: 0">Perfect Days</h2>
+                <div style="display: flex; align-items: center; gap: 10px; font-size: 14px; color: #94a3b8">2023<span style="width: 4px; height: 4px; border-radius: 999px; background: #475569"></span><span style="display: flex; align-items: center; gap: 4px; color: #f1f5f9; font-weight: 600"><span class="ms msf" style="font-size: 16px; color: #f59e0b">star</span>8.1</span></div>
+                <p style="font-size: 14px; line-height: 1.65; color: #cbd5e1; margin: 0">Hirayama maakt openbare toiletten schoon in Tokio. Zijn dagen lijken op elkaar, tot kleine ontmoetingen zijn ritme verstoren.</p>
+              </div>
+              <div style="width: 100%; display: flex; gap: 8px">
+                <div onClick="{{ goDetail }}" style="flex: 1; height: 44px; border-radius: 999px; background: #7c3aed; color: #fff; font-size: 14px; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 6px; cursor: pointer"><span class="ms" style="font-size: 18px">info</span>Details</div>
+                <div style="flex: 1; height: 44px; border-radius: 999px; border: 1px solid rgba(255,255,255,0.2); font-size: 14px; display: flex; align-items: center; justify-content: center; gap: 6px; cursor: pointer"><span class="ms" style="font-size: 18px">refresh</span>Andere</div>
+              </div>
+            </div>
+            <div style="height: 54px; border-radius: 999px; background: #7c3aed; color: #fff; font-size: 16px; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 10px; cursor: pointer; box-shadow: 0 0 40px rgba(124,58,237,0.3)"><span class="ms msf" style="font-size: 22px">casino</span>Opnieuw draaien</div>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ isMatcher }}" hint-placeholder-val="{{ false }}">
+          <div style="padding: 20px 20px 24px; display: flex; flex-direction: column; gap: 24px">
+            <div style="display: flex; flex-direction: column; align-items: center; gap: 10px; text-align: center">
+              <div style="width: 56px; height: 56px; border-radius: 16px; background: rgba(6,182,212,0.15); border: 1px solid rgba(6,182,212,0.25); display: grid; place-items: center"><span class="ms msf" style="font-size: 28px; color: #06b6d4">people</span></div>
+              <h1 style="font-size: 28px; font-weight: 800; letter-spacing: -0.03em; margin: 0">Film Matcher</h1>
+              <p style="font-size: 15px; color: #94a3b8; margin: 0">Vind de perfecte film om samen te kijken.</p>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 12px">
+              <div style="font-size: 16px; font-weight: 600">Selecteer vrienden</div>
+              <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px">
+                <div style="position: relative; padding: 16px 8px; border-radius: 12px; background: rgba(124,58,237,0.12); border: 1px solid #7c3aed; display: flex; flex-direction: column; align-items: center; gap: 8px; cursor: pointer">
+                  <div style="width: 48px; height: 48px; border-radius: 999px; background: linear-gradient(135deg, #7c3aed, #a78bfa); display: grid; place-items: center; font-size: 18px; font-weight: 700; color: #fff">S</div>
+                  <div style="font-size: 13px; font-weight: 500">Sanne</div>
+                  <span class="ms msf" style="position: absolute; top: 8px; right: 8px; font-size: 16px; color: #a78bfa">check_circle</span>
+                </div>
+                <div style="position: relative; padding: 16px 8px; border-radius: 12px; background: rgba(124,58,237,0.12); border: 1px solid #7c3aed; display: flex; flex-direction: column; align-items: center; gap: 8px; cursor: pointer">
+                  <div style="width: 48px; height: 48px; border-radius: 999px; background: linear-gradient(135deg, #7c3aed, #a78bfa); display: grid; place-items: center; font-size: 18px; font-weight: 700; color: #fff">J</div>
+                  <div style="font-size: 13px; font-weight: 500">Joris</div>
+                  <span class="ms msf" style="position: absolute; top: 8px; right: 8px; font-size: 16px; color: #a78bfa">check_circle</span>
+                </div>
+                <div style="position: relative; padding: 16px 8px; border-radius: 12px; background: rgba(26,26,36,0.8); border: 1px solid rgba(255,255,255,0.06); display: flex; flex-direction: column; align-items: center; gap: 8px; cursor: pointer">
+                  <div style="width: 48px; height: 48px; border-radius: 999px; background: linear-gradient(135deg, #7c3aed, #a78bfa); display: grid; place-items: center; font-size: 18px; font-weight: 700; color: #fff">M</div>
+                  <div style="font-size: 13px; color: #94a3b8">Maud</div>
+                  <span class="ms" style="position: absolute; top: 8px; right: 8px; font-size: 16px; color: #475569">radio_button_unchecked</span>
+                </div>
+                <div style="position: relative; padding: 16px 8px; border-radius: 12px; background: rgba(26,26,36,0.8); border: 1px solid rgba(255,255,255,0.06); display: flex; flex-direction: column; align-items: center; gap: 8px; cursor: pointer">
+                  <div style="width: 48px; height: 48px; border-radius: 999px; background: linear-gradient(135deg, #7c3aed, #a78bfa); display: grid; place-items: center; font-size: 18px; font-weight: 700; color: #fff">T</div>
+                  <div style="font-size: 13px; color: #94a3b8">Tim</div>
+                  <span class="ms" style="position: absolute; top: 8px; right: 8px; font-size: 16px; color: #475569">radio_button_unchecked</span>
+                </div>
+                <div style="position: relative; padding: 16px 8px; border-radius: 12px; background: rgba(26,26,36,0.8); border: 1px solid rgba(255,255,255,0.06); display: flex; flex-direction: column; align-items: center; gap: 8px; cursor: pointer">
+                  <div style="width: 48px; height: 48px; border-radius: 999px; background: linear-gradient(135deg, #7c3aed, #a78bfa); display: grid; place-items: center; font-size: 18px; font-weight: 700; color: #fff">L</div>
+                  <div style="font-size: 13px; color: #94a3b8">Lotte</div>
+                  <span class="ms" style="position: absolute; top: 8px; right: 8px; font-size: 16px; color: #475569">radio_button_unchecked</span>
+                </div>
+                <div style="position: relative; padding: 16px 8px; border-radius: 12px; background: rgba(26,26,36,0.8); border: 1px solid rgba(255,255,255,0.06); display: flex; flex-direction: column; align-items: center; gap: 8px; cursor: pointer">
+                  <div style="width: 48px; height: 48px; border-radius: 999px; background: linear-gradient(135deg, #7c3aed, #a78bfa); display: grid; place-items: center; font-size: 18px; font-weight: 700; color: #fff">D</div>
+                  <div style="font-size: 13px; color: #94a3b8">Daan</div>
+                  <span class="ms" style="position: absolute; top: 8px; right: 8px; font-size: 16px; color: #475569">radio_button_unchecked</span>
+                </div>
+              </div>
+              <div style="display: flex; align-items: center; gap: 8px; font-size: 14px; color: #a78bfa; margin-top: 4px"><span class="ms" style="font-size: 18px">people</span>2 vrienden geselecteerd</div>
+              <div style="height: 48px; border-radius: 999px; background: #7c3aed; color: #fff; font-size: 15px; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer"><span class="ms msf" style="font-size: 18px">auto_awesome</span>Vind films</div>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 14px">
+              <div><h2 style="font-size: 20px; font-weight: 700; letter-spacing: -0.025em; margin: 0">Jullie matches</h2><p style="font-size: 13px; color: #64748b; margin: 4px 0 0">Sanne &amp; Joris</p></div>
+              <div style="padding: 16px; border-radius: 12px; background: rgba(26,26,36,0.8); border: 1px solid rgba(255,255,255,0.06); display: flex; flex-direction: column; gap: 14px">
+                <div style="display: flex; align-items: center; justify-content: space-between">
+                  <div style="display: flex; align-items: center; gap: 6px; padding: 5px 12px; border-radius: 999px; background: rgba(74,222,128,0.13); color: #4ade80; font-size: 12px; font-weight: 600"><span class="ms msf" style="font-size: 14px">favorite</span>Beste match</div>
+                  <div style="font-size: 20px; font-weight: 800; color: #4ade80; letter-spacing: -0.02em">92%</div>
+                </div>
+                <div style="display: flex; gap: 12px">
+                  <div style="width: 72px; height: 108px; border-radius: 8px; overflow: hidden; flex: 0 0 auto; background: #16162a"><image-slot id="m-mt-1" shape="rounded" radius="8" placeholder=" "></image-slot></div>
+                  <div style="display: flex; flex-direction: column; gap: 4px; justify-content: center">
+                    <div style="font-size: 15px; font-weight: 600">Drive My Car</div>
+                    <div style="font-size: 13px; color: #64748b">2021</div>
+                    <div style="display: flex; align-items: center; gap: 4px; font-size: 13px"><span class="ms msf" style="font-size: 14px; color: #f59e0b">star</span>7.9</div>
+                  </div>
+                </div>
+                <div style="display: flex; flex-direction: column; gap: 8px">
+                  <div style="font-size: 11px; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; color: #475569">Waarom dit?</div>
+                  <div style="display: flex; gap: 8px; font-size: 13px; color: #94a3b8"><span class="ms msf" style="font-size: 15px; color: #4ade80">check_circle</span>Jullie gaven beiden 5 sterren aan Past Lives</div>
+                  <div style="display: flex; gap: 8px; font-size: 13px; color: #94a3b8"><span class="ms msf" style="font-size: 15px; color: #4ade80">check_circle</span>Drama is jullie gedeelde topgenre</div>
+                </div>
+              </div>
+              <div style="padding: 16px; border-radius: 12px; background: rgba(26,26,36,0.8); border: 1px solid rgba(255,255,255,0.06); display: flex; flex-direction: column; gap: 14px">
+                <div style="display: flex; align-items: center; justify-content: space-between">
+                  <div style="display: flex; align-items: center; gap: 6px; padding: 5px 12px; border-radius: 999px; background: rgba(124,58,237,0.15); color: #a78bfa; font-size: 12px; font-weight: 600"><span class="ms msf" style="font-size: 14px">handshake</span>Veilige keuze</div>
+                  <div style="font-size: 20px; font-weight: 800; color: #a78bfa; letter-spacing: -0.02em">84%</div>
+                </div>
+                <div style="display: flex; gap: 12px">
+                  <div style="width: 72px; height: 108px; border-radius: 8px; overflow: hidden; flex: 0 0 auto; background: #16162a"><image-slot id="m-mt-2" shape="rounded" radius="8" placeholder=" "></image-slot></div>
+                  <div style="display: flex; flex-direction: column; gap: 4px; justify-content: center">
+                    <div style="font-size: 15px; font-weight: 600">The Holdovers</div>
+                    <div style="font-size: 13px; color: #64748b">2023</div>
+                    <div style="display: flex; align-items: center; gap: 4px; font-size: 13px"><span class="ms msf" style="font-size: 14px; color: #f59e0b">star</span>7.7</div>
+                  </div>
+                </div>
+                <div style="display: flex; flex-direction: column; gap: 8px">
+                  <div style="font-size: 11px; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; color: #475569">Waarom dit?</div>
+                  <div style="display: flex; gap: 8px; font-size: 13px; color: #94a3b8"><span class="ms msf" style="font-size: 15px; color: #4ade80">check_circle</span>Niemand heeft hem gezien</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ isRecommendations }}" hint-placeholder-val="{{ false }}">
+          <div style="padding: 16px 20px 24px; display: flex; flex-direction: column; gap: 28px">
+            <p style="font-size: 14px; color: #64748b; margin: 0">Op basis van jouw kijkgeschiedenis en beoordelingen</p>
+            <div style="display: flex; flex-direction: column; gap: 14px">
+              <div style="display: flex; align-items: center; gap: 8px"><span class="ms msf" style="font-size: 20px; color: #a78bfa">favorite</span><h2 style="font-size: 19px; font-weight: 700; letter-spacing: -0.025em; margin: 0">Omdat je van Drama houdt</h2></div>
+              <div class="noscroll" style="display: flex; gap: 12px; overflow-x: auto; margin: 0 -20px; padding: 0 20px 4px">
+                <div onClick="{{ goDetail }}" style="flex: 0 0 132px; cursor: pointer; display: flex; flex-direction: column; gap: 8px"><div style="width: 132px; height: 198px; border-radius: 12px; overflow: hidden; background: #16162a"><image-slot id="m-rc-1" shape="rounded" radius="12" placeholder="Poster"></image-slot></div><div><div style="font-size: 13px; font-weight: 500">Drive My Car</div><div style="font-size: 12px; color: #475569">2021</div></div></div>
+                <div style="flex: 0 0 132px; display: flex; flex-direction: column; gap: 8px"><div style="width: 132px; height: 198px; border-radius: 12px; overflow: hidden; background: #16162a"><image-slot id="m-rc-2" shape="rounded" radius="12" placeholder="Poster"></image-slot></div><div><div style="font-size: 13px; font-weight: 500">Petite Maman</div><div style="font-size: 12px; color: #475569">2021</div></div></div>
+                <div style="flex: 0 0 132px; display: flex; flex-direction: column; gap: 8px"><div style="width: 132px; height: 198px; border-radius: 12px; overflow: hidden; background: #16162a"><image-slot id="m-rc-3" shape="rounded" radius="12" placeholder="Poster"></image-slot></div><div><div style="font-size: 13px; font-weight: 500">Saint Omer</div><div style="font-size: 12px; color: #475569">2022</div></div></div>
+              </div>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 14px">
+              <div style="display: flex; align-items: center; gap: 8px"><span class="ms msf" style="font-size: 20px; color: #a78bfa">favorite</span><h2 style="font-size: 19px; font-weight: 700; letter-spacing: -0.025em; margin: 0">Omdat je van Thriller houdt</h2></div>
+              <div class="noscroll" style="display: flex; gap: 12px; overflow-x: auto; margin: 0 -20px; padding: 0 20px 4px">
+                <div style="flex: 0 0 132px; display: flex; flex-direction: column; gap: 8px"><div style="width: 132px; height: 198px; border-radius: 12px; overflow: hidden; background: #16162a"><image-slot id="m-rc-4" shape="rounded" radius="12" placeholder="Poster"></image-slot></div><div><div style="font-size: 13px; font-weight: 500">Burning</div><div style="font-size: 12px; color: #475569">2018</div></div></div>
+                <div style="flex: 0 0 132px; display: flex; flex-direction: column; gap: 8px"><div style="width: 132px; height: 198px; border-radius: 12px; overflow: hidden; background: #16162a"><image-slot id="m-rc-5" shape="rounded" radius="12" placeholder="Poster"></image-slot></div><div><div style="font-size: 13px; font-weight: 500">Loveless</div><div style="font-size: 12px; color: #475569">2017</div></div></div>
+                <div style="flex: 0 0 132px; display: flex; flex-direction: column; gap: 8px"><div style="width: 132px; height: 198px; border-radius: 12px; overflow: hidden; background: #16162a"><image-slot id="m-rc-6" shape="rounded" radius="12" placeholder="Poster"></image-slot></div><div><div style="font-size: 13px; font-weight: 500">The Hunt</div><div style="font-size: 12px; color: #475569">2012</div></div></div>
+              </div>
+            </div>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ isLogin }}" hint-placeholder-val="{{ false }}">
+          <div style="min-height: 874px; display: flex; flex-direction: column; justify-content: center; gap: 26px; padding: 80px 20px 40px; background: radial-gradient(400px 260px at 50% 8%, rgba(124,58,237,0.24) 0%, rgba(15,15,19,0) 72%)">
+            <div onClick="{{ goLanding }}" style="display: flex; align-items: center; justify-content: center; gap: 10px; cursor: pointer">
+              <img src="public/favicon.svg" alt="FilmMaatjes" style="width: 36px; height: 36px; display: block; border-radius: 9px">
+              <span style="font-size: 20px; font-weight: 700; letter-spacing: -0.02em">FilmMaatjes</span>
+            </div>
+            <div style="padding: 24px; border-radius: 16px; background: rgba(26,26,36,0.8); border: 1px solid rgba(255,255,255,0.06); display: flex; flex-direction: column; gap: 20px">
+              <div><h1 style="font-size: 24px; font-weight: 700; letter-spacing: -0.025em; margin: 0">Welkom terug</h1><p style="font-size: 14px; color: #94a3b8; margin: 6px 0 0">Log in op je account om verder te gaan</p></div>
+              <div style="display: flex; flex-direction: column; gap: 12px">
+                <div style="display: flex; flex-direction: column; gap: 4px; height: 56px; padding: 8px 14px; border-radius: 8px 8px 0 0; background: #16161f; border-bottom: 1px solid rgba(255,255,255,0.2); justify-content: center">
+                  <span style="font-size: 11px; color: #64748b">E-mailadres</span><span style="font-size: 15px; color: #475569">jouw@email.nl</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 10px; height: 56px; padding: 8px 14px; border-radius: 8px 8px 0 0; background: #16161f; border-bottom: 2px solid #7c3aed">
+                  <div style="display: flex; flex-direction: column; gap: 4px; flex: 1"><span style="font-size: 11px; color: #a78bfa">Wachtwoord</span><span style="font-size: 15px; letter-spacing: 0.2em">••••••••</span></div>
+                  <span class="ms" style="font-size: 20px; color: #94a3b8">visibility</span>
+                </div>
+                <div style="height: 50px; border-radius: 999px; background: #7c3aed; color: #fff; font-size: 15px; font-weight: 600; display: grid; place-items: center; cursor: pointer; margin-top: 4px">Inloggen</div>
+              </div>
+              <p style="font-size: 14px; color: #94a3b8; margin: 0; text-align: center">Nog geen account? <span onClick="{{ goRegister }}" style="color: #a78bfa; cursor: pointer">Aanmelden</span></p>
+            </div>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ isRegister }}" hint-placeholder-val="{{ false }}">
+          <div style="min-height: 874px; display: flex; flex-direction: column; gap: 22px; padding: 76px 20px 40px; background: radial-gradient(400px 260px at 50% 6%, rgba(124,58,237,0.24) 0%, rgba(15,15,19,0) 72%)">
+            <div onClick="{{ goLanding }}" style="display: flex; align-items: center; justify-content: center; gap: 10px; cursor: pointer">
+              <img src="public/favicon.svg" alt="FilmMaatjes" style="width: 36px; height: 36px; display: block; border-radius: 9px">
+              <span style="font-size: 20px; font-weight: 700; letter-spacing: -0.02em">FilmMaatjes</span>
+            </div>
+            <div style="padding: 24px; border-radius: 16px; background: rgba(26,26,36,0.8); border: 1px solid rgba(255,255,255,0.06); display: flex; flex-direction: column; gap: 18px">
+              <div><h1 style="font-size: 24px; font-weight: 700; letter-spacing: -0.025em; margin: 0">Account aanmaken</h1><p style="font-size: 14px; color: #94a3b8; margin: 6px 0 0">Sluit je aan bij duizenden filmliefhebbers</p></div>
+              <div style="display: flex; flex-direction: column; gap: 10px">
+                <div style="display: flex; flex-direction: column; gap: 4px; height: 56px; padding: 8px 14px; border-radius: 8px 8px 0 0; background: #16161f; border-bottom: 1px solid rgba(255,255,255,0.2); justify-content: center"><span style="font-size: 11px; color: #64748b">Naam</span><span style="font-size: 15px">Julia Pieters</span></div>
+                <div style="display: flex; flex-direction: column; gap: 2px; padding: 8px 14px; border-radius: 8px 8px 0 0; background: #16161f; border-bottom: 2px solid #7c3aed"><span style="font-size: 11px; color: #a78bfa">Gebruikersnaam</span><span style="font-size: 15px">juliapieters</span><span style="font-size: 11px; color: #64748b">Alleen letters, cijfers en underscores</span></div>
+                <div style="display: flex; flex-direction: column; gap: 4px; height: 56px; padding: 8px 14px; border-radius: 8px 8px 0 0; background: #16161f; border-bottom: 1px solid rgba(255,255,255,0.2); justify-content: center"><span style="font-size: 11px; color: #64748b">E-mailadres</span><span style="font-size: 15px; color: #475569">jouw@email.nl</span></div>
+                <div style="display: flex; flex-direction: column; gap: 2px; padding: 8px 14px; border-radius: 8px 8px 0 0; background: #16161f; border-bottom: 1px solid rgba(255,255,255,0.2)"><span style="font-size: 11px; color: #64748b">Wachtwoord</span><span style="font-size: 15px; letter-spacing: 0.2em">••••••••</span><span style="font-size: 11px; color: #64748b">Minimaal 8 tekens</span></div>
+                <div style="display: flex; flex-direction: column; gap: 4px; height: 56px; padding: 8px 14px; border-radius: 8px 8px 0 0; background: #16161f; border-bottom: 1px solid rgba(255,255,255,0.2); justify-content: center"><span style="font-size: 11px; color: #64748b">Wachtwoord bevestigen</span><span style="font-size: 15px; letter-spacing: 0.2em">••••••••</span></div>
+                <div style="height: 50px; border-radius: 999px; background: #7c3aed; color: #fff; font-size: 15px; font-weight: 600; display: grid; place-items: center; cursor: pointer; margin-top: 6px">Account aanmaken</div>
+              </div>
+              <p style="font-size: 14px; color: #94a3b8; margin: 0; text-align: center">Al een account? <span onClick="{{ goLogin }}" style="color: #a78bfa; cursor: pointer">Inloggen</span></p>
+            </div>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ isNotFound }}" hint-placeholder-val="{{ false }}">
+          <div style="flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px 24px; text-align: center">
+            <div style="font-size: 96px; font-weight: 900; letter-spacing: -0.05em; line-height: 1; opacity: 0.8; background: linear-gradient(135deg, #a78bfa 0%, #7c3aed 50%, #5b21b6 100%); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent">404</div>
+            <div style="width: 60px; height: 60px; border-radius: 999px; background: rgba(26,26,36,0.8); border: 1px solid rgba(255,255,255,0.08); display: grid; place-items: center; margin: 20px 0"><span class="ms" style="font-size: 30px; color: #475569">movie_off</span></div>
+            <h1 style="font-size: 24px; font-weight: 700; margin: 0">Pagina niet gevonden</h1>
+            <p style="font-size: 15px; color: #94a3b8; margin: 8px 0 24px">De pagina die je zoekt bestaat niet of is verplaatst.</p>
+            <div style="width: 100%; display: flex; flex-direction: column; gap: 10px">
+              <div onClick="{{ goLanding }}" style="height: 48px; border-radius: 999px; background: #7c3aed; color: #fff; font-size: 15px; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer"><span class="ms" style="font-size: 18px">home</span>Naar homepage</div>
+              <div onClick="{{ goMovies }}" style="height: 48px; border-radius: 999px; border: 1px solid rgba(255,255,255,0.2); font-size: 15px; display: flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer"><span class="ms" style="font-size: 18px">movie</span>Films ontdekken</div>
+            </div>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ showTabBar }}" hint-placeholder-val="{{ true }}">
+          <div style="position: sticky; bottom: 0; margin-top: auto; z-index: 20; background: rgba(15,15,19,0.94); backdrop-filter: blur(12px); border-top: 1px solid rgba(255,255,255,0.06); padding: 8px 8px 28px; display: grid; grid-template-columns: repeat(5, 1fr)">
+            <sc-for list="{{ navItems }}" as="n" hint-placeholder-count="5">
+              <div onClick="{{ n.select }}" style="min-height: 48px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; cursor: pointer; border-radius: 10px; color: {{ n.color }}; background: {{ n.background }}">
+                <span class="ms {{ n.fillClass }}" style="font-size: 22px">{{ n.icon }}</span>
+                <span style="font-size: 10px; font-weight: 500">{{ n.label }}</span>
+              </div>
+            </sc-for>
+          </div>
+        </sc-if>
+      </div>
+    </x-import>
+  </div>
+</section>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:740,&quot;height&quot;:1000}}">
+class Component extends DCLogic {
+  state = { page: 'landing', tab: 0, rating: 4, reviewOpen: false, notificationsOpen: false, query: 'anatomy', friendTab: 0, profileTab: 0 };
+
+  renderVals() {
+    const s = this.state;
+    const go = (page) => () => this.setState({ page, notificationsOpen: false });
+    const pageDefs = [
+      { key: 'landing', label: 'Landing', icon: 'home', route: '/' },
+      { key: 'dashboard', label: 'Dashboard', icon: 'dashboard', route: '/dashboard' },
+      { key: 'movies', label: 'Films', icon: 'movie', route: '/movies' },
+      { key: 'detail', label: 'Filmdetail', icon: 'local_movies', route: '/movies/:id' },
+      { key: 'search', label: 'Zoeken', icon: 'search', route: '/search' },
+      { key: 'watchlists', label: 'Watchlists', icon: 'bookmark', route: '/watchlists' },
+      { key: 'watchlistDetail', label: 'Watchlist', icon: 'bookmarks', route: '/watchlists/:id' },
+      { key: 'friends', label: 'Vrienden', icon: 'people', route: '/friends' },
+      { key: 'profile', label: 'Profiel', icon: 'person', route: '/profile' },
+      { key: 'roulette', label: 'Roulette', icon: 'casino', route: '/roulette' },
+      { key: 'matcher', label: 'Matcher', icon: 'favorite', route: '/matcher' },
+      { key: 'recommendations', label: 'Aanbevolen', icon: 'auto_awesome', route: '/recommendations' },
+      { key: 'login', label: 'Inloggen', icon: 'login', route: '/auth/login' },
+      { key: 'register', label: 'Aanmelden', icon: 'person_add', route: '/auth/register' },
+      { key: 'notFound', label: '404', icon: 'error_outline', route: '/*' },
+    ];
+    const titles = {
+      dashboard: 'Dashboard',
+      movies: 'Films',
+      search: 'Zoeken',
+      watchlists: 'Mijn watchlists',
+      watchlistDetail: 'Zondagavond',
+      friends: 'Vrienden',
+      profile: 'Profiel',
+      roulette: 'Film Roulette',
+      matcher: 'Film Matcher',
+      recommendations: 'Aanbevolen voor jou',
+      notFound: '',
+    };
+    const chrome = !['login', 'register', 'detail'].includes(s.page);
+    const backPages = { watchlistDetail: 'watchlists', search: 'movies', recommendations: 'dashboard' };
+    const navMap = { movies: 'movies', detail: 'movies', landing: 'movies', search: 'search', watchlistDetail: 'watchlists' };
+    const navDefs = [
+      { key: 'movies', label: 'Films', icon: 'movie' },
+      { key: 'search', label: 'Zoeken', icon: 'search' },
+      { key: 'watchlists', label: 'Lijsten', icon: 'bookmark' },
+      { key: 'friends', label: 'Vrienden', icon: 'people' },
+      { key: 'profile', label: 'Profiel', icon: 'person' },
+    ];
+    const tabDefs = [
+      { label: 'Trending', icon: 'trending_up' },
+      { label: 'Populair', icon: 'whatshot' },
+      { label: 'Hoogst gewaardeerd', icon: 'star' },
+      { label: 'Binnenkort', icon: 'schedule' },
+      { label: 'Nu te zien', icon: 'play_circle' },
+    ];
+    const labels = ['Slecht', 'Matig', 'Goed', 'Heel goed', 'Uitstekend'];
+
+    return {
+      pages: pageDefs.map((p) => ({
+        label: p.label,
+        icon: p.icon,
+        route: p.route,
+        color: p.key === s.page ? '#a78bfa' : '#94a3b8',
+        background: p.key === s.page ? 'rgba(124,58,237,0.14)' : 'transparent',
+        select: go(p.key),
+      })),
+      showHeader: chrome,
+      showTabBar: !['login', 'register'].includes(s.page),
+      showBrand: ['landing', 'dashboard'].includes(s.page),
+      showPageTitle: chrome && !['landing', 'dashboard'].includes(s.page),
+      showBack: !!backPages[s.page],
+      goBack: go(backPages[s.page] || 'movies'),
+      pageTitle: titles[s.page] || '',
+      notificationsOpen: s.notificationsOpen,
+      toggleNotifications: () => this.setState({ notificationsOpen: !s.notificationsOpen }),
+      isLanding: s.page === 'landing',
+      isDashboard: s.page === 'dashboard',
+      isMovies: s.page === 'movies',
+      isDetail: s.page === 'detail',
+      isSearch: s.page === 'search',
+      isWatchlists: s.page === 'watchlists',
+      isWatchlistDetail: s.page === 'watchlistDetail',
+      isFriends: s.page === 'friends',
+      isProfile: s.page === 'profile',
+      isRoulette: s.page === 'roulette',
+      isMatcher: s.page === 'matcher',
+      isRecommendations: s.page === 'recommendations',
+      isLogin: s.page === 'login',
+      isRegister: s.page === 'register',
+      isNotFound: s.page === 'notFound',
+      goLanding: go('landing'),
+      goMovies: go('movies'),
+      goDetail: go('detail'),
+      goSearch: go('search'),
+      goWatchlists: go('watchlists'),
+      goWatchlistDetail: go('watchlistDetail'),
+      goFriends: go('friends'),
+      goProfile: go('profile'),
+      goRoulette: go('roulette'),
+      goMatcher: go('matcher'),
+      goRecommendations: go('recommendations'),
+      goLogin: go('login'),
+      goRegister: go('register'),
+      navItems: navDefs.map((n) => {
+        const active = s.page === n.key || navMap[s.page] === n.key;
+        return {
+          label: n.label,
+          icon: n.icon,
+          fillClass: active ? 'msf' : '',
+          color: active ? '#a78bfa' : '#64748b',
+          background: active ? 'rgba(124,58,237,0.12)' : 'transparent',
+          select: go(n.key),
+        };
+      }),
+      searchQuery: s.query,
+      hasResults: s.query.trim().length >= 2,
+      noQuery: s.query.trim().length < 2,
+      clearSearch: () => this.setState({ query: '' }),
+      suggestions: ['Marvel', 'Star Wars', 'Harry Potter', 'James Bond', 'The Lord of the Rings', 'Disney', 'Pixar', 'Christopher Nolan'].map((label) => ({
+        label,
+        pick: () => this.setState({ query: label }),
+      })),
+      reviewOpen: s.reviewOpen,
+      reviewButtonLabel: s.reviewOpen ? 'Sluiten' : 'Review schrijven',
+      toggleReview: () => this.setState({ reviewOpen: !s.reviewOpen }),
+      ratingText: s.rating > 0 ? `${s.rating}/5 · ${labels[s.rating - 1]}` : 'Nog niet beoordeeld',
+      stars: [1, 2, 3, 4, 5].map((n) => ({
+        icon: n <= s.rating ? 'star' : 'star_border',
+        fillClass: n <= s.rating ? 'msf' : '',
+        color: n <= s.rating ? '#f59e0b' : '#475569',
+        select: () => this.setState({ rating: s.rating === n ? 0 : n }),
+      })),
+      tabs: tabDefs.map((t, i) => ({
+        label: t.label,
+        icon: t.icon,
+        color: i === s.tab ? '#a78bfa' : '#94a3b8',
+        background: i === s.tab ? 'rgba(124,58,237,0.15)' : 'transparent',
+        borderColor: i === s.tab ? '#7c3aed' : 'rgba(255,255,255,0.1)',
+        select: () => this.setState({ tab: i }),
+      })),
+      friendTabIsList: s.friendTab === 0,
+      friendTabIsRequests: s.friendTab === 1,
+      friendTabIsSearch: s.friendTab === 2,
+      friendTabs: ['Mijn vrienden', 'Verzoeken (2)', 'Zoeken'].map((label, i) => ({
+        label,
+        color: i === s.friendTab ? '#a78bfa' : '#64748b',
+        borderColor: i === s.friendTab ? '#7c3aed' : 'transparent',
+        select: () => this.setState({ friendTab: i }),
+      })),
+      profileTabIsWatched: s.profileTab === 0,
+      profileTabIsRated: s.profileTab === 1,
+      profileTabIsLists: s.profileTab === 2,
+      profileTabs: [
+        { label: 'Gezien (248)', icon: 'visibility' },
+        { label: 'Beoordeeld (31)', icon: 'star' },
+        { label: 'Watchlists (3)', icon: 'bookmark' },
+      ].map((t, i) => ({
+        label: t.label,
+        icon: t.icon,
+        color: i === s.profileTab ? '#a78bfa' : '#64748b',
+        borderColor: i === s.profileTab ? '#7c3aed' : 'transparent',
+        select: () => this.setState({ profileTab: i }),
+      })),
+    };
+  }
+}
+</script>
+</body>
+</html>

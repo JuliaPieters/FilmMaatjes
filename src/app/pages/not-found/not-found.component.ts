@@ -14,11 +14,11 @@ import { MatIcon } from '@angular/material/icon';
           <mat-icon>movie_off</mat-icon>
         </div>
         <h1 class="text-2xl font-bold text-text-primary mb-2">Pagina niet gevonden</h1>
-        <p class="text-text-secondary max-w-sm mb-8">
+        <p class="not-found-text text-text-secondary max-w-sm mb-8">
           De pagina die je zoekt bestaat niet of is verplaatst.
           Ga terug naar de homepage.
         </p>
-        <div class="flex gap-3 justify-center">
+        <div class="not-found-actions flex gap-3 justify-center">
           <a mat-flat-button color="primary" routerLink="/">
             <mat-icon>home</mat-icon>
             Naar Homepage
@@ -63,6 +63,34 @@ import { MatIcon } from '@angular/material/icon';
         font-size: 2rem;
         width: 2rem;
         height: 2rem;
+      }
+    }
+
+    @media (max-width: 767px) {
+      .not-found-container {
+        width: 100%;
+      }
+
+      .error-code {
+        font-size: 6rem;
+      }
+
+      .error-icon {
+        width: 60px;
+        height: 60px;
+      }
+
+      .not-found-text {
+        font-size: 15px;
+      }
+
+      .not-found-actions {
+        flex-direction: column;
+        width: 100%;
+      }
+
+      .not-found-actions a {
+        width: 100%;
       }
     }
   `],

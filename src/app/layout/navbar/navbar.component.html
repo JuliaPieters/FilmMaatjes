@@ -2,7 +2,8 @@
   <div class="navbar-inner">
     <div class="navbar-left">
       <a routerLink="/" class="logo" (click)="closeMobileMenu()">
-        <img src="assets/logo.png" class="logo-img" alt="FilmMaatjes" />
+        <img src="favicon.svg" class="logo-icon" alt="" />
+        <span class="logo-text">FilmMaatjes</span>
       </a>
     </div>
 
@@ -146,21 +147,18 @@
         <hr class="mobile-divider" />
       }
 
-      @for (link of navLinks; track link.route) {
-        <a [routerLink]="link.route" routerLinkActive="mobile-link-active" class="mobile-link" (click)="closeMobileMenu()">
-          <mat-icon>{{ link.icon }}</mat-icon>
-          {{ link.label }}
-        </a>
-      }
-
       @if (authService.isAuthenticated()) {
-        <a routerLink="/watchlists" routerLinkActive="mobile-link-active" class="mobile-link" (click)="closeMobileMenu()">
-          <mat-icon>bookmark</mat-icon>
-          Watchlists
+        <a routerLink="/dashboard" routerLinkActive="mobile-link-active" class="mobile-link" (click)="closeMobileMenu()">
+          <mat-icon>dashboard</mat-icon>
+          Dashboard
         </a>
-        <a routerLink="/profile" routerLinkActive="mobile-link-active" class="mobile-link" (click)="closeMobileMenu()">
-          <mat-icon>person</mat-icon>
-          Profiel
+        <a routerLink="/roulette" routerLinkActive="mobile-link-active" class="mobile-link" (click)="closeMobileMenu()">
+          <mat-icon>casino</mat-icon>
+          Film Roulette
+        </a>
+        <a routerLink="/matcher" routerLinkActive="mobile-link-active" class="mobile-link" (click)="closeMobileMenu()">
+          <mat-icon>favorite</mat-icon>
+          Film Matcher
         </a>
         <hr class="mobile-divider" />
         <button class="mobile-link mobile-link-logout" (click)="logout()">

@@ -15,7 +15,7 @@ import { NotificationService } from '../../../../core/services/notification.serv
   template: `
     <div class="page-container">
       <div class="flex items-center gap-3 mb-6">
-        <button mat-icon-button (click)="goBack()">
+        <button mat-icon-button class="back-btn" (click)="goBack()">
           <mat-icon>arrow_back</mat-icon>
         </button>
         <div class="flex-1 min-w-0">
@@ -25,8 +25,11 @@ import { NotificationService } from '../../../../core/services/notification.serv
           @if (watchlist()?.description) {
             <p class="text-text-secondary text-sm mt-1">{{ watchlist()!.description }}</p>
           }
+          <span class="movie-count-mobile whitespace-nowrap">
+            {{ movies().length }} film{{ movies().length === 1 ? '' : 's' }}
+          </span>
         </div>
-        <span class="text-text-muted text-sm whitespace-nowrap">
+        <span class="movie-count-desktop text-text-muted text-sm whitespace-nowrap">
           {{ movies().length }} film{{ movies().length === 1 ? '' : 's' }}
         </span>
       </div>
@@ -88,6 +91,41 @@ import { NotificationService } from '../../../../core/services/notification.serv
 
     .group:hover .remove-btn {
       opacity: 1;
+    }
+
+    @media (hover: none) {
+      .remove-btn {
+        opacity: 1;
+        width: 32px;
+        height: 32px;
+      }
+    }
+
+    .movie-count-mobile {
+      display: none;
+    }
+
+    @media (max-width: 767px) {
+      .back-btn {
+        width: 44px !important;
+        height: 44px !important;
+        padding: 0;
+      }
+
+      .movie-count-desktop {
+        display: none;
+      }
+
+      .movie-count-mobile {
+        display: block;
+        margin-top: 2px;
+        font-size: 13px;
+        color: #64748b;
+      }
+
+      .card-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+      }
     }
   `],
 })

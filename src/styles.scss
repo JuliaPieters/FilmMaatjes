@@ -92,10 +92,11 @@ img {
 }
 
 .page-container {
-  min-height: calc(100vh - 90px);
-  padding: 2rem 1rem;
+  min-height: calc(100vh - 58px);
+  padding: 1.5rem 1.25rem calc(96px + env(safe-area-inset-bottom));
 
   @media (min-width: 768px) {
+    min-height: calc(100vh - 90px);
     padding: 2rem 2rem;
   }
 
@@ -151,11 +152,25 @@ img {
 
   > * {
     flex-shrink: 0;
-    width: 160px;
+    width: 132px;
 
     @media (min-width: 640px) {
+      width: 160px;
+    }
+
+    @media (min-width: 768px) {
       width: 180px;
     }
+  }
+}
+
+.bleed-row {
+  margin: 0 -1.25rem;
+  padding: 0 1.25rem;
+
+  @media (min-width: 768px) {
+    margin: 0;
+    padding: 0;
   }
 }
 

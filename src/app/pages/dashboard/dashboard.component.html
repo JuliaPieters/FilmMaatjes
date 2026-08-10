@@ -6,7 +6,7 @@
       </h1>
       <p class="welcome-subtitle">Wat ga je vandaag kijken?</p>
     </div>
-    <div class="flex gap-3 flex-wrap">
+    <div class="quick-actions flex gap-3 flex-wrap">
       <a mat-flat-button color="primary" routerLink="/roulette" class="quick-action">
         <mat-icon>casino</mat-icon>
         Film Roulette
@@ -81,7 +81,7 @@
           </div>
           <a routerLink="/recommendations" class="see-all-link">Alles zien</a>
         </div>
-        <div class="horizontal-scroll">
+        <div class="horizontal-scroll bleed-row">
           @for (movie of recommended(); track movie.id) {
             <app-movie-card [movie]="movie" [showActions]="true" />
           }
@@ -95,7 +95,7 @@
           <h2 class="section-title mb-0">Trending deze week</h2>
           <a routerLink="/movies" class="see-all-link">Alles bekijken</a>
         </div>
-        <div class="horizontal-scroll">
+        <div class="horizontal-scroll bleed-row">
           @for (movie of trending(); track movie.id) {
             <app-movie-card [movie]="movie" [showActions]="true" />
           }
@@ -109,7 +109,7 @@
           <h2 class="section-title mb-0">Populair</h2>
           <a routerLink="/movies" class="see-all-link">Alles bekijken</a>
         </div>
-        <div class="horizontal-scroll">
+        <div class="horizontal-scroll bleed-row">
           @for (movie of popular(); track movie.id) {
             <app-movie-card [movie]="movie" [showActions]="true" />
           }

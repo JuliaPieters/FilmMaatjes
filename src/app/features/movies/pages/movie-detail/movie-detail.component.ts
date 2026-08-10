@@ -2,6 +2,7 @@ import { Component, computed, HostListener, inject, OnInit, signal } from '@angu
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { MatIcon } from '@angular/material/icon';
 import { MatButton, MatIconButton } from '@angular/material/button';
+import { MatBottomSheet } from '@angular/material/bottom-sheet';
 import { DecimalPipe, DatePipe, Location } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MovieService } from '../../services/movie.service';
@@ -9,6 +10,7 @@ import { TmdbMovie, TmdbMovieDetail, TmdbCastMember } from '../../../../core/mod
 import { LoadingSpinnerComponent } from '../../../../shared/components/loading-spinner/loading-spinner.component';
 import { StarRatingComponent } from '../../../../shared/components/star-rating/star-rating.component';
 import { MovieCardComponent } from '../../../../shared/components/movie-card/movie-card.component';
+import { WatchlistPickerSheetComponent } from '../../../../shared/components/watchlist-picker-sheet/watchlist-picker-sheet.component';
 import { AuthService } from '../../../auth/services/auth.service';
 import { NotificationService } from '../../../../core/services/notification.service';
 import { UserLibraryService } from '../../../../core/services/user-library.service';
@@ -43,6 +45,9 @@ export class MovieDetailComponent implements OnInit {
   protected readonly libraryService = inject(UserLibraryService);
   protected readonly watchlistService = inject(WatchlistService);
   protected readonly reviewService = inject(ReviewService);
+  private readonly bottomSheet = inject(MatBottomSheet);
+
+  private readonly ratingLabels = ['Slecht', 'Matig', 'Goed', 'Heel goed', 'Uitstekend'];
 
   protected readonly movie = signal<TmdbMovieDetail | null>(null);
   protected readonly loading = signal(true);
@@ -176,7 +181,19 @@ export class MovieDetailComponent implements OnInit {
       this.router.navigate(['/auth/login']);
       return;
     }
+    const m = this.movie();
+    if (!m) return;
+
+    if (window.matchMedia('(max-width: 767px)').matches) {
+      this.bottomSheet.open(WatchlistPickerSheetComponent, { data: { movie: m as unknown as TmdbMovie } });
+      return;
+    }
+
     this.showWatchlistPicker.update(v => !v);
+  }
+
+  protected ratingLabelFor(rating: number): string {
+    return this.ratingLabels[rating - 1] ?? '';
   }
 
   @HostListener('document:click')

@@ -4,6 +4,7 @@ import { DecimalPipe } from '@angular/common';
 import { MatIcon } from '@angular/material/icon';
 import { MatRipple } from '@angular/material/core';
 import { MatTooltip } from '@angular/material/tooltip';
+import { MatBottomSheet } from '@angular/material/bottom-sheet';
 import { TmdbMovie } from '../../../core/models/movie.model';
 import { MovieService } from '../../../features/movies/services/movie.service';
 import { UserLibraryService } from '../../../core/services/user-library.service';
@@ -11,6 +12,7 @@ import { WatchlistService } from '../../../features/watchlists/services/watchlis
 import { AuthService } from '../../../features/auth/services/auth.service';
 import { NotificationService } from '../../../core/services/notification.service';
 import { StarRatingComponent } from '../star-rating/star-rating.component';
+import { WatchlistPickerSheetComponent } from '../watchlist-picker-sheet/watchlist-picker-sheet.component';
 
 @Component({
   selector: 'app-movie-card',
@@ -122,6 +124,17 @@ import { StarRatingComponent } from '../star-rating/star-rating.component';
       .movie-card:hover .action-btns { opacity: 1; }
     }
 
+    @media (hover: none) {
+      .poster-overlay { display: none; }
+      .action-btns {
+        opacity: 1;
+        top: 8px;
+        right: 8px;
+      }
+      .action-btns > button:nth-child(2) { display: none; }
+      .action-icon-btn { width: 32px; height: 32px; }
+    }
+
     .card-info { min-height: 2.75rem; overflow: hidden; }
     .action-icon-btn {
       width: 2rem; height: 2rem; border-radius: 50%;
@@ -148,6 +161,7 @@ export class MovieCardComponent {
   private readonly authService = inject(AuthService);
   private readonly notifications = inject(NotificationService);
   private readonly router = inject(Router);
+  private readonly bottomSheet = inject(MatBottomSheet);
 
   protected readonly isWatched = computed(() => this.libraryService.isWatched(this.movie().id));
   protected readonly isInAnyWatchlist = computed(() => this.watchlistService.isMovieInAnyWatchlist(this.movie().id));
@@ -179,6 +193,15 @@ export class MovieCardComponent {
       return;
     }
     const lists = this.watchlistService.watchlists();
+    if (window.matchMedia('(max-width: 767px)').matches) {
+      if (lists.length === 0) {
+        this.notifications.info('Maak eerst een watchlist aan via de Watchlists pagina.');
+        return;
+      }
+      this.bottomSheet.open(WatchlistPickerSheetComponent, { data: { movie: this.movie() } });
+      this.addToWatchlist.emit(this.movie());
+      return;
+    }
     if (lists.length === 0) {
       this.notifications.info('Maak eerst een watchlist aan via de Watchlists pagina.');
       return;

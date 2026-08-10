@@ -11,6 +11,7 @@ import { MatTooltip } from '@angular/material/tooltip';
         <button
           type="button"
           class="star-btn p-0.5 transition-all duration-150"
+          [class.readonly]="readonly()"
           [class.cursor-default]="readonly()"
           [class.cursor-pointer]="!readonly()"
           (mouseenter)="!readonly() && setHover(star)"
@@ -46,6 +47,14 @@ import { MatTooltip } from '@angular/material/tooltip';
     .star-btn:focus-visible {
       outline: 2px solid #7c3aed;
       border-radius: 4px;
+    }
+
+    @media (hover: none) {
+      .star-btn:not(.readonly) {
+        min-width: 44px;
+        min-height: 44px;
+        justify-content: center;
+      }
     }
   `],
 })

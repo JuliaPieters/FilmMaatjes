@@ -34,9 +34,9 @@
             </button>
           </div>
 
-          <!-- RANDOM MODE: existing filters -->
+          <!-- RANDOM MODE: existing filters (desktop sidebar) -->
           @if (mode() === 'random') {
-            <div class="filters-header mt-4">
+            <div class="filters-header mt-4 desktop-only-filters">
               <h3>Filters</h3>
               @if (selectedGenreIds().length > 0 || minRating() > 0 || yearFrom()) {
                 <button mat-button (click)="clearFilters()" class="text-text-muted text-sm">
@@ -45,7 +45,7 @@
               }
             </div>
 
-            <div class="filter-group">
+            <div class="filter-group desktop-only-filters">
               <label class="filter-label">Genre</label>
               <div class="genre-chips">
                 @for (genre of genres; track genre.id) {
@@ -60,7 +60,7 @@
               </div>
             </div>
 
-            <div class="filter-group">
+            <div class="filter-group desktop-only-filters">
               <label class="filter-label">Decennium</label>
               <div class="decade-chips">
                 @for (decade of decadeOptions; track decade.label) {
@@ -75,12 +75,22 @@
               </div>
             </div>
 
-            <div class="filter-group">
+            <div class="filter-group desktop-only-filters">
               <label class="filter-label">Minimale beoordeling: {{ minRating() > 0 ? minRating() + '/10' : 'Alles' }}</label>
               <mat-slider min="0" max="9" step="1" class="w-full">
                 <input matSliderThumb [(ngModel)]="minRatingValue" />
               </mat-slider>
             </div>
+
+            <!-- Mobile: filters as a row that opens a bottom sheet -->
+            <button type="button" class="filters-summary-row mobile-only-filters" (click)="openFilterSheet()">
+              <mat-icon class="filters-summary-icon">tune</mat-icon>
+              <span class="filters-summary-text">
+                <span class="filters-summary-title">Filters</span>
+                <span class="filters-summary-value">{{ filtersSummary() }}</span>
+              </span>
+              <mat-icon class="filters-summary-chevron">chevron_right</mat-icon>
+            </button>
           }
 
           <!-- WATCHLIST MODE -->
