@@ -20,9 +20,28 @@
     </nav>
 
     <div class="navbar-right">
-      <a mat-icon-button routerLink="/movies/search" matTooltip="Zoeken" class="desktop-only">
-        <mat-icon>search</mat-icon>
-      </a>
+      <div class="search-widget desktop-only" [class.open]="searchOpen()">
+        @if (searchOpen()) {
+          <input
+            #searchInput
+            type="text"
+            class="search-input"
+            placeholder="Zoek een film..."
+            autofocus
+            (keydown.enter)="submitSearch(searchInput.value)"
+            (keydown.escape)="closeSearch()"
+          />
+        }
+        <button
+          type="button"
+          mat-icon-button
+          (click)="toggleSearch()"
+          matTooltip="Zoeken"
+          class="search-toggle-btn"
+        >
+          <mat-icon>{{ searchOpen() ? 'close' : 'search' }}</mat-icon>
+        </button>
+      </div>
 
       @if (authService.isAuthenticated()) {
         <a mat-icon-button routerLink="/watchlists" matTooltip="Watchlists" class="desktop-only">

@@ -1,5 +1,5 @@
-import { Component, inject } from '@angular/core';
-import { RouterLink, RouterLinkActive } from '@angular/router';
+import { Component, inject, signal } from '@angular/core';
+import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { DatePipe } from '@angular/common';
 import { MatIcon } from '@angular/material/icon';
 import { MatIconButton, MatButton } from '@angular/material/button';
@@ -33,6 +33,23 @@ export class NavbarComponent {
   protected readonly authService = inject(AuthService);
   protected readonly activityService = inject(FriendActivityService);
   private readonly datePipe = inject(DatePipe);
+  private readonly router = inject(Router);
+
+  protected readonly searchOpen = signal(false);
+
+  protected toggleSearch(): void {
+    this.searchOpen() ? this.closeSearch() : this.searchOpen.set(true);
+  }
+
+  protected closeSearch(): void {
+    this.searchOpen.set(false);
+  }
+
+  protected submitSearch(query: string): void {
+    if (!query.trim()) return;
+    this.router.navigate(['/movies/search'], { queryParams: { q: query.trim() } });
+    this.closeSearch();
+  }
 
   protected markNotificationsSeen(): void {
     this.activityService.markAllSeen();

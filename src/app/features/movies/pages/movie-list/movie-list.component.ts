@@ -1,6 +1,5 @@
 import { Component, computed, DestroyRef, ElementRef, inject, NgZone, signal, viewChild, viewChildren } from '@angular/core';
 import { MatIcon } from '@angular/material/icon';
-import { RouterLink } from '@angular/router';
 import { MovieCardComponent } from '../../../../shared/components/movie-card/movie-card.component';
 import { LoadingSpinnerComponent } from '../../../../shared/components/loading-spinner/loading-spinner.component';
 import { MovieService } from '../../services/movie.service';
@@ -14,7 +13,7 @@ interface CategoryTab {
 
 @Component({
   selector: 'app-movie-list',
-  imports: [MatIcon, RouterLink, MovieCardComponent, LoadingSpinnerComponent],
+  imports: [MatIcon, MovieCardComponent, LoadingSpinnerComponent],
   templateUrl: './movie-list.component.html',
   styleUrl: './movie-list.component.scss',
 })
