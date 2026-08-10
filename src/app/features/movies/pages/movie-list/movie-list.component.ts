@@ -1,4 +1,4 @@
-import { Component, computed, DestroyRef, inject, NgZone, signal } from '@angular/core';
+import { Component, computed, DestroyRef, ElementRef, inject, NgZone, signal, viewChild, viewChildren } from '@angular/core';
 import { MatIcon } from '@angular/material/icon';
 import { RouterLink } from '@angular/router';
 import { MovieCardComponent } from '../../../../shared/components/movie-card/movie-card.component';
@@ -40,6 +40,9 @@ export class MovieListComponent {
   protected readonly totalPages = signal(1);
   protected readonly hasApiKey = this.movieService.hasApiKey();
 
+  private readonly tabBarEl = viewChild<ElementRef<HTMLElement>>('tabBar');
+  private readonly tabButtonEls = viewChildren<ElementRef<HTMLButtonElement>>('tabBtn');
+
   constructor() {
     this.loadMovies();
     this.setupScrollListener();
@@ -72,6 +75,16 @@ export class MovieListComponent {
     this.page.set(1);
     this._movies.set([]);
     this.loadMovies();
+    this.scrollActiveTabIntoView(index);
+  }
+
+  private scrollActiveTabIntoView(index: number): void {
+    const container = this.tabBarEl()?.nativeElement;
+    const button = this.tabButtonEls()[index]?.nativeElement;
+    if (!container || !button) return;
+
+    const targetLeft = button.offsetLeft - (container.clientWidth - button.clientWidth) / 2;
+    container.scrollLeft = Math.max(0, targetLeft);
   }
 
   private loadMoreIfPossible(): void {

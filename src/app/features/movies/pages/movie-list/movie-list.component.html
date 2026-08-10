@@ -1,10 +1,14 @@
 <div class="page-container">
-  <div class="flex items-center justify-between mb-6">
-    <h1 class="text-3xl font-bold text-text-primary tracking-tight">Films</h1>
-    <a mat-stroked-button routerLink="/movies/search">
+  <div class="page-header flex items-center justify-between mb-6">
+    <h1 class="page-title text-3xl font-bold text-text-primary tracking-tight">Films</h1>
+    <a class="header-search-link" mat-stroked-button routerLink="/movies/search">
       <mat-icon>search</mat-icon>
       Zoeken
     </a>
+    <div class="sort-pill">
+      {{ tabs[selectedTab()].label }}
+      <mat-icon>expand_more</mat-icon>
+    </div>
   </div>
 
   @if (!hasApiKey) {
@@ -17,9 +21,10 @@
       </p>
     </div>
   } @else {
-    <div class="tab-bar">
+    <div class="tab-bar" #tabBar>
       @for (tab of tabs; track tab.category) {
         <button
+          #tabBtn
           class="tab-btn"
           [class.active]="selectedTab() === $index"
           (click)="onTabChange($index)"
@@ -45,7 +50,7 @@
       </div>
 
       @if (loading()) {
-        <div class="flex justify-center py-8">
+        <div class="flex justify-center py-8 load-more-spinner">
           <app-loading-spinner [diameter]="36" />
         </div>
       }

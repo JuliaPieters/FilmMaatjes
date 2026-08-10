@@ -65,3 +65,53 @@
   min-height: 300px;
   text-align: center;
 }
+
+.sort-pill {
+  display: none;
+}
+
+@media (max-width: 767px) {
+  .page-header {
+    align-items: center;
+  }
+
+  .page-title {
+    font-size: 1.75rem;
+    letter-spacing: -0.025em;
+  }
+
+  .header-search-link {
+    display: none;
+  }
+
+  .sort-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    height: 34px;
+    padding: 0 0.75rem;
+    border-radius: 999px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #94a3b8;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    white-space: nowrap;
+
+    mat-icon {
+      font-size: 1.125rem;
+      width: 1.125rem;
+      height: 1.125rem;
+    }
+  }
+
+  .tab-btn {
+    height: 36px;
+    padding: 0 0.875rem;
+  }
+
+  .load-more-spinner ::ng-deep .mdc-circular-progress,
+  .load-more-spinner ::ng-deep .mat-mdc-progress-spinner {
+    width: 28px !important;
+    height: 28px !important;
+  }
+}

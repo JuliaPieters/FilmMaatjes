@@ -59,7 +59,7 @@ import { EmptyStateComponent } from '../../../../shared/components/empty-state/e
         />
       } @else if (results().length > 0) {
         <div class="mt-6">
-          <p class="text-text-muted text-sm mb-4">
+          <p class="results-summary text-text-muted mb-4">
             {{ totalResults() }} {{ totalResults() === 1 ? 'resultaat' : 'resultaten' }} voor
             <span class="text-text-secondary">"{{ searchControl.value }}"</span>
           </p>
@@ -112,6 +112,47 @@ import { EmptyStateComponent } from '../../../../shared/components/empty-state/e
         background: rgba(124, 58, 237, 0.15);
         border-color: rgba(124, 58, 237, 0.3);
         color: #a78bfa;
+      }
+    }
+    .results-summary {
+      font-size: 0.875rem;
+    }
+
+    @media (max-width: 767px) {
+      .suggestion-chip {
+        padding: 9px 16px;
+      }
+      .results-summary {
+        font-size: 13px;
+      }
+      .search-field ::ng-deep .mat-mdc-text-field-wrapper {
+        border-radius: 8px 8px 0 0;
+      }
+      .search-field ::ng-deep .mdc-text-field--filled {
+        border-radius: 8px 8px 0 0;
+      }
+      .search-field ::ng-deep .mat-mdc-form-field-infix {
+        min-height: 52px;
+        display: flex;
+        align-items: center;
+      }
+      .search-field ::ng-deep .mdc-floating-label {
+        font-size: 11px;
+      }
+      .search-field ::ng-deep .mdc-floating-label--float-above {
+        color: #a78bfa;
+      }
+      .search-field ::ng-deep .mat-mdc-input-element {
+        font-size: 15px;
+      }
+      .search-field ::ng-deep .mdc-line-ripple::before,
+      .search-field ::ng-deep .mdc-line-ripple::after {
+        border-bottom-width: 2px;
+      }
+      .search-field ::ng-deep .mat-mdc-icon-button.mat-mdc-button-base {
+        width: 44px;
+        height: 44px;
+        padding: 10px;
       }
     }
   `],
