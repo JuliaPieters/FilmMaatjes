@@ -29,6 +29,57 @@ $app-theme: mat.define-theme((
 :root {
   @include mat.all-component-themes($app-theme);
   color-scheme: dark;
+
+  /* Surfaces */
+  --color-surface: #0f0f13;
+  --color-surface-rgb: 15, 15, 19;
+  --color-surface-50: #1a1a24;
+  --color-surface-50-rgb: 26, 26, 36;
+  --color-surface-100: #16161f;
+  --color-surface-100-rgb: 22, 22, 31;
+  --color-surface-200: #12121a;
+  --color-surface-400: #0a0a0e;
+  --color-poster-placeholder: #16162a;
+
+  /* Accent (purple) */
+  --color-accent: #7c3aed;
+  --color-accent-rgb: 124, 58, 237;
+  --color-accent-light: #a78bfa;
+  --color-accent-light-rgb: 167, 139, 250;
+  --color-accent-lighter: #c4b5fd;
+  --color-accent-pale: #e2d9ff;
+  --color-accent-dark: #5b21b6;
+  --color-violet-deep: #1a0533;
+  --color-indigo-rgb: 79, 70, 229;
+
+  /* Status / semantic */
+  --color-gold: #f59e0b;
+  --color-success: #4ade80;
+  --color-success-rgb: 74, 222, 128;
+  --color-danger: #fca5a5;
+  --color-danger-strong: #f87171;
+  --color-danger-strong-rgb: 248, 113, 113;
+  --color-info: #06b6d4;
+  --color-info-rgb: 6, 182, 212;
+  --color-pink: #ec4899;
+  --color-pink-rgb: 236, 72, 153;
+  --color-cyan: #38bdf8;
+  --color-orange: #fb923c;
+  --color-amber: #fbbf24;
+
+  /* Text */
+  --color-text-primary: #f1f5f9;
+  --color-text-secondary: #94a3b8;
+  --color-text-soft: #e2e8f0;
+  --color-text-meta: #64748b;
+  --color-text-muted: #475569;
+  --color-text-body: #cbd5e1;
+
+  /* Borders & neutrals */
+  --color-border: #1e1e2e;
+  --color-white-rgb: 255, 255, 255;
+  --color-black-rgb: 0, 0, 0;
+  --color-scrollbar-thumb: #2a2a3e;
 }
 
 *, *::before, *::after {
@@ -39,8 +90,8 @@ html,
 body {
   height: 100%;
   margin: 0;
-  background-color: #0f0f13;
-  color: #f1f5f9;
+  background-color: var(--color-surface);
+  color: var(--color-text-primary);
   font-family: 'Inter', system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -52,16 +103,16 @@ body {
 }
 
 ::-webkit-scrollbar-track {
-  background: #0f0f13;
+  background: var(--color-surface);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #2a2a3e;
+  background: var(--color-scrollbar-thumb);
   border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #7c3aed;
+  background: var(--color-accent);
 }
 
 a {
@@ -79,16 +130,16 @@ img {
 }
 
 .mat-mdc-snack-bar-container {
-  --mdc-snackbar-container-color: #1a1a24;
-  --mdc-snackbar-supporting-text-color: #f1f5f9;
+  --mdc-snackbar-container-color: var(--color-surface-50);
+  --mdc-snackbar-supporting-text-color: var(--color-text-primary);
 }
 
 .mdc-text-field--filled:not(.mdc-text-field--disabled) {
-  background-color: #16161f !important;
+  background-color: var(--color-surface-100) !important;
 }
 
 .mat-mdc-form-field-focus-overlay {
-  background-color: rgba(124, 58, 237, 0.05) !important;
+  background-color: rgba(var(--color-accent-rgb), 0.05) !important;
 }
 
 .page-container {
@@ -110,7 +161,7 @@ img {
 .section-title {
   font-size: 1.5rem;
   font-weight: 700;
-  color: #f1f5f9;
+  color: var(--color-text-primary);
   margin-bottom: 1.25rem;
   letter-spacing: -0.025em;
 }
@@ -144,7 +195,7 @@ img {
   overflow-x: auto;
   padding-bottom: 1rem;
   scrollbar-width: thin;
-  scrollbar-color: #2a2a3e transparent;
+  scrollbar-color: var(--color-scrollbar-thumb) transparent;
 
   &::-webkit-scrollbar {
     height: 4px;
@@ -187,10 +238,10 @@ img {
 
 @keyframes pulse-glow {
   0%, 100% {
-    box-shadow: 0 0 20px rgba(124, 58, 237, 0.3);
+    box-shadow: 0 0 20px rgba(var(--color-accent-rgb), 0.3);
   }
   50% {
-    box-shadow: 0 0 40px rgba(124, 58, 237, 0.6);
+    box-shadow: 0 0 40px rgba(var(--color-accent-rgb), 0.6);
   }
 }
 
@@ -204,19 +255,19 @@ img {
 }
 
 .glass-card {
-  background: rgba(26, 26, 36, 0.8);
+  background: rgba(var(--color-surface-50-rgb), 0.8);
   backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(var(--color-white-rgb), 0.06);
   border-radius: 12px;
 }
 
 .gradient-text {
-  background: linear-gradient(135deg, #a78bfa 0%, #7c3aed 50%, #5b21b6 100%);
+  background: linear-gradient(135deg, var(--color-accent-light) 0%, var(--color-accent) 50%, var(--color-accent-dark) 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
 
 .accent-gradient {
-  background: linear-gradient(135deg, #7c3aed 0%, #a78bfa 100%);
+  background: linear-gradient(135deg, var(--color-accent) 0%, var(--color-accent-light) 100%);
 }

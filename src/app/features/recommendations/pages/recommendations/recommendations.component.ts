@@ -13,13 +13,6 @@ interface RecommendationGroup {
   movies: TmdbMovie[];
 }
 
-const GENRE_NAMES: Record<number, string> = {
-  28: 'Actie', 12: 'Avontuur', 16: 'Animatie', 35: 'Komedie', 80: 'Misdaad',
-  99: 'Documentaire', 18: 'Drama', 10751: 'Familie', 14: 'Fantasy', 36: 'Geschiedenis',
-  27: 'Horror', 10402: 'Muziek', 9648: 'Mystery', 10749: 'Romantiek', 878: 'Sci-Fi',
-  10770: 'TV-film', 53: 'Thriller', 10752: 'Oorlog', 37: 'Western',
-};
-
 @Component({
   selector: 'app-recommendations',
   imports: [MatIcon, MovieCardComponent, LoadingSpinnerComponent, EmptyStateComponent],
@@ -71,7 +64,7 @@ const GENRE_NAMES: Record<number, string> = {
     @media (max-width: 767px) {
       .rec-subtitle {
         font-size: 14px;
-        color: #64748b;
+        color: var(--color-text-meta);
       }
     }
   `],
@@ -83,19 +76,9 @@ export class RecommendationsComponent {
   protected readonly loading = signal(true);
   protected readonly groups = signal<RecommendationGroup[]>([]);
 
-  protected readonly topGenres = computed(() => {
-    const rated = this.library.ratedMovies().filter(e => e.rating >= 4);
-    const freq: Record<number, number> = {};
-    for (const entry of rated) {
-      for (const g of (entry.movie.genre_ids ?? [])) {
-        freq[g] = (freq[g] ?? 0) + 1;
-      }
-    }
-    return Object.entries(freq)
-      .sort((a, b) => b[1] - a[1])
-      .slice(0, 3)
-      .map(([id]) => Number(id));
-  });
+  protected readonly topGenres = computed(() =>
+    this.library.getTopGenres({ minRating: 4, limit: 3 }),
+  );
 
   constructor() {
     // Reactive: re-runs when Firestore ratings finish loading (ratedMovies changes)
@@ -135,7 +118,7 @@ export class RecommendationsComponent {
       this.movieService.discoverMovies({ with_genres: String(genreId), 'vote_average.gte': 6.5 }).subscribe({
         next: page => {
           result[i] = {
-            reason: `Omdat je van ${GENRE_NAMES[genreId] ?? 'dit genre'} houdt`,
+            reason: `Omdat je van ${this.movieService.getGenreName(genreId) ?? 'dit genre'} houdt`,
             icon: 'favorite',
             movies: page.results.filter(m => !watchedIds.has(m.id)).slice(0, 10),
           };

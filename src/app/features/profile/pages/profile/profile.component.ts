@@ -6,7 +6,6 @@ import { MatButton } from '@angular/material/button';
 import { FormsModule } from '@angular/forms';
 import { DatePipe } from '@angular/common';
 import { firstValueFrom } from 'rxjs';
-import { collection, getDocs, query, where } from 'firebase/firestore';
 import { AuthService } from '../../../auth/services/auth.service';
 import { UserLibraryService } from '../../../../core/services/user-library.service';
 import { WatchlistService } from '../../../watchlists/services/watchlist.service';
@@ -19,7 +18,6 @@ import { StarRatingComponent } from '../../../../shared/components/star-rating/s
 import { User } from '../../../../core/models/user.model';
 import { Watchlist } from '../../../../core/models/watchlist.model';
 import { Review } from '../../../../core/models/review.model';
-import { db } from '../../../../core/firebase';
 
 @Component({
   selector: 'app-profile',
@@ -388,7 +386,7 @@ import { db } from '../../../../core/firebase';
 
     .profile-banner {
       height: 200px;
-      background: linear-gradient(135deg, #1a0533 0%, #12121a 40%, #0f0f13 100%);
+      background: linear-gradient(135deg, var(--color-violet-deep) 0%, var(--color-surface-200) 40%, var(--color-surface) 100%);
       position: relative;
       &::after {
         content: '';
@@ -408,8 +406,8 @@ import { db } from '../../../../core/firebase';
     }
 
     .profile-avatar {
-      width: 96px; height: 96px; border-radius: 50%; border: 4px solid #0f0f13;
-      background: linear-gradient(135deg, #7c3aed, #a78bfa);
+      width: 96px; height: 96px; border-radius: 50%; border: 4px solid var(--color-surface);
+      background: linear-gradient(135deg, var(--color-accent), var(--color-accent-light));
       display: flex; align-items: center; justify-content: center;
       font-size: 2.5rem; font-weight: 700; color: white; flex-shrink: 0; overflow: hidden;
       position: relative;
@@ -417,16 +415,16 @@ import { db } from '../../../../core/firebase';
     }
 
     .profile-info { flex: 1; }
-    .profile-name { font-size: 1.75rem; font-weight: 800; color: #f1f5f9; letter-spacing: -0.03em; margin: 0; }
-    .profile-username { font-size: 0.875rem; color: #64748b; margin: 0.25rem 0; }
-    .profile-bio { font-size: 0.875rem; color: #94a3b8; margin: 0.5rem 0; }
+    .profile-name { font-size: 1.75rem; font-weight: 800; color: var(--color-text-primary); letter-spacing: -0.03em; margin: 0; }
+    .profile-username { font-size: 0.875rem; color: var(--color-text-meta); margin: 0.25rem 0; }
+    .profile-bio { font-size: 0.875rem; color: var(--color-text-secondary); margin: 0.5rem 0; }
 
     .profile-stats {
       display: flex; gap: 1.5rem; margin-top: 0.75rem; flex-wrap: wrap;
       @media (min-width: 768px) { gap: 2rem; }
       .stat { display: flex; flex-direction: column; align-items: center; gap: 0.125rem; }
-      .stat-value { font-size: 1.25rem; font-weight: 700; color: #f1f5f9; }
-      .stat-label { font-size: 0.75rem; color: #64748b; }
+      .stat-value { font-size: 1.25rem; font-weight: 700; color: var(--color-text-primary); }
+      .stat-label { font-size: 0.75rem; color: var(--color-text-meta); }
     }
 
     .profile-actions {
@@ -439,30 +437,30 @@ import { db } from '../../../../core/firebase';
     .profile-tabs {
       display: flex; gap: 0.5rem; overflow-x: auto;
       scrollbar-width: none; &::-webkit-scrollbar { display: none; }
-      border-bottom: 1px solid rgba(255,255,255,0.06); padding-bottom: 0;
+      border-bottom: 1px solid rgba(var(--color-white-rgb),0.06); padding-bottom: 0;
     }
 
     .profile-tab {
       display: inline-flex; align-items: center; gap: 0.375rem;
       padding: 0.625rem 1rem; border: none; background: transparent;
-      color: #64748b; font-size: 0.875rem; font-weight: 500; cursor: pointer;
+      color: var(--color-text-meta); font-size: 0.875rem; font-weight: 500; cursor: pointer;
       border-bottom: 2px solid transparent; margin-bottom: -1px; white-space: nowrap;
       transition: all 0.15s ease;
       mat-icon { font-size: 1rem; width: 1rem; height: 1rem; }
-      &:hover { color: #94a3b8; }
-      &.active { color: #a78bfa; border-bottom-color: #7c3aed; }
+      &:hover { color: var(--color-text-secondary); }
+      &.active { color: var(--color-accent-light); border-bottom-color: var(--color-accent); }
       @media (max-width: 767px) { padding: 0.5rem 0.75rem; font-size: 0.8125rem; }
     }
 
     .empty-state {
       display: flex; flex-direction: column; align-items: center;
-      gap: 1rem; padding: 4rem 2rem; color: #475569; text-align: center;
-      mat-icon { font-size: 3rem; width: 3rem; height: 3rem; }
+      gap: 1rem; padding: 5rem 1.5rem; color: var(--color-text-muted); text-align: center;
+      mat-icon { font-size: 2.5rem; width: 2.5rem; height: 2.5rem; }
       p { font-size: 0.875rem; }
     }
 
     .rated-grid {
-      display: grid; gap: 0.75rem;
+      display: grid; gap: 1rem;
       grid-template-columns: 1fr;
       @media (min-width: 640px) { grid-template-columns: repeat(2, 1fr); }
       @media (min-width: 1024px) { grid-template-columns: repeat(3, 1fr); }
@@ -470,43 +468,41 @@ import { db } from '../../../../core/firebase';
 
     .rated-item {
       display: flex; align-items: center; gap: 0.875rem; padding: 0.75rem;
-      background: rgba(26,26,36,0.6); border: 1px solid rgba(255,255,255,0.06);
+      background: rgba(var(--color-surface-50-rgb),0.6); border: 1px solid rgba(var(--color-white-rgb),0.06);
       border-radius: 10px; text-decoration: none; transition: border-color 0.15s;
-      &:hover { border-color: rgba(124,58,237,0.3); }
+      &:hover { border-color: rgba(var(--color-accent-rgb),0.3); }
     }
 
     .rated-poster {
-      width: 48px; height: 72px; border-radius: 6px; overflow: hidden; flex-shrink: 0;
+      width: 48px; height: 72px; border-radius: 8px; overflow: hidden; flex-shrink: 0;
       img { width: 100%; height: 100%; object-fit: cover; }
     }
 
     .rated-info { flex: 1; min-width: 0; }
-    .rated-title { font-size: 0.875rem; font-weight: 600; color: #f1f5f9; margin: 0 0 0.375rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .rated-title { font-size: 0.875rem; font-weight: 600; color: var(--color-text-primary); margin: 0 0 0.375rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
     .wl-grid {
       display: grid; gap: 1rem;
       grid-template-columns: 1fr;
       @media (min-width: 640px) { grid-template-columns: repeat(2, 1fr); }
       @media (min-width: 1024px) { grid-template-columns: repeat(3, 1fr); }
-      @media (max-width: 767px) { grid-template-columns: 1fr; gap: 0.625rem; }
     }
 
     .wl-card {
       display: flex; align-items: center; gap: 1rem; padding: 1rem;
       text-decoration: none; cursor: pointer;
-      &:hover { border-color: rgba(124,58,237,0.3) !important; }
+      &:hover { border-color: rgba(var(--color-accent-rgb),0.3) !important; }
       @media (max-width: 767px) { padding: 0.75rem 0.875rem; gap: 0.75rem; }
     }
 
     .wl-icon {
-      width: 44px; height: 44px; border-radius: 10px; background: rgba(124,58,237,0.2);
+      width: 44px; height: 44px; border-radius: 10px; background: rgba(var(--color-accent-rgb),0.2);
       display: flex; align-items: center; justify-content: center; flex-shrink: 0;
-      mat-icon { color: #a78bfa; }
-      @media (max-width: 767px) { width: 40px; height: 40px; }
+      mat-icon { color: var(--color-accent-light); }
     }
 
-    .wl-name { font-size: 0.9375rem; font-weight: 600; color: #f1f5f9; margin: 0; }
-    .wl-count { font-size: 0.8125rem; color: #64748b; margin: 0.125rem 0 0; }
+    .wl-name { font-size: 0.9375rem; font-weight: 600; color: var(--color-text-primary); margin: 0; }
+    .wl-count { font-size: 0.8125rem; color: var(--color-text-meta); margin: 0.125rem 0 0; }
 
     .public-wl-list { display: flex; flex-direction: column; gap: 0.625rem; }
 
@@ -516,13 +512,14 @@ import { db } from '../../../../core/firebase';
       display: flex; align-items: center; gap: 0.875rem; padding: 0.875rem 1rem;
       width: 100%; border: none; cursor: pointer; text-align: left;
       transition: border-color 0.15s;
-      &:hover { border-color: rgba(124,58,237,0.3) !important; }
+      &:hover { border-color: rgba(var(--color-accent-rgb),0.3) !important; }
       @media (max-width: 767px) { padding: 0.75rem 0.875rem; gap: 0.75rem; }
     }
 
     .wl-chevron {
-      color: #64748b; flex-shrink: 0; transition: transform 0.2s ease;
-      &.rotated { transform: rotate(180deg); color: #a78bfa; }
+      color: var(--color-text-meta); font-size: 1.25rem; width: 1.25rem; height: 1.25rem;
+      flex-shrink: 0; transition: transform 0.2s ease;
+      &.rotated { transform: rotate(180deg); color: var(--color-accent-light); }
     }
 
     .reviews-list {
@@ -530,26 +527,26 @@ import { db } from '../../../../core/firebase';
     }
 
     .review-card {
-      display: flex; flex-direction: row; gap: 0.875rem; padding: 0.75rem;
+      display: flex; flex-direction: row; gap: 0.875rem; padding: 1rem;
       text-decoration: none; transition: border-color 0.15s; align-items: flex-start;
-      &:hover { border-color: rgba(124,58,237,0.3) !important; }
+      &:hover { border-color: rgba(var(--color-accent-rgb),0.3) !important; }
     }
 
     .review-poster {
-      width: 56px; height: 84px; border-radius: 6px; overflow: hidden; flex-shrink: 0;
-      background: rgba(255,255,255,0.05);
+      width: 56px; height: 84px; border-radius: 8px; overflow: hidden; flex-shrink: 0;
+      background: rgba(var(--color-white-rgb),0.05);
       img { width: 100%; height: 100%; object-fit: cover; display: block; }
     }
 
     .review-poster-placeholder {
       width: 100%; height: 100%; display: flex; align-items: center; justify-content: center;
-      mat-icon { color: #475569; font-size: 1.5rem; width: 1.5rem; height: 1.5rem; }
+      mat-icon { color: var(--color-text-muted); font-size: 1.5rem; width: 1.5rem; height: 1.5rem; }
     }
 
     .review-body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 0.375rem; }
 
     .review-movie-title {
-      font-size: 0.9375rem; font-weight: 600; color: #f1f5f9; margin: 0;
+      font-size: 0.9375rem; font-weight: 600; color: var(--color-text-primary); margin: 0;
       white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
     }
 
@@ -557,35 +554,35 @@ import { db } from '../../../../core/firebase';
       display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;
     }
 
-    .review-date { font-size: 0.8125rem; color: #64748b; }
+    .review-date { font-size: 0.8125rem; color: var(--color-text-meta); }
 
     .review-content {
-      font-size: 0.875rem; color: #94a3b8; line-height: 1.6; margin: 0;
+      font-size: 0.875rem; color: var(--color-text-secondary); line-height: 1.6; margin: 0;
       display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;
     }
 
-    .edit-form { border: 1px solid rgba(124,58,237,0.3); }
+    .edit-form { border: 1px solid rgba(var(--color-accent-rgb),0.3); }
     .edit-fields { display: flex; flex-direction: column; gap: 1rem; }
     .field-group { display: flex; flex-direction: column; gap: 0.375rem; }
-    .field-label { font-size: 0.8125rem; font-weight: 600; color: #64748b; }
+    .field-label { font-size: 0.8125rem; font-weight: 600; color: var(--color-text-meta); }
     .field-input {
-      background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1);
-      border-radius: 8px; color: #f1f5f9; padding: 0.625rem 0.875rem;
+      background: rgba(var(--color-white-rgb),0.04); border: 1px solid rgba(var(--color-white-rgb),0.1);
+      border-radius: 8px; color: var(--color-text-primary); padding: 0.625rem 0.875rem;
       font-size: 0.9375rem; outline: none; font-family: inherit; width: 100%; box-sizing: border-box;
-      &:focus { border-color: rgba(124,58,237,0.5); }
-      &::placeholder { color: #475569; }
+      &:focus { border-color: rgba(var(--color-accent-rgb),0.5); }
+      &::placeholder { color: var(--color-text-muted); }
     }
     .field-textarea { resize: vertical; line-height: 1.5; }
     .settings-section-title {
       display: flex; align-items: center; gap: 0.5rem;
-      font-size: 1rem; font-weight: 600; color: #f1f5f9; margin: 0 0 0.375rem;
-      mat-icon { font-size: 1.125rem; width: 1.125rem; height: 1.125rem; color: #a78bfa; }
+      font-size: 1rem; font-weight: 600; color: var(--color-text-primary); margin: 0 0 0.375rem;
+      mat-icon { font-size: 1.125rem; width: 1.125rem; height: 1.125rem; color: var(--color-accent-light); }
     }
-    .settings-section-desc { font-size: 0.8125rem; color: #64748b; margin: 0 0 1.25rem; }
-    .settings-error { font-size: 0.8125rem; color: #f87171; margin: 0.75rem 0 0; }
+    .settings-section-desc { font-size: 0.8125rem; color: var(--color-text-meta); margin: 0 0 1.25rem; }
+    .settings-error { font-size: 0.8125rem; color: var(--color-danger-strong); margin: 0.75rem 0 0; }
     .settings-success {
       display: flex; align-items: flex-start; gap: 0.5rem;
-      font-size: 0.875rem; color: #4ade80; line-height: 1.5;
+      font-size: 0.875rem; color: var(--color-success); line-height: 1.5;
       mat-icon { font-size: 1.125rem; width: 1.125rem; height: 1.125rem; flex-shrink: 0; margin-top: 1px; }
     }
   `],
@@ -690,15 +687,10 @@ export class ProfileComponent implements OnInit {
           this.loading.set(true);
           this.friendProfileWatchlists.set([]);
           this.publicActiveTab.set('watchlists');
-          getDocs(query(collection(db, 'users'), where('username', '==', username)))
-            .then(snap => {
-              if (snap.empty) {
-                this.user.set(null);
-              } else {
-                const userDoc = snap.docs[0];
-                this.user.set({ id: userDoc.id, ...userDoc.data() } as User);
-                this.loadFriendData(userDoc.id);
-              }
+          firstValueFrom(this.authService.getUserByUsername(username))
+            .then(foundUser => {
+              this.user.set(foundUser);
+              if (foundUser) this.loadFriendData(foundUser.id);
               this.loading.set(false);
             })
             .catch(() => {
@@ -720,12 +712,11 @@ export class ProfileComponent implements OnInit {
     this.friendProfileWatchlists.set([]);
 
     Promise.all([
-      getDocs(query(collection(db, 'friendRequests'), where('senderId', '==', userId), where('status', '==', 'accepted'))),
-      getDocs(query(collection(db, 'friendRequests'), where('receiverId', '==', userId), where('status', '==', 'accepted'))),
+      firstValueFrom(this.friendsService.getAcceptedFriendCount(userId)),
       firstValueFrom(this.watchlistService.loadFriendWatchlists(userId)),
       firstValueFrom(this.reviewService.getUserReviews(userId)),
-    ]).then(async ([sentSnap, receivedSnap, watchlists, reviews]) => {
-      this.friendActualCount.set(sentSnap.size + receivedSnap.size);
+    ]).then(async ([friendCount, watchlists, reviews]) => {
+      this.friendActualCount.set(friendCount);
       this.friendProfileWatchlists.set(watchlists);
 
       const missing = reviews.filter(r => !r.moviePosterPath);

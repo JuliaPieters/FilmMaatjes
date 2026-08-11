@@ -117,6 +117,31 @@ export class UserLibraryService {
       .sort((a, b) => (b.ratedAt ?? '').localeCompare(a.ratedAt ?? ''))
   );
 
+  /**
+   * Genre ids the user gravitates towards, ranked by how often (optionally
+   * weighted by rating) they show up across their rated movies. Shared by
+   * dashboard, recommendations and roulette so the "favorite genre" notion
+   * stays consistent instead of each screen reimplementing its own count.
+   */
+  getTopGenres(options?: { minRating?: number; weighted?: boolean; limit?: number }): number[] {
+    const minRating = options?.minRating ?? 0;
+    const weighted = options?.weighted ?? false;
+    const limit = options?.limit ?? 3;
+
+    const rated = this.ratedMovies().filter(e => e.rating >= minRating);
+    const counts: Record<number, number> = {};
+    for (const entry of rated) {
+      for (const genreId of (entry.movie.genre_ids ?? [])) {
+        counts[genreId] = (counts[genreId] ?? 0) + (weighted ? entry.rating : 1);
+      }
+    }
+
+    return Object.entries(counts)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, limit)
+      .map(([id]) => Number(id));
+  }
+
   isWatched(movieId: number): boolean {
     const gezien = this.watchlistService.watchlists().find(wl => wl.name === 'Gezien');
     return (gezien?.movies ?? []).some(m => m.movieId === movieId);

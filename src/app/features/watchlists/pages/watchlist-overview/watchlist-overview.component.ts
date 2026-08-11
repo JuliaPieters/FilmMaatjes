@@ -1,6 +1,6 @@
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, computed, inject } from '@angular/core';
 import { MatIcon } from '@angular/material/icon';
-import { MatButton, MatFabButton } from '@angular/material/button';
+import { MatButton, MatFabButton, MatIconButton } from '@angular/material/button';
 import { RouterLink } from '@angular/router';
 import { WatchlistService } from '../../services/watchlist.service';
 import { Watchlist } from '../../../../core/models/watchlist.model';
@@ -11,7 +11,7 @@ import { MovieService } from '../../../movies/services/movie.service';
 
 @Component({
   selector: 'app-watchlist-overview',
-  imports: [MatIcon, MatButton, MatFabButton, RouterLink, LoadingSpinnerComponent, EmptyStateComponent],
+  imports: [MatIcon, MatButton, MatFabButton, MatIconButton, RouterLink, LoadingSpinnerComponent, EmptyStateComponent],
   template: `
     <div class="page-container">
       <div class="flex items-center justify-between mb-6">
@@ -34,10 +34,10 @@ import { MovieService } from '../../../movies/services/movie.service';
       } @else {
         <div class="watchlist-grid">
           @for (list of watchlists(); track list.id) {
-            <a class="watchlist-card glass-card p-5 hover:border-accent/30 transition-all cursor-pointer block no-underline"
+            <a class="watchlist-card glass-card p-4 hover:border-accent/30 transition-all cursor-pointer block no-underline"
                [routerLink]="['/watchlists', list.id]">
-              <div class="flex items-start justify-between mb-3">
-                <div class="list-icon w-10 h-10 rounded-lg bg-accent/20 flex items-center justify-center flex-shrink-0">
+              <div class="flex items-center justify-between mb-3">
+                <div class="list-icon w-11 h-11 bg-accent/20 flex items-center justify-center flex-shrink-0">
                   <mat-icon class="text-accent-light">bookmark</mat-icon>
                 </div>
                 <div class="flex gap-1">
@@ -55,7 +55,7 @@ import { MovieService } from '../../../movies/services/movie.service';
                 <span>{{ (list.movies.length || list._count?.movies || 0) }} films</span>
                 @if (list.isPublic) {
                   <span class="ml-auto flex items-center gap-1">
-                    <mat-icon style="font-size: 0.875rem; width: 0.875rem; height: 0.875rem;">public</mat-icon>
+                    <mat-icon style="font-size: 1rem; width: 1rem; height: 1rem;">public</mat-icon>
                     Publiek
                   </span>
                 }
@@ -103,6 +103,10 @@ import { MovieService } from '../../../movies/services/movie.service';
       display: none;
     }
 
+    .list-icon {
+      border-radius: 10px;
+    }
+
     @media (max-width: 767px) {
       .header-new-btn {
         display: none;
@@ -119,8 +123,8 @@ import { MovieService } from '../../../movies/services/movie.service';
         height: 56px;
         min-width: 56px;
         border-radius: 50%;
-        background-color: #7c3aed !important;
-        box-shadow: 0 8px 30px rgba(124, 58, 237, 0.45);
+        background-color: var(--color-accent) !important;
+        box-shadow: 0 8px 30px rgba(var(--color-accent-rgb), 0.45);
         z-index: 40;
         color: #fff !important;
       }
@@ -133,15 +137,9 @@ import { MovieService } from '../../../movies/services/movie.service';
       }
 
       .watchlist-card {
-        padding: 18px;
         border-radius: 12px;
-        background: rgba(26, 26, 36, 0.8);
-        border: 1px solid rgba(255, 255, 255, 0.06);
-      }
-
-      .list-icon {
-        width: 44px;
-        height: 44px;
+        background: rgba(var(--color-surface-50-rgb), 0.8);
+        border: 1px solid rgba(var(--color-white-rgb), 0.06);
       }
 
       .delete-btn {
@@ -157,7 +155,7 @@ import { MovieService } from '../../../movies/services/movie.service';
 
       .list-description {
         font-size: 14px;
-        color: #64748b;
+        color: var(--color-text-meta);
       }
 
       .poster-strip {
@@ -169,7 +167,7 @@ import { MovieService } from '../../../movies/services/movie.service';
       .poster-thumb {
         width: 48px;
         height: 72px;
-        border-radius: 6px;
+        border-radius: 8px;
         object-fit: cover;
         flex-shrink: 0;
       }
@@ -178,8 +176,8 @@ import { MovieService } from '../../../movies/services/movie.service';
         display: flex;
         align-items: center;
         justify-content: center;
-        background: rgba(124, 58, 237, 0.15);
-        color: #a78bfa;
+        background: rgba(var(--color-accent-rgb), 0.15);
+        color: var(--color-accent-light);
         font-size: 13px;
         font-weight: 600;
       }

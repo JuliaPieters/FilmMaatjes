@@ -77,9 +77,9 @@ import { NotificationService } from '../../../../core/services/notification.serv
       height: 28px;
       border-radius: 50%;
       border: none;
-      background: rgba(0, 0, 0, 0.7);
+      background: rgba(var(--color-black-rgb), 0.7);
       backdrop-filter: blur(4px);
-      color: #f1f5f9;
+      color: var(--color-text-primary);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -120,7 +120,7 @@ import { NotificationService } from '../../../../core/services/notification.serv
         display: block;
         margin-top: 2px;
         font-size: 13px;
-        color: #64748b;
+        color: var(--color-text-meta);
       }
 
       .card-grid {

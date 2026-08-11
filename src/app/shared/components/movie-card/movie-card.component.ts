@@ -1,18 +1,15 @@
-import { Component, computed, inject, input, output, signal } from '@angular/core';
-import { Router, RouterLink } from '@angular/router';
+import { Component, computed, inject, input, output } from '@angular/core';
+import { RouterLink } from '@angular/router';
 import { DecimalPipe } from '@angular/common';
 import { MatIcon } from '@angular/material/icon';
 import { MatRipple } from '@angular/material/core';
 import { MatTooltip } from '@angular/material/tooltip';
-import { MatBottomSheet } from '@angular/material/bottom-sheet';
 import { TmdbMovie } from '../../../core/models/movie.model';
 import { MovieService } from '../../../features/movies/services/movie.service';
 import { UserLibraryService } from '../../../core/services/user-library.service';
 import { WatchlistService } from '../../../features/watchlists/services/watchlist.service';
-import { AuthService } from '../../../features/auth/services/auth.service';
-import { NotificationService } from '../../../core/services/notification.service';
+import { MovieActionsService } from '../../../core/services/movie-actions.service';
 import { StarRatingComponent } from '../star-rating/star-rating.component';
-import { WatchlistPickerSheetComponent } from '../watchlist-picker-sheet/watchlist-picker-sheet.component';
 
 @Component({
   selector: 'app-movie-card',
@@ -21,7 +18,7 @@ import { WatchlistPickerSheetComponent } from '../watchlist-picker-sheet/watchli
     <div
       class="movie-card relative cursor-pointer"
       matRipple
-      [matRippleColor]="'rgba(124, 58, 237, 0.1)'"
+      [matRippleColor]="'rgba(var(--color-accent-rgb), 0.1)'"
     >
       <a [routerLink]="['/movies', movie().id]" class="block">
         <div class="poster-wrap rounded-card bg-surface-50">
@@ -94,7 +91,7 @@ import { WatchlistPickerSheetComponent } from '../watchlist-picker-sheet/watchli
       width: 100%;
       aspect-ratio: 2/3;
       overflow: hidden;
-      background: #16162a;
+      background: var(--color-poster-placeholder);
       transform: translateZ(0);
     }
 
@@ -138,14 +135,14 @@ import { WatchlistPickerSheetComponent } from '../watchlist-picker-sheet/watchli
     .card-info { min-height: 2.75rem; overflow: hidden; }
     .action-icon-btn {
       width: 2rem; height: 2rem; border-radius: 50%;
-      background: rgba(0,0,0,0.6); backdrop-filter: blur(4px);
+      background: rgba(var(--color-black-rgb),0.6); backdrop-filter: blur(4px);
       display: flex; align-items: center; justify-content: center;
       border: none; cursor: pointer; color: white;
       transition: background 0.15s;
-      &:hover { background: rgba(124,58,237,0.7); }
+      &:hover { background: rgba(var(--color-accent-rgb),0.7); }
     }
-    .action-active-purple { background: rgba(124,58,237,0.8) !important; color: white; }
-    .action-active-green { background: rgba(74,222,128,0.25) !important; color: #4ade80; }
+    .action-active-purple { background: rgba(var(--color-accent-rgb),0.8) !important; color: white; }
+    .action-active-green { background: rgba(var(--color-success-rgb),0.25) !important; color: var(--color-success); }
   `],
 })
 export class MovieCardComponent {
@@ -158,10 +155,7 @@ export class MovieCardComponent {
   protected readonly movieService = inject(MovieService);
   private readonly libraryService = inject(UserLibraryService);
   private readonly watchlistService = inject(WatchlistService);
-  private readonly authService = inject(AuthService);
-  private readonly notifications = inject(NotificationService);
-  private readonly router = inject(Router);
-  private readonly bottomSheet = inject(MatBottomSheet);
+  private readonly movieActions = inject(MovieActionsService);
 
   protected readonly isWatched = computed(() => this.libraryService.isWatched(this.movie().id));
   protected readonly isInAnyWatchlist = computed(() => this.watchlistService.isMovieInAnyWatchlist(this.movie().id));
@@ -176,48 +170,14 @@ export class MovieCardComponent {
   protected onMarkWatched(event: MouseEvent): void {
     event.preventDefault();
     event.stopPropagation();
-    if (!this.authService.isAuthenticated()) {
-      this.router.navigate(['/auth/login']);
-      return;
-    }
-    const newState = this.libraryService.toggleWatched(this.movie());
-    this.notifications.success(newState ? 'Gemarkeerd als gezien!' : 'Markering verwijderd');
+    this.movieActions.toggleWatched(this.movie());
     this.markWatched.emit(this.movie());
   }
 
   protected onAddToWatchlist(event: MouseEvent): void {
     event.preventDefault();
     event.stopPropagation();
-    if (!this.authService.isAuthenticated()) {
-      this.router.navigate(['/auth/login']);
-      return;
-    }
-    const lists = this.watchlistService.watchlists();
-    if (window.matchMedia('(max-width: 767px)').matches) {
-      if (lists.length === 0) {
-        this.notifications.info('Maak eerst een watchlist aan via de Watchlists pagina.');
-        return;
-      }
-      this.bottomSheet.open(WatchlistPickerSheetComponent, { data: { movie: this.movie() } });
-      this.addToWatchlist.emit(this.movie());
-      return;
-    }
-    if (lists.length === 0) {
-      this.notifications.info('Maak eerst een watchlist aan via de Watchlists pagina.');
-      return;
-    }
-    if (lists.length === 1) {
-      const wl = lists[0];
-      if (this.watchlistService.isMovieInWatchlist(wl.id, this.movie().id)) {
-        this.watchlistService.removeMovie(wl.id, this.movie().id).subscribe();
-        this.notifications.success(`Verwijderd uit "${wl.name}"`);
-      } else {
-        this.watchlistService.addMovie(wl.id, this.movie()).subscribe();
-        this.notifications.success(`Toegevoegd aan "${wl.name}"`);
-      }
-    } else {
-      this.router.navigate(['/movies', this.movie().id]);
-    }
+    this.movieActions.toggleWatchlist(this.movie());
     this.addToWatchlist.emit(this.movie());
   }
 }

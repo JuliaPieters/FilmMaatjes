@@ -1,6 +1,6 @@
 import { computed, inject, Injectable, signal } from '@angular/core';
 import { Router } from '@angular/router';
-import { from, Observable, throwError } from 'rxjs';
+import { from, Observable, of, throwError } from 'rxjs';
 import { catchError, finalize } from 'rxjs/operators';
 import {
   signInWithEmailAndPassword,
@@ -14,7 +14,7 @@ import {
   reauthenticateWithCredential,
   EmailAuthProvider,
 } from 'firebase/auth';
-import { doc, setDoc, getDoc, updateDoc } from 'firebase/firestore';
+import { doc, setDoc, getDoc, updateDoc, collection, query, where, getDocs } from 'firebase/firestore';
 import { auth, db } from '../../../core/firebase';
 import { LoginDto, RegisterDto, User } from '../../../core/models/user.model';
 
@@ -133,6 +133,18 @@ export class AuthService {
         return throwError(() => ({ error: { message: this.mapError(err.code) } }));
       }),
       finalize(() => this._loading.set(false)),
+    );
+  }
+
+  getUserByUsername(username: string): Observable<User | null> {
+    return from(
+      getDocs(query(collection(db, 'users'), where('username', '==', username))).then(snap => {
+        if (snap.empty) return null;
+        const userDoc = snap.docs[0];
+        return { id: userDoc.id, ...userDoc.data() } as User;
+      }),
+    ).pipe(
+      catchError(() => of(null)),
     );
   }
 

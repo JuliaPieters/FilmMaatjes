@@ -32,25 +32,25 @@ export class LandingComponent implements OnInit {
       icon: 'star',
       title: 'Beoordeel films',
       description: 'Geef je mening met een beoordeling van 1 tot 5 sterren en schrijf uitgebreide reviews.',
-      color: '#f59e0b',
+      color: 'var(--color-gold)',
     },
     {
       icon: 'bookmark',
       title: 'Watchlists',
       description: 'Maak persoonlijke lijsten aan voor films die je wilt kijken of al hebt gezien.',
-      color: '#7c3aed',
+      color: 'var(--color-accent)',
     },
     {
       icon: 'people',
       title: 'Vrienden',
       description: 'Volg vrienden, bekijk hun beoordelingen en ontdek films samen.',
-      color: '#06b6d4',
+      color: 'var(--color-info)',
     },
     {
       icon: 'casino',
       title: 'Film Roulette',
       description: 'Geen idee wat je wilt kijken? Laat ons een willekeurige film voor je kiezen!',
-      color: '#ec4899',
+      color: 'var(--color-pink)',
     },
   ];
 

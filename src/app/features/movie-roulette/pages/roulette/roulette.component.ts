@@ -129,19 +129,9 @@ export class RouletteComponent implements OnInit {
   });
 
   // Recommended mode
-  protected readonly topGenreIds = computed(() => {
-    const rated = this.libraryService.ratedMovies().filter(e => e.rating >= 4);
-    const counts: Record<number, number> = {};
-    for (const entry of rated) {
-      for (const gId of (entry.movie.genre_ids ?? [])) {
-        counts[gId] = (counts[gId] ?? 0) + entry.rating;
-      }
-    }
-    return Object.entries(counts)
-      .sort((a, b) => Number(b[1]) - Number(a[1]))
-      .slice(0, 3)
-      .map(([id]) => Number(id));
-  });
+  protected readonly topGenreIds = computed(() =>
+    this.libraryService.getTopGenres({ minRating: 4, weighted: true, limit: 3 }),
+  );
 
   protected readonly topGenreNames = computed(() =>
     this.topGenreIds()

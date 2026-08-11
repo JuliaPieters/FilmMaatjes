@@ -10,8 +10,10 @@ import { MatIcon } from '@angular/material/icon';
       @for (tab of tabs; track tab.route) {
         <a
           [routerLink]="tab.route"
-          routerLinkActive="tab-active"
+          routerLinkActive
+          #rla="routerLinkActive"
           [routerLinkActiveOptions]="{ exact: tab.exact }"
+          [class.tab-active]="rla.isActive"
           class="tab-item"
         >
           <mat-icon class="tab-icon">{{ tab.icon }}</mat-icon>
@@ -28,9 +30,9 @@ import { MatIcon } from '@angular/material/icon';
       left: 0;
       right: 0;
       z-index: 100;
-      background: rgba(15, 15, 19, 0.94);
+      background: rgba(var(--color-surface-rgb), 0.94);
       backdrop-filter: blur(12px);
-      border-top: 1px solid rgba(255, 255, 255, 0.06);
+      border-top: 1px solid rgba(var(--color-white-rgb), 0.06);
       padding: 6px 4px calc(6px + env(safe-area-inset-bottom));
       grid-template-columns: repeat(5, 1fr);
 
@@ -48,7 +50,7 @@ import { MatIcon } from '@angular/material/icon';
       min-height: 46px;
       padding: 0 1px;
       border-radius: 9px;
-      color: #64748b;
+      color: var(--color-text-meta);
       text-decoration: none;
       transition: background 0.15s, color 0.15s;
     }
@@ -68,8 +70,8 @@ import { MatIcon } from '@angular/material/icon';
     }
 
     .tab-active {
-      color: #a78bfa;
-      background: rgba(124, 58, 237, 0.12);
+      color: var(--color-accent-light);
+      background: rgba(var(--color-accent-rgb), 0.12);
 
       .tab-icon {
         font-variation-settings: 'FILL' 1;

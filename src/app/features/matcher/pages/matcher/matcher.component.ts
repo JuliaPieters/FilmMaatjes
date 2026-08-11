@@ -12,6 +12,7 @@ import { ReviewService } from '../../../../core/services/review.service';
 import { TmdbMovie } from '../../../../core/models/movie.model';
 import { LoadingSpinnerComponent } from '../../../../shared/components/loading-spinner/loading-spinner.component';
 import { EmptyStateComponent } from '../../../../shared/components/empty-state/empty-state.component';
+import { MovieMatchingService } from '../../services/movie-matching.service';
 
 interface MatchResult {
   type: 'best' | 'random' | 'safe' | 'wildcard';
@@ -22,22 +23,6 @@ interface MatchResult {
   confidence: 'high' | 'medium' | 'low';
   reasons: string[];
 }
-
-interface ScoredMovie {
-  movie: TmdbMovie;
-  total: number;
-  reasons: string[];
-}
-
-// genreId -> preference score 0–100
-type GenreProfile = Record<number, number>;
-
-const GENRE_NAMES: Record<number, string> = {
-  28: 'Actie', 12: 'Avontuur', 16: 'Animatie', 35: 'Komedie', 80: 'Misdaad',
-  99: 'Documentaire', 18: 'Drama', 10751: 'Familie', 14: 'Fantasy', 36: 'Geschiedenis',
-  27: 'Horror', 10402: 'Muziek', 9648: 'Mystery', 10749: 'Romantiek', 878: 'Sci-Fi',
-  53: 'Thriller', 10752: 'Oorlog', 37: 'Western',
-};
 
 @Component({
   selector: 'app-matcher',
@@ -51,6 +36,7 @@ export class MatcherComponent implements OnInit {
   private readonly library = inject(UserLibraryService);
   private readonly watchlistService = inject(WatchlistService);
   private readonly reviewService = inject(ReviewService);
+  private readonly matching = inject(MovieMatchingService);
 
   protected readonly friends = this.friendsService.friends;
   protected readonly selectedFriends = signal<Set<string>>(new Set());
@@ -148,7 +134,7 @@ export class MatcherComponent implements OnInit {
     }
 
     // Build genre preference profiles
-    const myProfile = this.buildGenreProfile(myRated);
+    const myProfile = this.matching.buildGenreProfile(myRated);
 
     const friendProfiles = friendIds.map((fid, idx) => {
       const reviewMap = friendReviewMaps[idx];
@@ -166,11 +152,11 @@ export class MatcherComponent implements OnInit {
           rating: reviewMap.get(m.movieId) ?? 4, // default 4: seen = assumed liked
           ratedAt: null,
         }));
-      return this.buildGenreProfile(gezienEntries);
+      return this.matching.buildGenreProfile(gezienEntries);
     });
 
     // Compute shared taste profile across all selected users
-    const sharedProfile = this.computeSharedProfile([myProfile, ...friendProfiles]);
+    const sharedProfile = this.matching.computeSharedProfile([myProfile, ...friendProfiles]);
     const hasPersonalData = myRated.length >= 3;
     const hasFriendData = friendProfiles.some(p => Object.keys(p).length >= 2);
 
@@ -204,7 +190,7 @@ export class MatcherComponent implements OnInit {
         }
 
         const scored = candidates
-          .map(movie => this.scoreMovie(movie, sharedProfile, myRated, watchlistIds, watchlistGenreFreq, watchedIds))
+          .map(movie => this.matching.scoreMovie(movie, sharedProfile, myRated, watchlistIds, watchlistGenreFreq, watchedIds))
           .sort((a, b) => b.total - a.total);
 
         const results: MatchResult[] = [];
@@ -294,7 +280,7 @@ export class MatcherComponent implements OnInit {
           next: wildcardPage => {
             const wildcardScored = wildcardPage.results
               .filter(m => !watchedIds.has(m.id) && !selectedIds.has(m.id))
-              .map(movie => this.scoreMovie(movie, sharedProfile, myRated, watchlistIds, watchlistGenreFreq, watchedIds))
+              .map(movie => this.matching.scoreMovie(movie, sharedProfile, myRated, watchlistIds, watchlistGenreFreq, watchedIds))
               .sort((a, b) => b.total - a.total);
 
             // Pick from top 5 wildcard candidates for a bit of randomness
@@ -328,156 +314,6 @@ export class MatcherComponent implements OnInit {
     });
   }
 
-  /**
-   * Builds a genre preference profile from rated movies.
-   * Score = (avg_rating/5 × 100) + volume bonus (max +30).
-   * Genres rated below 3 on average score negatively and are excluded.
-   */
-  private buildGenreProfile(library: LibraryEntry[]): GenreProfile {
-    const genreRatings: Record<number, number[]> = {};
-    for (const e of library) {
-      for (const g of (e.movie.genre_ids ?? [])) {
-        if (!genreRatings[g]) genreRatings[g] = [];
-        genreRatings[g].push(e.rating);
-      }
-    }
-    const profile: GenreProfile = {};
-    for (const [gStr, ratings] of Object.entries(genreRatings)) {
-      const g = Number(gStr);
-      const avg = ratings.reduce((a, b) => a + b, 0) / ratings.length;
-      if (avg < 2.5) continue; // skip actively disliked genres
-      const ratingComponent = (avg / 5) * 100;
-      const volumeBonus = Math.min(30, Math.log2(ratings.length + 1) * 12);
-      profile[g] = Math.min(100, ratingComponent + volumeBonus);
-    }
-    return profile;
-  }
-
-  /**
-   * Computes a shared taste profile across all selected users.
-   *
-   * Key fix vs previous version: empty profiles are ignored rather than being
-   * treated as "score 0", which previously caused geometric mean to collapse
-   * every genre to ~9 when a friend had no watch history.
-   *
-   * Aggregation: arithmetic mean of known scores, with a penalty when any user
-   * actively dislikes the genre (score < 30).
-   */
-  private computeSharedProfile(profiles: GenreProfile[]): GenreProfile {
-    // Only aggregate profiles that have actual data
-    const validProfiles = profiles.filter(p => Object.keys(p).length >= 1);
-    if (validProfiles.length === 0) return {};
-
-    const allGenres = new Set<number>(validProfiles.flatMap(p => Object.keys(p).map(Number)));
-    const shared: GenreProfile = {};
-
-    for (const g of allGenres) {
-      const knownScores = validProfiles.map(p => p[g] ?? 0);
-      const avg = knownScores.reduce((a, b) => a + b, 0) / validProfiles.length;
-      const minKnown = Math.min(...knownScores);
-
-      // Penalise when the lowest-scoring user actively dislikes this genre
-      const penalty = minKnown < 30 ? 0.5 + minKnown / 60 : 1.0;
-      shared[g] = Math.min(100, avg * penalty);
-    }
-
-    return shared;
-  }
-
-  /**
-   * Scores a candidate movie against the shared preference profile.
-   *
-   * Weights:
-   *   40% Genre Match        — shared profile score for movie's genres
-   *   25% Taste Similarity   — Jaccard overlap with my personally high-rated movies
-   *   20% Watchlist Intent   — genre popularity in non-Gezien watchlists
-   *   10% Popularity         — TMDB vote_average + vote_count (reliability signal)
-   *    5% Novelty            — bonus when nobody has seen it
-   *
-   * When personal data is absent:
-   *   - tasteScore falls back to 50 (neutral) rather than 0
-   *   - genreScore still works via sharedProfile if friend data exists
-   */
-  private scoreMovie(
-    movie: TmdbMovie,
-    sharedProfile: GenreProfile,
-    myRated: LibraryEntry[],
-    watchlistIds: Set<number>,
-    watchlistGenreFreq: Record<number, number>,
-    watchedIds: Set<number>,
-  ): ScoredMovie {
-    const genres = movie.genre_ids ?? [];
-
-    // Genre Match (40%)
-    const matchedGenres: number[] = [];
-    let genreSum = 0;
-    for (const g of genres) {
-      const s = sharedProfile[g] ?? 0;
-      if (s > 0) { genreSum += s; matchedGenres.push(g); }
-    }
-    const genreScore = genres.length > 0 ? Math.min(100, genreSum / genres.length) : 0;
-
-    // Taste Similarity (25%) — Jaccard similarity to my personally rated movies
-    // Neutral fallback of 50 when no personal rating data to avoid 0% scores
-    const myFavs = myRated.filter(e => e.rating >= 4).slice(0, 30);
-    let tasteSim = 0;
-    for (const fav of myFavs) {
-      const favGenres = fav.movie.genre_ids ?? [];
-      const intersection = genres.filter(g => favGenres.includes(g)).length;
-      const union = new Set([...genres, ...favGenres]).size;
-      if (union > 0 && intersection > 0) {
-        tasteSim += (intersection / union) * (fav.rating / 5);
-      }
-    }
-    const tasteScore = myFavs.length > 0
-      ? Math.min(100, (tasteSim / myFavs.length) * 300)
-      : 50; // neutral when no personal ratings exist
-
-    // Watchlist Intent (20%)
-    let watchlistScore: number;
-    if (watchlistIds.has(movie.id)) {
-      watchlistScore = 100; // direct hit: someone already wants to see it
-    } else {
-      const genreMatches = genres.filter(g => (watchlistGenreFreq[g] ?? 0) > 0).length;
-      watchlistScore = genres.length > 0 ? Math.min(85, (genreMatches / genres.length) * 85) : 0;
-    }
-
-    // Popularity Confidence (10%)
-    const avgNorm = (movie.vote_average / 10) * 100;
-    const countNorm = Math.min(100, (Math.log10(Math.max(1, movie.vote_count)) / Math.log10(500_000)) * 100);
-    const popularityScore = avgNorm * 0.7 + countNorm * 0.3;
-
-    // Novelty Bonus (5%)
-    const noveltyScore = watchedIds.has(movie.id) ? 0 : 100;
-
-    const total = (
-      genreScore     * 0.40 +
-      tasteScore     * 0.25 +
-      watchlistScore * 0.20 +
-      popularityScore * 0.10 +
-      noveltyScore   * 0.05
-    );
-
-    // Dynamic reasons — generated from actual scoring data
-    const reasons: string[] = [];
-    if (matchedGenres.length > 0) {
-      const names = matchedGenres.slice(0, 2).map(g => GENRE_NAMES[g] ?? 'dit genre').join(' & ');
-      reasons.push(`Jullie houden allebei van ${names}`);
-    }
-    if (tasteSim > 0 && tasteScore >= 35) {
-      reasons.push(`Past bij jullie eerdere kijkgedrag`);
-    }
-    if (movie.vote_average >= 7.5) {
-      reasons.push(`Hoog beoordeeld (${movie.vote_average.toFixed(1)}⭐)`);
-    }
-    if (watchlistIds.has(movie.id)) {
-      reasons.push(`Staat al op een van jullie lijsten`);
-    }
-    reasons.push(`Niemand heeft deze film nog gezien`);
-
-    return { movie, total, reasons };
-  }
-
   protected reset(): void {
     this.step.set('select');
     this.results.set([]);
@@ -485,7 +321,7 @@ export class MatcherComponent implements OnInit {
   }
 
   protected getMatchColor(type: string): string {
-    return { best: '#a78bfa', safe: '#4ade80', random: '#38bdf8', wildcard: '#fb923c' }[type] ?? '#a78bfa';
+    return { best: 'var(--color-accent-light)', safe: 'var(--color-success)', random: 'var(--color-cyan)', wildcard: 'var(--color-orange)' }[type] ?? 'var(--color-accent-light)';
   }
 
   protected getConfidenceLabel(confidence: 'high' | 'medium' | 'low'): string {
@@ -493,7 +329,7 @@ export class MatcherComponent implements OnInit {
   }
 
   protected getConfidenceColor(confidence: 'high' | 'medium' | 'low'): string {
-    return { high: '#4ade80', medium: '#fbbf24', low: '#94a3b8' }[confidence];
+    return { high: 'var(--color-success)', medium: 'var(--color-amber)', low: 'var(--color-text-secondary)' }[confidence];
   }
 
   protected getFriendName(id: string): string {

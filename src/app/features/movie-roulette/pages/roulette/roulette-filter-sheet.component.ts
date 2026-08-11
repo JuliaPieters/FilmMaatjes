@@ -38,9 +38,14 @@ export interface RouletteFilterSheetData {
           <mat-icon>tune</mat-icon>
           Filters
         </h3>
-        @if (data.selectedGenreIds().length > 0 || data.minRating() > 0 || data.yearFrom()) {
-          <button type="button" class="sheet-clear" (click)="data.clearFilters()">Wissen</button>
-        }
+        <div class="sheet-header-actions">
+          @if (data.selectedGenreIds().length > 0 || data.minRating() > 0 || data.yearFrom()) {
+            <button type="button" class="sheet-clear" (click)="data.clearFilters()">Wissen</button>
+          }
+          <button type="button" class="sheet-close" (click)="close()">
+            <mat-icon>close</mat-icon>
+          </button>
+        </div>
       </div>
 
       <div class="filter-group">
@@ -101,24 +106,46 @@ export interface RouletteFilterSheetData {
       gap: 0.5rem;
       font-size: 16px;
       font-weight: 700;
-      color: #f1f5f9;
+      color: var(--color-text-primary);
       margin: 0;
 
       mat-icon {
-        color: #a78bfa;
+        color: var(--color-accent-light);
         font-size: 1.125rem;
         width: 1.125rem;
         height: 1.125rem;
       }
     }
 
+    .sheet-header-actions {
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+    }
+
     .sheet-clear {
       border: none;
       background: none;
-      color: #64748b;
+      color: var(--color-text-meta);
       font-size: 13px;
       cursor: pointer;
       padding: 0.25rem 0.5rem;
+    }
+
+    .sheet-close {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      border: none;
+      background: none;
+      color: var(--color-text-secondary);
+      cursor: pointer;
+      flex-shrink: 0;
+
+      &:active { background: rgba(var(--color-white-rgb), 0.08); }
     }
 
     .filter-group { margin-bottom: 1.25rem; }
@@ -127,7 +154,7 @@ export interface RouletteFilterSheetData {
       display: block;
       font-size: 0.8125rem;
       font-weight: 500;
-      color: #94a3b8;
+      color: var(--color-text-secondary);
       margin-bottom: 0.625rem;
     }
 
@@ -143,19 +170,19 @@ export interface RouletteFilterSheetData {
       border-radius: 100px;
       font-size: 0.8125rem;
       font-weight: 500;
-      background: rgba(255, 255, 255, 0.05);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      color: #94a3b8;
+      background: rgba(var(--color-white-rgb), 0.05);
+      border: 1px solid rgba(var(--color-white-rgb), 0.1);
+      color: var(--color-text-secondary);
       cursor: pointer;
       transition: all 0.15s;
 
       &.selected {
-        background: rgba(124, 58, 237, 0.25);
-        border-color: #7c3aed;
-        color: #c4b5fd;
+        background: rgba(var(--color-accent-rgb), 0.25);
+        border-color: var(--color-accent);
+        color: var(--color-accent-lighter);
       }
 
-      &:active { background: rgba(124, 58, 237, 0.15); }
+      &:active { background: rgba(var(--color-accent-rgb), 0.15); }
     }
   `],
 })

@@ -24,28 +24,28 @@
 
   <div class="stats-row">
     <a routerLink="/watchlists" class="stat-card glass-card">
-      <mat-icon class="stat-icon" style="color: #7c3aed;">bookmark</mat-icon>
+      <mat-icon class="stat-icon" style="color: var(--color-accent);">bookmark</mat-icon>
       <div>
         <p class="stat-value">{{ watchlistCount() }}</p>
         <p class="stat-label">Watchlists</p>
       </div>
     </a>
     <a routerLink="/profile" class="stat-card glass-card">
-      <mat-icon class="stat-icon" style="color: #06b6d4;">check_circle</mat-icon>
+      <mat-icon class="stat-icon" style="color: var(--color-info);">check_circle</mat-icon>
       <div>
         <p class="stat-value">{{ watchedCount() }}</p>
         <p class="stat-label">Gezien</p>
       </div>
     </a>
     <a routerLink="/friends" class="stat-card glass-card">
-      <mat-icon class="stat-icon" style="color: #ec4899;">people</mat-icon>
+      <mat-icon class="stat-icon" style="color: var(--color-pink);">people</mat-icon>
       <div>
         <p class="stat-value">{{ friendsCount() }}</p>
         <p class="stat-label">Vrienden</p>
       </div>
     </a>
     <a routerLink="/profile" class="stat-card glass-card">
-      <mat-icon class="stat-icon" style="color: #f59e0b;">star</mat-icon>
+      <mat-icon class="stat-icon" style="color: var(--color-gold);">star</mat-icon>
       <div>
         <p class="stat-value">{{ ratedCount() }}</p>
         <p class="stat-label">Beoordeeld</p>

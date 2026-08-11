@@ -138,11 +138,11 @@ import { NotificationService } from '../../../../core/services/notification.serv
                     </a>
                     @if (friendIds().has(user.id)) {
                       <button mat-icon-button disabled class="status-btn" title="Al vrienden">
-                        <mat-icon style="color: #4ade80">people</mat-icon>
+                        <mat-icon style="color: var(--color-success)">people</mat-icon>
                       </button>
                     } @else if (sentRequestIds().has(user.id)) {
                       <button mat-icon-button disabled class="status-btn" title="Verzoek verstuurd">
-                        <mat-icon style="color: #a78bfa">hourglass_empty</mat-icon>
+                        <mat-icon style="color: var(--color-accent-light)">hourglass_empty</mat-icon>
                       </button>
                     } @else {
                       <button mat-icon-button color="primary" class="status-btn" (click)="sendRequest(user.id)" title="Vriendschapsverzoek sturen">
@@ -162,7 +162,7 @@ import { NotificationService } from '../../../../core/services/notification.serv
     .friends-grid {
       display: grid;
       grid-template-columns: repeat(1, 1fr);
-      gap: 0.75rem;
+      gap: 1rem;
 
       @media (min-width: 768px) {
         grid-template-columns: repeat(2, 1fr);
@@ -177,7 +177,7 @@ import { NotificationService } from '../../../../core/services/notification.serv
       width: 44px;
       height: 44px;
       border-radius: 50%;
-      background: linear-gradient(135deg, #7c3aed, #a78bfa);
+      background: linear-gradient(135deg, var(--color-accent), var(--color-accent-light));
       display: flex;
       align-items: center;
       justify-content: center;
@@ -194,59 +194,53 @@ import { NotificationService } from '../../../../core/services/notification.serv
       }
     }
 
-    .tab-badge {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      width: 18px;
-      height: 18px;
-      border-radius: 50%;
-      background: #7c3aed;
-      color: white;
-      font-size: 0.6875rem;
-      font-weight: 700;
-      margin-left: 0.375rem;
-    }
-
     /* Mobile (<768px) — scrollable tab row, list-style cards, larger touch targets.
        Desktop (>=768px) styling above is left untouched. */
     @media (max-width: 767px) {
+      /* noinspection CssUnusedSymbol */
       ::ng-deep .friends-tabs .mat-mdc-tab-header {
-        border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+        border-bottom: 1px solid rgba(var(--color-white-rgb), 0.06);
       }
 
+      /* noinspection CssUnusedSymbol */
       ::ng-deep .friends-tabs .mat-mdc-tab-labels {
         overflow-x: auto;
         scrollbar-width: none;
       }
 
+      /* noinspection CssUnusedSymbol */
       ::ng-deep .friends-tabs .mat-mdc-tab-labels::-webkit-scrollbar {
         display: none;
       }
 
+      /* noinspection CssUnusedSymbol */
       ::ng-deep .friends-tabs .mdc-tab {
         min-width: auto;
         padding: 0 12px;
         height: auto;
       }
 
+      /* noinspection CssUnusedSymbol */
       ::ng-deep .friends-tabs .mdc-tab__content {
         padding: 14px 0;
       }
 
+      /* noinspection CssUnusedSymbol */
       ::ng-deep .friends-tabs .mdc-tab__text-label {
         font-size: 14px !important;
         font-weight: 500 !important;
-        color: #64748b !important;
+        color: var(--color-text-meta) !important;
         letter-spacing: normal !important;
       }
 
+      /* noinspection CssUnusedSymbol */
       ::ng-deep .friends-tabs .mdc-tab--active .mdc-tab__text-label {
-        color: #a78bfa !important;
+        color: var(--color-accent-light) !important;
       }
 
+      /* noinspection CssUnusedSymbol */
       ::ng-deep .friends-tabs .mdc-tab-indicator__content--underline {
-        border-color: #7c3aed !important;
+        border-color: var(--color-accent) !important;
         border-top-width: 2px !important;
       }
 
@@ -257,7 +251,7 @@ import { NotificationService } from '../../../../core/services/notification.serv
 
       .friend-username {
         font-size: 13px;
-        color: #475569;
+        color: var(--color-text-muted);
       }
 
       .request-accept-btn,
@@ -270,31 +264,34 @@ import { NotificationService } from '../../../../core/services/notification.serv
       }
 
       .request-accept-btn {
-        background: rgba(124, 58, 237, 0.15) !important;
+        background: rgba(var(--color-accent-rgb), 0.15) !important;
         border-radius: 50%;
       }
 
       .request-accept-btn mat-icon {
-        color: #a78bfa !important;
+        color: var(--color-accent-light) !important;
       }
 
       .request-decline-btn mat-icon {
-        color: #94a3b8 !important;
+        color: var(--color-text-secondary) !important;
       }
 
       .status-icon-add {
-        color: #a78bfa !important;
+        color: var(--color-accent-light) !important;
       }
 
+      /* noinspection CssUnusedSymbol */
       ::ng-deep .friends-search-field .mdc-text-field--filled {
         border-radius: 8px 8px 0 0;
       }
 
+      /* noinspection CssUnusedSymbol */
       ::ng-deep .friends-search-field .mat-mdc-form-field-flex {
         height: 52px;
         align-items: center;
       }
 
+      /* noinspection CssUnusedSymbol */
       ::ng-deep .friends-search-field .mat-mdc-form-field-infix {
         min-height: 52px;
         padding-top: 0;

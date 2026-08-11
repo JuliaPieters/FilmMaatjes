@@ -45,7 +45,7 @@ import { MatTooltip } from '@angular/material/tooltip';
       align-items: center;
     }
     .star-btn:focus-visible {
-      outline: 2px solid #7c3aed;
+      outline: 2px solid var(--color-accent);
       border-radius: 4px;
     }
 

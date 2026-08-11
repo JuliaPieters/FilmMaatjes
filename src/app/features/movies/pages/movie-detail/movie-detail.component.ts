@@ -1,8 +1,7 @@
-import { Component, computed, HostListener, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { MatIcon } from '@angular/material/icon';
 import { MatButton, MatIconButton } from '@angular/material/button';
-import { MatBottomSheet } from '@angular/material/bottom-sheet';
 import { DecimalPipe, DatePipe, Location } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MovieService } from '../../services/movie.service';
@@ -10,11 +9,11 @@ import { TmdbMovie, TmdbMovieDetail, TmdbCastMember } from '../../../../core/mod
 import { LoadingSpinnerComponent } from '../../../../shared/components/loading-spinner/loading-spinner.component';
 import { StarRatingComponent } from '../../../../shared/components/star-rating/star-rating.component';
 import { MovieCardComponent } from '../../../../shared/components/movie-card/movie-card.component';
-import { WatchlistPickerSheetComponent } from '../../../../shared/components/watchlist-picker-sheet/watchlist-picker-sheet.component';
 import { AuthService } from '../../../auth/services/auth.service';
 import { NotificationService } from '../../../../core/services/notification.service';
 import { UserLibraryService } from '../../../../core/services/user-library.service';
 import { WatchlistService } from '../../../watchlists/services/watchlist.service';
+import { MovieActionsService } from '../../../../core/services/movie-actions.service';
 import { ReviewService } from '../../../../core/services/review.service';
 import { Review } from '../../../../core/models/review.model';
 
@@ -45,7 +44,7 @@ export class MovieDetailComponent implements OnInit {
   protected readonly libraryService = inject(UserLibraryService);
   protected readonly watchlistService = inject(WatchlistService);
   protected readonly reviewService = inject(ReviewService);
-  private readonly bottomSheet = inject(MatBottomSheet);
+  private readonly movieActions = inject(MovieActionsService);
 
   private readonly ratingLabels = ['Slecht', 'Matig', 'Goed', 'Heel goed', 'Uitstekend'];
 
@@ -53,8 +52,6 @@ export class MovieDetailComponent implements OnInit {
   protected readonly loading = signal(true);
   protected readonly error = signal<string | null>(null);
   protected readonly userRating = signal(0);
-  protected readonly watched = signal(false);
-  protected readonly showWatchlistPicker = signal(false);
 
   protected readonly reviewText = signal('');
   protected readonly reviewRating = signal(0);
@@ -84,7 +81,10 @@ export class MovieDetailComponent implements OnInit {
     return m ? this.watchlistService.isMovieInAnyWatchlist(m.id) : false;
   });
 
-  protected readonly userWatchlists = this.watchlistService.watchlists;
+  protected readonly watched = computed(() => {
+    const m = this.movie();
+    return m ? this.libraryService.isWatched(m.id) : false;
+  });
 
   ngOnInit(): void {
     const id = Number(this.route.snapshot.paramMap.get('id'));
@@ -100,7 +100,6 @@ export class MovieDetailComponent implements OnInit {
     this.movieService.getMovieDetail(id).subscribe({
       next: movie => {
         this.movie.set(movie);
-        this.watched.set(this.libraryService.isWatched(movie.id));
         this.userRating.set(this.libraryService.getRating(movie.id));
         this.loading.set(false);
         this.reviewService.getMovieReviews(movie.id).subscribe();
@@ -177,63 +176,19 @@ export class MovieDetailComponent implements OnInit {
 
   protected openWatchlistPicker(event: MouseEvent): void {
     event.stopPropagation();
-    if (!this.authService.isAuthenticated()) {
-      this.router.navigate(['/auth/login']);
-      return;
-    }
     const m = this.movie();
     if (!m) return;
-
-    if (window.matchMedia('(max-width: 767px)').matches) {
-      this.bottomSheet.open(WatchlistPickerSheetComponent, { data: { movie: m as unknown as TmdbMovie } });
-      return;
-    }
-
-    this.showWatchlistPicker.update(v => !v);
+    this.movieActions.toggleWatchlist(m as unknown as TmdbMovie);
   }
 
   protected ratingLabelFor(rating: number): string {
     return this.ratingLabels[rating - 1] ?? '';
   }
 
-  @HostListener('document:click')
-  onDocumentClick(): void {
-    this.showWatchlistPicker.set(false);
-  }
-
-  protected closeWatchlistPicker(): void {
-    this.showWatchlistPicker.set(false);
-  }
-
-  protected toggleInWatchlist(watchlistId: string, event: MouseEvent): void {
-    event.stopPropagation();
-    const m = this.movie();
-    if (!m) return;
-    const movie = m as unknown as TmdbMovie;
-
-    if (this.watchlistService.isMovieInWatchlist(watchlistId, m.id)) {
-      this.watchlistService.removeMovie(watchlistId, m.id).subscribe();
-      this.notifications.success('Verwijderd uit watchlist');
-    } else {
-      this.watchlistService.addMovie(watchlistId, movie).subscribe();
-      this.notifications.success('Toegevoegd aan watchlist');
-    }
-  }
-
-  protected isInWatchlist(watchlistId: string): boolean {
-    return this.watchlistService.isMovieInWatchlist(watchlistId, this.movie()?.id ?? 0);
-  }
-
   protected toggleWatched(): void {
-    if (!this.authService.isAuthenticated()) {
-      this.router.navigate(['/auth/login']);
-      return;
-    }
     const m = this.movie();
     if (!m) return;
-    const newState = this.libraryService.toggleWatched(m as unknown as TmdbMovie);
-    this.watched.set(newState);
-    this.notifications.success(newState ? 'Gemarkeerd als gezien!' : 'Markering verwijderd');
+    this.movieActions.toggleWatched(m as unknown as TmdbMovie);
   }
 
   protected onRate(rating: number): void {

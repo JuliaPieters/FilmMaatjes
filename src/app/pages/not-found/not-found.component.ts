@@ -51,15 +51,15 @@ import { MatIcon } from '@angular/material/icon';
       width: 64px;
       height: 64px;
       border-radius: 50%;
-      background: rgba(26, 26, 36, 0.8);
-      border: 1px solid rgba(255, 255, 255, 0.08);
+      background: rgba(var(--color-surface-50-rgb), 0.8);
+      border: 1px solid rgba(var(--color-white-rgb), 0.08);
       display: flex;
       align-items: center;
       justify-content: center;
       margin-bottom: 1.5rem;
 
       mat-icon {
-        color: #475569;
+        color: var(--color-text-muted);
         font-size: 2rem;
         width: 2rem;
         height: 2rem;

@@ -63,23 +63,14 @@ export class DashboardComponent implements OnInit {
   }
 
   private loadRecommendations(): void {
-    const topRated = this.library.ratedMovies().filter(e => e.rating >= 4);
-    if (topRated.length === 0) {
+    const [topGenre] = this.library.getTopGenres({ minRating: 4, limit: 1 });
+    if (!topGenre) {
       this.movieService.getTopRated().subscribe({
         next: page => this.recommended.set(page.results.slice(0, 8)),
         error: () => {},
       });
       return;
     }
-
-    const genreFreq: Record<number, number> = {};
-    for (const entry of topRated) {
-      for (const g of (entry.movie.genre_ids ?? [])) {
-        genreFreq[g] = (genreFreq[g] ?? 0) + 1;
-      }
-    }
-    const topGenre = Object.entries(genreFreq).sort((a, b) => b[1] - a[1])[0]?.[0];
-    if (!topGenre) return;
 
     this.movieService.discoverMovies({ with_genres: topGenre, 'vote_average.gte': 7 }).subscribe({
       next: page => {

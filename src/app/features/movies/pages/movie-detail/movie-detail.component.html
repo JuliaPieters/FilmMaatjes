@@ -85,8 +85,8 @@
               </button>
             }
 
-            <!-- Watchlist picker (desktop: inline dropdown; mobile: MatBottomSheet, see openWatchlistPicker()) -->
-            <div class="watchlist-anchor" style="position: relative; z-index: 50">
+            <!-- Watchlist picker: single list toggles directly, multiple lists open the shared bottom sheet (see MovieActionsService) -->
+            <div class="watchlist-anchor">
               <button
                 mat-stroked-button
                 class="action-btn watchlist-btn"
@@ -96,36 +96,7 @@
               >
                 <mat-icon>{{ isInAnyWatchlist() ? 'bookmark' : 'bookmark_border' }}</mat-icon>
                 <span class="btn-label">{{ isInAnyWatchlist() ? 'In watchlist' : 'Toevoegen' }}</span>
-                <mat-icon class="chevron-icon" style="font-size: 1rem; width: 1rem; height: 1rem; margin-left: 2px">
-                  {{ showWatchlistPicker() ? 'expand_less' : 'expand_more' }}
-                </mat-icon>
               </button>
-
-              @if (showWatchlistPicker()) {
-                <div class="watchlist-picker" (click)="$event.stopPropagation()">
-                  <p class="picker-header">Voeg toe aan watchlist</p>
-                  @if (userWatchlists().length === 0) {
-                    <p class="picker-empty">
-                      Nog geen watchlists.
-                      <a routerLink="/watchlists" (click)="closeWatchlistPicker()">Maak er een aan</a>
-                    </p>
-                  } @else {
-                    @for (wl of userWatchlists(); track wl.id) {
-                      <button
-                        class="picker-item"
-                        [class.in-list]="isInWatchlist(wl.id)"
-                        (click)="toggleInWatchlist(wl.id, $event)"
-                      >
-                        <mat-icon>{{ isInWatchlist(wl.id) ? 'bookmark' : 'bookmark_border' }}</mat-icon>
-                        <span>{{ wl.name }}</span>
-                        @if (isInWatchlist(wl.id)) {
-                          <mat-icon class="check-icon">check</mat-icon>
-                        }
-                      </button>
-                    }
-                  }
-                </div>
-              }
             </div>
 
             <button
@@ -144,7 +115,7 @@
             <p class="rating-label text-sm text-text-secondary mb-2">Jouw beoordeling:</p>
             <app-star-rating
               [(value)]="userRating"
-              [size]="28"
+              [size]="24"
               [showValue]="true"
               (ratingChange)="onRate($event)"
             />
@@ -189,7 +160,7 @@
         </div>
 
         @if (showReviewForm()) {
-          <div class="review-form glass-card p-5 mb-6">
+          <div class="review-form glass-card p-6 mb-6">
             <h3 class="text-text-primary font-semibold mb-3">
               {{ editingReview() ? 'Review bewerken' : 'Review schrijven' }}
             </h3>
@@ -223,7 +194,7 @@
         } @else {
           <div class="reviews-list">
             @for (review of reviewService.movieReviews(); track review.id) {
-              <div class="review-card glass-card p-5">
+              <div class="review-card glass-card p-4">
                 <div class="review-header">
                   <div class="reviewer-avatar">
                     <span>{{ (review.user?.displayName ?? 'U').charAt(0).toUpperCase() }}</span>

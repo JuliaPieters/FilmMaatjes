@@ -1,5 +1,5 @@
 import { effect, inject, Injectable, signal } from '@angular/core';
-import { from, Observable, of, forkJoin } from 'rxjs';
+import { from, Observable, of } from 'rxjs';
 import { map, catchError, tap } from 'rxjs/operators';
 import {
   collection, query, where, getDocs, addDoc, updateDoc,
@@ -100,6 +100,18 @@ export class FriendsService {
 
   getPendingRequests(): Observable<FriendRequest[]> {
     return of(this._pendingRequests());
+  }
+
+  /** Accepted-friend count for an arbitrary user (e.g. someone else's public profile). */
+  getAcceptedFriendCount(userId: string): Observable<number> {
+    return from(
+      Promise.all([
+        getDocs(query(collection(db, 'friendRequests'), where('senderId', '==', userId), where('status', '==', 'accepted'))),
+        getDocs(query(collection(db, 'friendRequests'), where('receiverId', '==', userId), where('status', '==', 'accepted'))),
+      ]).then(([sentSnap, receivedSnap]) => sentSnap.size + receivedSnap.size),
+    ).pipe(
+      catchError(() => of(0)),
+    );
   }
 
   sendRequest(userId: string): Observable<FriendRequest> {

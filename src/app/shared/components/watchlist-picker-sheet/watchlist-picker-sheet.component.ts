@@ -14,7 +14,12 @@ export interface WatchlistPickerSheetData {
   imports: [MatIcon],
   template: `
     <div class="sheet">
-      <h3 class="sheet-title">Toevoegen aan watchlist</h3>
+      <div class="sheet-header">
+        <h3 class="sheet-title">Toevoegen aan watchlist</h3>
+        <button type="button" class="sheet-close" (click)="close()">
+          <mat-icon>close</mat-icon>
+        </button>
+      </div>
       @if (watchlistService.watchlists().length === 0) {
         <p class="sheet-empty">Je hebt nog geen watchlists.</p>
       } @else {
@@ -36,8 +41,30 @@ export interface WatchlistPickerSheetData {
   `,
   styles: [`
     .sheet { padding: 4px 4px calc(12px + env(safe-area-inset-bottom)); }
-    .sheet-title { font-size: 16px; font-weight: 700; color: #f1f5f9; margin: 0 0 12px; padding: 0 12px; }
-    .sheet-empty { color: #94a3b8; font-size: 14px; padding: 0 12px 12px; }
+    .sheet-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+      padding: 0 4px 0 12px;
+    }
+    .sheet-title { font-size: 16px; font-weight: 700; color: var(--color-text-primary); margin: 0; }
+    .sheet-close {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      border: none;
+      background: none;
+      color: var(--color-text-secondary);
+      cursor: pointer;
+      flex-shrink: 0;
+
+      &:active { background: rgba(var(--color-white-rgb), 0.08); }
+    }
+    .sheet-empty { color: var(--color-text-secondary); font-size: 14px; padding: 0 12px 12px; }
     .sheet-list { display: flex; flex-direction: column; }
     .sheet-item {
       display: flex;
@@ -48,28 +75,28 @@ export interface WatchlistPickerSheetData {
       border: none;
       background: none;
       border-radius: 10px;
-      color: #f1f5f9;
+      color: var(--color-text-primary);
       font-size: 15px;
       cursor: pointer;
       text-align: left;
 
-      &:active { background: rgba(255, 255, 255, 0.06); }
+      &:active { background: rgba(var(--color-white-rgb), 0.06); }
     }
     .sheet-item-icon {
       width: 36px;
       height: 36px;
       border-radius: 10px;
-      background: rgba(124, 58, 237, 0.15);
-      color: #a78bfa;
+      background: rgba(var(--color-accent-rgb), 0.15);
+      color: var(--color-accent-light);
       display: flex;
       align-items: center;
       justify-content: center;
       flex-shrink: 0;
 
-      &.active { background: rgba(124, 58, 237, 0.8); color: white; }
+      &.active { background: rgba(var(--color-accent-rgb), 0.8); color: white; }
     }
     .sheet-item-name { flex: 1; min-width: 0; }
-    .sheet-item-check { color: #4ade80; }
+    .sheet-item-check { color: var(--color-success); }
   `],
 })
 export class WatchlistPickerSheetComponent {

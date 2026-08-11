@@ -188,4 +188,20 @@ export class MovieService {
   hasApiKey(): boolean {
     return !!this.config.readAccessToken || !!this.config.apiKey;
   }
+
+  /**
+   * List endpoints (discover/popular/trending) only return `genre_ids`, not
+   * names, so callers that need a display name look it up here instead of
+   * keeping their own copy of this table.
+   */
+  private static readonly GENRE_NAMES: Record<number, string> = {
+    28: 'Actie', 12: 'Avontuur', 16: 'Animatie', 35: 'Komedie', 80: 'Misdaad',
+    99: 'Documentaire', 18: 'Drama', 10751: 'Familie', 14: 'Fantasy', 36: 'Geschiedenis',
+    27: 'Horror', 10402: 'Muziek', 9648: 'Mystery', 10749: 'Romantiek', 878: 'Sci-Fi',
+    10770: 'TV-film', 53: 'Thriller', 10752: 'Oorlog', 37: 'Western',
+  };
+
+  getGenreName(genreId: number): string | undefined {
+    return MovieService.GENRE_NAMES[genreId];
+  }
 }
