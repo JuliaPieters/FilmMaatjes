@@ -50,6 +50,7 @@ export class AuthService {
             const missingFields: Record<string, string> = {};
             if (profile['username'] && !profile['usernameLower']) missingFields['usernameLower'] = profile['username'].toLowerCase();
             if (profile['displayName'] && !profile['displayNameLower']) missingFields['displayNameLower'] = profile['displayName'].toLowerCase();
+            if (fbUser.photoURL && profile['avatar'] !== fbUser.photoURL) missingFields['avatar'] = fbUser.photoURL;
             if (Object.keys(missingFields).length) updateDoc(doc(db, 'users', fbUser.uid), missingFields);
             this._user.update(u => u ? ({
               ...u,
