@@ -45,6 +45,21 @@ import { Review } from '../../../../core/models/review.model';
               } @else {
                 <span>{{ user()?.displayName?.charAt(0)?.toUpperCase() }}</span>
               }
+              @if (isOwnProfile() && editMode()) {
+                <button
+                  type="button"
+                  class="avatar-upload-btn"
+                  [disabled]="uploadingAvatar()"
+                  (click)="avatarInput.click()"
+                >
+                  @if (uploadingAvatar()) {
+                    <mat-icon class="animate-spin">refresh</mat-icon>
+                  } @else {
+                    <mat-icon>photo_camera</mat-icon>
+                  }
+                </button>
+                <input #avatarInput type="file" accept="image/*" hidden (change)="onAvatarSelected($event)" />
+              }
             </div>
 
             <div class="profile-info">
@@ -414,6 +429,16 @@ import { Review } from '../../../../core/models/review.model';
       img { width: 100%; height: 100%; object-fit: cover; }
     }
 
+    .avatar-upload-btn {
+      position: absolute; inset: 0;
+      display: flex; align-items: center; justify-content: center;
+      background: rgba(var(--color-black-rgb), 0.5); border: none; border-radius: 50%;
+      color: white; cursor: pointer; opacity: 0; transition: opacity 0.15s ease;
+      mat-icon { font-size: 1.5rem; width: 1.5rem; height: 1.5rem; }
+      &:hover, &:focus-visible { opacity: 1; }
+      &:disabled { opacity: 1; cursor: default; }
+    }
+
     .profile-info { flex: 1; }
     .profile-name { font-size: 1.75rem; font-weight: 800; color: var(--color-text-primary); letter-spacing: -0.03em; margin: 0; }
     .profile-username { font-size: 0.875rem; color: var(--color-text-meta); margin: 0.25rem 0; }
@@ -606,6 +631,7 @@ export class ProfileComponent implements OnInit {
   protected readonly editMode = signal(false);
   protected editDisplayName = '';
   protected editBio = '';
+  protected readonly uploadingAvatar = signal(false);
 
   // Email change
   protected emailCurrentPassword = '';
@@ -771,6 +797,33 @@ export class ProfileComponent implements OnInit {
 
   protected cancelEdit(): void {
     this.editMode.set(false);
+  }
+
+  protected async onAvatarSelected(event: Event): Promise<void> {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    input.value = '';
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      this.notifications.error('Kies een afbeeldingsbestand.');
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      this.notifications.error('Afbeelding mag maximaal 5MB zijn.');
+      return;
+    }
+
+    this.uploadingAvatar.set(true);
+    try {
+      await this.authService.uploadAvatar(file);
+      this.user.set(this.authService.user());
+      this.notifications.success('Profielfoto bijgewerkt!');
+    } catch {
+      this.notifications.error('Uploaden mislukt. Probeer het opnieuw.');
+    } finally {
+      this.uploadingAvatar.set(false);
+    }
   }
 
   protected async saveEmail(): Promise<void> {

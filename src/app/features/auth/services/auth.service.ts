@@ -15,7 +15,8 @@ import {
   EmailAuthProvider,
 } from 'firebase/auth';
 import { doc, setDoc, getDoc, updateDoc, collection, query, where, getDocs } from 'firebase/firestore';
-import { auth, db } from '../../../core/firebase';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { auth, db, storage } from '../../../core/firebase';
 import { LoginDto, RegisterDto, User } from '../../../core/models/user.model';
 
 @Injectable({ providedIn: 'root' })
@@ -174,6 +175,20 @@ export class AuthService {
       displayName: updates.displayName ?? current.displayName,
       bio: updates.bio !== undefined ? updates.bio : current.bio,
     });
+  }
+
+  async uploadAvatar(file: File): Promise<void> {
+    const fbUser = auth.currentUser;
+    const current = this._user();
+    if (!fbUser || !current) throw new Error('Niet ingelogd');
+
+    const avatarRef = ref(storage, `avatars/${fbUser.uid}`);
+    await uploadBytes(avatarRef, file);
+    const photoURL = await getDownloadURL(avatarRef);
+
+    await updateProfile(fbUser, { photoURL });
+
+    this._user.set({ ...current, avatar: photoURL });
   }
 
   async changeEmail(currentPassword: string, newEmail: string): Promise<void> {
