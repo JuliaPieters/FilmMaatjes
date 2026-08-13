@@ -1,9 +1,8 @@
 import { computed, effect, inject, Injectable, signal } from '@angular/core';
-import { collection, collectionGroup, query, where, onSnapshot, Unsubscribe } from 'firebase/firestore';
+import { collection, collectionGroup, doc, query, where, onSnapshot, updateDoc, arrayUnion, Unsubscribe } from 'firebase/firestore';
 import { db } from '../firebase';
 import { AuthService } from '../../features/auth/services/auth.service';
 import { FriendsService } from '../../features/friends/services/friends.service';
-import { StorageService } from './storage.service';
 import { FriendActivity } from '../models/friend-activity.model';
 
 const CHUNK_SIZE = 10;
@@ -18,13 +17,13 @@ function chunk<T>(arr: T[], size: number): T[][] {
 export class FriendActivityService {
   private readonly authService = inject(AuthService);
   private readonly friendsService = inject(FriendsService);
-  private readonly storage = inject(StorageService);
 
   private readonly items = new Map<string, FriendActivity>();
   private readonly _activity = signal<FriendActivity[]>([]);
   private readonly _lastSeenAt = signal<string>('');
   private readonly _dismissedIds = signal<Set<string>>(new Set());
   private unsubscribers: Unsubscribe[] = [];
+  private userDocUnsub: Unsubscribe | null = null;
   private lastFriendIdsKey = '';
 
   readonly activity = computed(() => {
@@ -40,6 +39,9 @@ export class FriendActivityService {
   constructor() {
     effect(() => {
       const user = this.authService.user();
+      this.userDocUnsub?.();
+      this.userDocUnsub = null;
+
       if (!user) {
         this._lastSeenAt.set('');
         this._dismissedIds.set(new Set());
@@ -47,9 +49,18 @@ export class FriendActivityService {
         this.teardown();
         return;
       }
-      this._lastSeenAt.set(this.storage.get<string>(this.seenKey(user.id)) ?? '');
-      const dismissed = this.storage.get<string[]>(this.dismissedKey(user.id)) ?? [];
-      this._dismissedIds.set(new Set(dismissed));
+
+      this.userDocUnsub = onSnapshot(
+        doc(db, 'users', user.id),
+        snap => {
+          const data = snap.data();
+          this._lastSeenAt.set(data?.['notificationsSeenAt'] ?? '');
+          this._dismissedIds.set(new Set(data?.['notificationsDismissedIds'] ?? []));
+        },
+        () => {
+          // Firestore unavailable or read denied — keep prior state.
+        },
+      );
     });
 
     effect(() => {
@@ -81,7 +92,7 @@ export class FriendActivityService {
     if (!user) return;
     const now = new Date().toISOString();
     this._lastSeenAt.set(now);
-    this.storage.set(this.seenKey(user.id), now);
+    updateDoc(doc(db, 'users', user.id), { notificationsSeenAt: now }).catch(() => {});
   }
 
   isUnread(item: FriendActivity): boolean {
@@ -89,31 +100,27 @@ export class FriendActivityService {
   }
 
   dismiss(id: string): void {
+    const user = this.authService.user();
+    if (!user) return;
     const next = new Set(this._dismissedIds());
     next.add(id);
-    this.persistDismissed(next);
+    this._dismissedIds.set(next);
+    updateDoc(doc(db, 'users', user.id), { notificationsDismissedIds: arrayUnion(id) }).catch(() => {});
   }
 
   clearAll(): void {
-    const next = new Set(this._dismissedIds());
-    for (const item of this._activity()) next.add(item.id);
-    this.persistDismissed(next);
-    this.markAllSeen();
-  }
-
-  private persistDismissed(ids: Set<string>): void {
-    this._dismissedIds.set(ids);
     const user = this.authService.user();
     if (!user) return;
-    this.storage.set(this.dismissedKey(user.id), Array.from(ids));
-  }
+    const ids = this._activity().map(item => item.id);
+    const next = new Set(this._dismissedIds());
+    for (const id of ids) next.add(id);
+    this._dismissedIds.set(next);
+    const now = new Date().toISOString();
+    this._lastSeenAt.set(now);
 
-  private seenKey(userId: string): string {
-    return `friend_activity_seen_${userId}`;
-  }
-
-  private dismissedKey(userId: string): string {
-    return `friend_activity_dismissed_${userId}`;
+    const updates: Record<string, unknown> = { notificationsSeenAt: now };
+    if (ids.length) updates['notificationsDismissedIds'] = arrayUnion(...ids);
+    updateDoc(doc(db, 'users', user.id), updates).catch(() => {});
   }
 
   private teardown(): void {
