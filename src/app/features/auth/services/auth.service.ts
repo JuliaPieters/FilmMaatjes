@@ -187,6 +187,7 @@ export class AuthService {
     const photoURL = await getDownloadURL(avatarRef);
 
     await updateProfile(fbUser, { photoURL });
+    await updateDoc(doc(db, 'users', fbUser.uid), { avatar: photoURL });
 
     this._user.set({ ...current, avatar: photoURL });
   }

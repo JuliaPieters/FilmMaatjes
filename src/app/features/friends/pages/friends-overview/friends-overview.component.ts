@@ -86,7 +86,11 @@ import { NotificationService } from '../../../../core/services/notification.serv
                 @for (req of pendingRequests(); track req.id) {
                   <div class="friend-card glass-card p-4 flex items-center gap-3">
                     <div class="friend-avatar">
-                      <span>{{ req.sender?.displayName?.charAt(0)?.toUpperCase() }}</span>
+                      @if (req.sender?.avatar) {
+                        <img [src]="req.sender!.avatar!" [alt]="req.sender!.displayName" />
+                      } @else {
+                        <span>{{ req.sender?.displayName?.charAt(0)?.toUpperCase() }}</span>
+                      }
                     </div>
                     <div class="flex-1 min-w-0">
                       <p class="friend-name text-text-primary font-semibold">{{ req.sender?.displayName }}</p>
@@ -129,7 +133,11 @@ import { NotificationService } from '../../../../core/services/notification.serv
                   <div class="friend-card glass-card p-4 flex items-center gap-3">
                     <a class="flex items-center gap-3 flex-1 min-w-0 no-underline" [routerLink]="['/profile', user.username]">
                       <div class="friend-avatar">
-                        <span>{{ user.displayName.charAt(0).toUpperCase() }}</span>
+                        @if (user.avatar) {
+                          <img [src]="user.avatar" [alt]="user.displayName" />
+                        } @else {
+                          <span>{{ user.displayName.charAt(0).toUpperCase() }}</span>
+                        }
                       </div>
                       <div class="min-w-0">
                         <p class="friend-name text-text-primary font-semibold truncate">{{ user.displayName }}</p>

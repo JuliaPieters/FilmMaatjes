@@ -60,7 +60,13 @@
                 [class.unread]="isUnread(item)"
                 [routerLink]="['/movies', item.movieId]"
               >
-                <div class="notification-avatar">{{ (item.userName || '?').charAt(0).toUpperCase() }}</div>
+                <div class="notification-avatar">
+                  @if (item.userAvatar) {
+                    <img [src]="item.userAvatar" [alt]="item.userName" />
+                  } @else {
+                    {{ (item.userName || '?').charAt(0).toUpperCase() }}
+                  }
+                </div>
                 <div class="notification-body">
                   <p class="notification-text">
                     <strong>{{ item.userName || 'Een vriend' }}</strong>
