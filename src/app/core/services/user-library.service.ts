@@ -1,6 +1,5 @@
 import { computed, effect, inject, Injectable, signal } from '@angular/core';
 import { TmdbMovie } from '../models/movie.model';
-import { StorageService } from './storage.service';
 import { AuthService } from '../../features/auth/services/auth.service';
 import { WatchlistService } from '../../features/watchlists/services/watchlist.service';
 import { collection, doc, getDocs, setDoc, deleteDoc } from 'firebase/firestore';
@@ -25,7 +24,6 @@ interface RatingEntry {
 
 @Injectable({ providedIn: 'root' })
 export class UserLibraryService {
-  private readonly storage = inject(StorageService);
   private readonly authService = inject(AuthService);
   private readonly watchlistService = inject(WatchlistService);
 
@@ -49,43 +47,12 @@ export class UserLibraryService {
       for (const d of snap.docs) {
         ratings[d.id] = d.data() as RatingEntry;
       }
-
-      // One-time migration: upload any localStorage ratings to Firestore
-      if (snap.empty) {
-        const oldData = this.storage.get<Record<string, LibraryEntry>>(`user_library_${userId}`);
-        if (oldData) {
-          const toMigrate = Object.entries(oldData).filter(([, e]) => e.rating > 0);
-          await Promise.allSettled(toMigrate.map(([id, entry]) =>
-            setDoc(doc(db, 'users', userId, 'ratings', id), {
-              movieId: entry.movieId,
-              movie: entry.movie,
-              rating: entry.rating,
-              ratedAt: entry.ratedAt ?? null,
-            } as RatingEntry)
-          ));
-          for (const [id, entry] of toMigrate) {
-            ratings[id] = { movieId: entry.movieId, movie: entry.movie, rating: entry.rating, ratedAt: entry.ratedAt ?? null };
-          }
-        }
-      }
-
       this._ratings.set(ratings);
     } catch {
-      // Firestore unavailable — fall back to localStorage so the app stays functional
-      const oldData = this.storage.get<Record<string, LibraryEntry>>(`user_library_${userId}`);
-      if (oldData) {
-        const ratings: Record<string, RatingEntry> = {};
-        for (const [id, entry] of Object.entries(oldData)) {
-          if (entry.rating > 0) {
-            ratings[id] = { movieId: entry.movieId, movie: entry.movie, rating: entry.rating, ratedAt: entry.ratedAt ?? null };
-          }
-        }
-        this._ratings.set(ratings);
-      }
+      // keep prior state
     }
   }
 
-  // Derived from the "Gezien" Firestore watchlist — single source of truth
   readonly watchedMovies = computed<LibraryEntry[]>(() => {
     const gezien = this.watchlistService.watchlists().find(wl => wl.name === 'Gezien');
     if (!gezien) return [];
@@ -102,7 +69,6 @@ export class UserLibraryService {
       .sort((a, b) => (b.watchedAt ?? '').localeCompare(a.watchedAt ?? ''));
   });
 
-  // Derived from Firestore ratings subcollection
   readonly ratedMovies = computed<LibraryEntry[]>(() =>
     Object.values(this._ratings())
       .filter(v => v.rating > 0)
@@ -117,12 +83,6 @@ export class UserLibraryService {
       .sort((a, b) => (b.ratedAt ?? '').localeCompare(a.ratedAt ?? ''))
   );
 
-  /**
-   * Genre ids the user gravitates towards, ranked by how often (optionally
-   * weighted by rating) they show up across their rated movies. Shared by
-   * dashboard, recommendations and roulette so the "favorite genre" notion
-   * stays consistent instead of each screen reimplementing its own count.
-   */
   getTopGenres(options?: { minRating?: number; weighted?: boolean; limit?: number }): number[] {
     const minRating = options?.minRating ?? 0;
     const weighted = options?.weighted ?? false;
@@ -170,18 +130,14 @@ export class UserLibraryService {
     const id = String(movie.id);
     const ratedAt = rating > 0 ? new Date().toISOString() : null;
 
-    // Optimistic local update
     if (rating > 0) {
       this._ratings.update(r => ({ ...r, [id]: { movieId: movie.id, movie, rating, ratedAt, userId: user.id } }));
       setDoc(doc(db, 'users', user.id, 'ratings', id), { movieId: movie.id, movie, rating, ratedAt, userId: user.id }).catch(() => {
-        // Revert on Firestore failure
         this._ratings.update(r => { const n = { ...r }; delete n[id]; return n; });
       });
     } else {
       this._ratings.update(r => { const n = { ...r }; delete n[id]; return n; });
-      deleteDoc(doc(db, 'users', user.id, 'ratings', id)).catch(() => {
-        // Deletion failure is non-critical
-      });
+      deleteDoc(doc(db, 'users', user.id, 'ratings', id)).catch(() => {});
     }
   }
 }

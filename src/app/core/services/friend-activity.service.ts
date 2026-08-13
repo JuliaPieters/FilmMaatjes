@@ -57,9 +57,7 @@ export class FriendActivityService {
           this._lastSeenAt.set(data?.['notificationsSeenAt'] ?? '');
           this._dismissedIds.set(new Set(data?.['notificationsDismissedIds'] ?? []));
         },
-        () => {
-          // Firestore unavailable or read denied — keep prior state.
-        },
+        () => {},
       );
     });
 
@@ -71,7 +69,6 @@ export class FriendActivityService {
       const friendIds = friends.map(f => f.id).sort();
       const key = friendIds.join(',');
       if (key === this.lastFriendIdsKey) {
-        // Friend names/avatars may still have changed; keep the list fresh.
         this.rebuild();
         return;
       }
@@ -173,9 +170,7 @@ export class FriendActivityService {
         prevIds = newIds;
         this.rebuild();
       },
-      () => {
-        // Firestore unavailable or read denied — keep prior state.
-      },
+      () => {},
     );
     this.unsubscribers.push(unsub);
   }
@@ -207,9 +202,7 @@ export class FriendActivityService {
         prevIds = newIds;
         this.rebuild();
       },
-      () => {
-        // Firestore unavailable or read denied — keep prior state.
-      },
+      () => {},
     );
     this.unsubscribers.push(unsub);
   }

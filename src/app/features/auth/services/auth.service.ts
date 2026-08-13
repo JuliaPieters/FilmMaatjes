@@ -32,11 +32,10 @@ export class AuthService {
   constructor() {
     onAuthStateChanged(auth, async fbUser => {
       if (fbUser) {
-        const cachedUsername = localStorage.getItem(`username_${fbUser.uid}`);
         this._user.set({
           id: fbUser.uid,
           email: fbUser.email ?? '',
-          username: cachedUsername ?? fbUser.email?.split('@')[0] ?? fbUser.uid,
+          username: fbUser.email?.split('@')[0] ?? fbUser.uid,
           displayName: fbUser.displayName ?? 'Gebruiker',
           avatar: fbUser.photoURL,
           bio: null,
@@ -47,8 +46,6 @@ export class AuthService {
         getDoc(doc(db, 'users', fbUser.uid)).then(profileSnap => {
           const profile = profileSnap.data();
           if (profile) {
-            if (profile['username']) localStorage.setItem(`username_${fbUser.uid}`, profile['username']);
-            // Backfill missing lowercase search fields
             const missingFields: Record<string, string> = {};
             if (profile['username'] && !profile['usernameLower']) missingFields['usernameLower'] = profile['username'].toLowerCase();
             if (profile['displayName'] && !profile['displayNameLower']) missingFields['displayNameLower'] = profile['displayName'].toLowerCase();
@@ -62,7 +59,7 @@ export class AuthService {
               _count: profile['_count'] ?? u._count,
             }) : null);
           } else {
-            const username = cachedUsername ?? fbUser.email?.split('@')[0] ?? fbUser.uid;
+            const username = fbUser.email?.split('@')[0] ?? fbUser.uid;
             const displayName = fbUser.displayName ?? username;
             setDoc(doc(db, 'users', fbUser.uid), {
               username,
@@ -101,12 +98,8 @@ export class AuthService {
     return from(
       createUserWithEmailAndPassword(auth, data.email, data.password).then(async cred => {
         const createdAt = new Date().toISOString();
-        localStorage.setItem(`username_${cred.user.uid}`, data.username);
-        localStorage.setItem(`displayName_${cred.user.uid}`, data.displayName);
         await updateProfile(cred.user, { displayName: data.displayName });
         sendEmailVerification(cred.user);
-        // Written directly (not left to onAuthStateChanged) so the chosen username/displayName
-        // can never lose a race against the auth-state listener's email-derived fallback.
         await setDoc(doc(db, 'users', cred.user.uid), {
           username: data.username,
           usernameLower: data.username.toLowerCase(),
