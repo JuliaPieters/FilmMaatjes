@@ -9,6 +9,7 @@ import { MatTooltip } from '@angular/material/tooltip';
 import { MatBadge } from '@angular/material/badge';
 import { AuthService } from '../../features/auth/services/auth.service';
 import { FriendActivityService } from '../../core/services/friend-activity.service';
+import { FriendActivity } from '../../core/models/friend-activity.model';
 
 @Component({
   selector: 'app-navbar',
@@ -36,6 +37,22 @@ export class NavbarComponent {
 
   protected markNotificationsSeen(): void {
     this.activityService.markAllSeen();
+  }
+
+  protected isUnread(item: FriendActivity): boolean {
+    return this.activityService.isUnread(item);
+  }
+
+  protected dismiss(id: string, event: Event): void {
+    event.stopPropagation();
+    event.preventDefault();
+    this.activityService.dismiss(id);
+  }
+
+  protected clearAll(event: Event): void {
+    event.stopPropagation();
+    event.preventDefault();
+    this.activityService.clearAll();
   }
 
   protected formatActivityTime(createdAt: string): string {

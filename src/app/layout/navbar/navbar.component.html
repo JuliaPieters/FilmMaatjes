@@ -40,7 +40,12 @@
         </button>
 
         <mat-menu #notificationsMenu="matMenu" class="notifications-menu" (closed)="markNotificationsSeen()">
-          <div class="notifications-header">Vriendenactiviteit</div>
+          <div class="notifications-header">
+            <span>Vriendenactiviteit</span>
+            @if (activityService.activity().length > 0) {
+              <button type="button" class="clear-all-btn" (click)="clearAll($event)">Wis alles</button>
+            }
+          </div>
           <mat-divider />
           @if (activityService.activity().length === 0) {
             <div class="notifications-empty">
@@ -49,7 +54,12 @@
             </div>
           } @else {
             @for (item of activityService.activity(); track item.id) {
-              <a mat-menu-item class="notification-item" [routerLink]="['/movies', item.movieId]">
+              <a
+                mat-menu-item
+                class="notification-item"
+                [class.unread]="isUnread(item)"
+                [routerLink]="['/movies', item.movieId]"
+              >
                 <div class="notification-avatar">{{ (item.userName || '?').charAt(0).toUpperCase() }}</div>
                 <div class="notification-body">
                   <p class="notification-text">
@@ -62,6 +72,14 @@
                   </p>
                   <p class="notification-time">{{ formatActivityTime(item.createdAt) }}</p>
                 </div>
+                <button
+                  type="button"
+                  class="notification-dismiss"
+                  matTooltip="Verwijderen"
+                  (click)="dismiss(item.id, $event)"
+                >
+                  <mat-icon>close</mat-icon>
+                </button>
               </a>
             }
           }

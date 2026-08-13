@@ -23,14 +23,18 @@ export class FriendActivityService {
   private readonly items = new Map<string, FriendActivity>();
   private readonly _activity = signal<FriendActivity[]>([]);
   private readonly _lastSeenAt = signal<string>('');
+  private readonly _dismissedIds = signal<Set<string>>(new Set());
   private unsubscribers: Unsubscribe[] = [];
   private lastFriendIdsKey = '';
 
-  readonly activity = this._activity.asReadonly();
+  readonly activity = computed(() => {
+    const dismissed = this._dismissedIds();
+    return this._activity().filter(a => !dismissed.has(a.id));
+  });
 
   readonly unreadCount = computed(() => {
     const seen = this._lastSeenAt();
-    return this._activity().filter(a => a.createdAt > seen).length;
+    return this.activity().filter(a => a.createdAt > seen).length;
   });
 
   constructor() {
@@ -38,11 +42,14 @@ export class FriendActivityService {
       const user = this.authService.user();
       if (!user) {
         this._lastSeenAt.set('');
+        this._dismissedIds.set(new Set());
         this.lastFriendIdsKey = '';
         this.teardown();
         return;
       }
       this._lastSeenAt.set(this.storage.get<string>(this.seenKey(user.id)) ?? '');
+      const dismissed = this.storage.get<string[]>(this.dismissedKey(user.id)) ?? [];
+      this._dismissedIds.set(new Set(dismissed));
     });
 
     effect(() => {
@@ -77,8 +84,36 @@ export class FriendActivityService {
     this.storage.set(this.seenKey(user.id), now);
   }
 
+  isUnread(item: FriendActivity): boolean {
+    return item.createdAt > this._lastSeenAt();
+  }
+
+  dismiss(id: string): void {
+    const next = new Set(this._dismissedIds());
+    next.add(id);
+    this.persistDismissed(next);
+  }
+
+  clearAll(): void {
+    const next = new Set(this._dismissedIds());
+    for (const item of this._activity()) next.add(item.id);
+    this.persistDismissed(next);
+    this.markAllSeen();
+  }
+
+  private persistDismissed(ids: Set<string>): void {
+    this._dismissedIds.set(ids);
+    const user = this.authService.user();
+    if (!user) return;
+    this.storage.set(this.dismissedKey(user.id), Array.from(ids));
+  }
+
   private seenKey(userId: string): string {
     return `friend_activity_seen_${userId}`;
+  }
+
+  private dismissedKey(userId: string): string {
+    return `friend_activity_dismissed_${userId}`;
   }
 
   private teardown(): void {
