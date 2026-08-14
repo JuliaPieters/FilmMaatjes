@@ -1,0 +1,66 @@
+<div
+  class="movie-card relative cursor-pointer"
+  matRipple
+  [matRippleColor]="'rgba(var(--color-accent-rgb), 0.1)'"
+>
+  <a [routerLink]="['/movies', movie().id]" class="block">
+    <div class="poster-wrap rounded-card bg-surface-50">
+      <img
+        [src]="posterUrl()"
+        [alt]="movie().title"
+        class="poster-img"
+        loading="lazy"
+        (error)="onImageError($event)"
+      />
+
+      <div class="poster-overlay absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent flex flex-col justify-end p-3">
+        @if (movie().vote_average > 0) {
+          <div class="flex items-center gap-1 mb-2">
+            <app-star-rating [value]="normalizedRating()" [readonly]="true" [size]="14" />
+            <span class="text-xs text-white/80">{{ movie().vote_average | number:'1.1-1' }}</span>
+          </div>
+        }
+        <p class="text-white/70 text-xs line-clamp-3 leading-relaxed">{{ movie().overview }}</p>
+      </div>
+
+      @if (showActions()) {
+        <div class="action-btns absolute top-2 right-2 flex flex-col gap-1.5">
+          <button
+            type="button"
+            class="action-icon-btn"
+            [class.action-active-purple]="isInAnyWatchlist()"
+            (click)="onAddToWatchlist($event)"
+            [matTooltip]="isInAnyWatchlist() ? 'In watchlist' : 'Toevoegen aan watchlist'"
+          >
+            <mat-icon style="font-size: 1rem; width: 1rem; height: 1rem;">
+              {{ isInAnyWatchlist() ? 'bookmark' : 'bookmark_add' }}
+            </mat-icon>
+          </button>
+          <button
+            type="button"
+            class="action-icon-btn"
+            [class.action-active-green]="isWatched()"
+            (click)="onMarkWatched($event)"
+            [matTooltip]="isWatched() ? 'Gezien' : 'Markeer als gezien'"
+          >
+            <mat-icon style="font-size: 1rem; width: 1rem; height: 1rem;">
+              {{ isWatched() ? 'check_circle' : 'check_circle_outline' }}
+            </mat-icon>
+          </button>
+        </div>
+      }
+
+      @if (movie().vote_average > 0) {
+        <div class="absolute top-2 left-2 bg-black/70 backdrop-blur-sm rounded-full px-2 py-0.5 flex items-center gap-0.5">
+          <mat-icon class="text-gold" style="font-size: 0.75rem; width: 0.75rem; height: 0.75rem;">star</mat-icon>
+          <span class="text-white text-xs font-medium">{{ movie().vote_average | number:'1.1-1' }}</span>
+        </div>
+      }
+    </div>
+
+    <div class="card-info mt-2 px-0.5">
+      <h3 class="text-text-primary text-sm font-medium truncate leading-tight">{{ movie().title }}</h3>
+      <p class="text-text-muted text-xs mt-0.5">{{ movieService.formatYear(movie().release_date) }}</p>
+    </div>
+  </a>
+</div>

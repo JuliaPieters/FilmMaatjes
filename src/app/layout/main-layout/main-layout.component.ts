@@ -7,15 +7,6 @@ import { BottomTabBarComponent } from '../bottom-tab-bar/bottom-tab-bar.componen
 @Component({
   selector: 'app-main-layout',
   imports: [RouterOutlet, NavbarComponent, FooterComponent, BottomTabBarComponent],
-  template: `
-    <div class="min-h-screen flex flex-col bg-surface">
-      <app-navbar />
-      <main class="flex-1">
-        <router-outlet />
-      </main>
-      <app-footer />
-      <app-bottom-tab-bar />
-    </div>
-  `,
+  templateUrl: './main-layout.component.html',
 })
 export class MainLayoutComponent {}

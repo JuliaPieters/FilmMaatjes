@@ -1,0 +1,58 @@
+    .remove-btn {
+      position: absolute;
+      top: 6px;
+      left: 6px;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      border: none;
+      background: rgba(var(--color-black-rgb), 0.7);
+      backdrop-filter: blur(4px);
+      color: var(--color-text-primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.15s;
+      z-index: 2;
+    }
+
+    .group:hover .remove-btn {
+      opacity: 1;
+    }
+
+    @media (hover: none) {
+      .remove-btn {
+        opacity: 1;
+        width: 32px;
+        height: 32px;
+      }
+    }
+
+    .movie-count-mobile {
+      display: none;
+    }
+
+    @media (max-width: 767px) {
+      .back-btn {
+        width: 44px !important;
+        height: 44px !important;
+        padding: 0;
+      }
+
+      .movie-count-desktop {
+        display: none;
+      }
+
+      .movie-count-mobile {
+        display: block;
+        margin-top: 2px;
+        font-size: 13px;
+        color: var(--color-text-meta);
+      }
+
+      .card-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+      }
+    }

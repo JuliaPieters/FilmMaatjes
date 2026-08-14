@@ -1,0 +1,57 @@
+    <div class="sheet">
+      <div class="sheet-header">
+        <h3 class="sheet-title">
+          <mat-icon>tune</mat-icon>
+          Filters
+        </h3>
+        <div class="sheet-header-actions">
+          @if (data.selectedGenreIds().length > 0 || data.minRating() > 0 || data.yearFrom()) {
+            <button type="button" class="sheet-clear" (click)="data.clearFilters()">Wissen</button>
+          }
+          <button type="button" class="sheet-close" (click)="close()">
+            <mat-icon>close</mat-icon>
+          </button>
+        </div>
+      </div>
+
+      <div class="filter-group">
+        <label class="filter-label">Genre</label>
+        <div class="genre-chips">
+          @for (genre of data.genres; track genre.id) {
+            <button
+              type="button"
+              class="genre-chip"
+              [class.selected]="data.isGenreSelected(genre.id)"
+              (click)="data.toggleGenre(genre.id)"
+            >
+              {{ genre.name }}
+            </button>
+          }
+        </div>
+      </div>
+
+      <div class="filter-group">
+        <label class="filter-label">Decennium</label>
+        <div class="decade-chips">
+          @for (decade of data.decadeOptions; track decade.label) {
+            <button
+              type="button"
+              class="genre-chip"
+              [class.selected]="data.yearFrom() === (decade.from ?? null)"
+              (click)="data.setDecade(decade)"
+            >
+              {{ decade.label }}
+            </button>
+          }
+        </div>
+      </div>
+
+      <div class="filter-group">
+        <label class="filter-label">
+          Minimale beoordeling: {{ data.minRating() > 0 ? data.minRating() + '/10' : 'Alles' }}
+        </label>
+        <mat-slider min="0" max="9" step="1" class="w-full">
+          <input matSliderThumb [(ngModel)]="minRatingValue" />
+        </mat-slider>
+      </div>
+    </div>

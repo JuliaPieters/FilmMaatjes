@@ -1,0 +1,25 @@
+    <div class="sheet">
+      <div class="sheet-header">
+        <h3 class="sheet-title">Toevoegen aan watchlist</h3>
+        <button type="button" class="sheet-close" (click)="close()">
+          <mat-icon>close</mat-icon>
+        </button>
+      </div>
+      @if (watchlistService.watchlists().length === 0) {
+        <p class="sheet-empty">Je hebt nog geen watchlists.</p>
+      } @else {
+        <div class="sheet-list">
+          @for (wl of watchlistService.watchlists(); track wl.id) {
+            <button type="button" class="sheet-item" (click)="toggle(wl.id)">
+              <span class="sheet-item-icon" [class.active]="isIn(wl.id)">
+                <mat-icon>{{ isIn(wl.id) ? 'bookmark' : 'bookmark_add' }}</mat-icon>
+              </span>
+              <span class="sheet-item-name">{{ wl.name }}</span>
+              @if (isIn(wl.id)) {
+                <mat-icon class="sheet-item-check">check</mat-icon>
+              }
+            </button>
+          }
+        </div>
+      }
+    </div>

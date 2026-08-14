@@ -1,0 +1,19 @@
+    .star-btn {
+      background: none;
+      border: none;
+      line-height: 1;
+      display: inline-flex;
+      align-items: center;
+    }
+    .star-btn:focus-visible {
+      outline: 2px solid var(--color-accent);
+      border-radius: 4px;
+    }
+
+    @media (hover: none) {
+      .star-btn:not(.readonly) {
+        min-width: 44px;
+        min-height: 44px;
+        justify-content: center;
+      }
+    }

@@ -1,0 +1,66 @@
+    <div class="page-container">
+      <div class="flex items-center justify-between mb-6">
+        <h1 class="text-3xl font-bold text-text-primary tracking-tight">Mijn Watchlists</h1>
+        <button mat-flat-button color="primary" class="header-new-btn" (click)="createWatchlist()">
+          <mat-icon>add</mat-icon>
+          Nieuwe watchlist
+        </button>
+      </div>
+
+      @if (loading()) {
+        <app-loading-spinner message="Watchlists laden..." />
+      } @else if (watchlists().length === 0) {
+        <app-empty-state
+          icon="bookmark_border"
+          title="Nog geen watchlists"
+          description="Maak een watchlist aan om films bij te houden die je wilt kijken."
+          actionLabel="Watchlist aanmaken"
+        />
+      } @else {
+        <div class="watchlist-grid">
+          @for (list of watchlists(); track list.id) {
+            <a class="watchlist-card glass-card p-4 hover:border-accent/30 transition-all cursor-pointer block no-underline"
+               [routerLink]="['/watchlists', list.id]">
+              <div class="flex items-center justify-between mb-3">
+                <div class="list-icon w-11 h-11 bg-accent/20 flex items-center justify-center flex-shrink-0">
+                  <mat-icon class="text-accent-light">bookmark</mat-icon>
+                </div>
+                <div class="flex gap-1">
+                  <button mat-icon-button class="delete-btn text-text-muted" (click)="deleteWatchlist(list, $event)" title="Verwijderen">
+                    <mat-icon style="font-size: 1.125rem; width: 1.125rem; height: 1.125rem;">delete_outline</mat-icon>
+                  </button>
+                </div>
+              </div>
+              <h3 class="list-name font-semibold text-text-primary mb-1">{{ list.name }}</h3>
+              @if (list.description) {
+                <p class="list-description text-text-muted text-sm mb-3 line-clamp-2">{{ list.description }}</p>
+              }
+              <div class="flex items-center gap-2 text-xs text-text-muted">
+                <mat-icon style="font-size: 1rem; width: 1rem; height: 1rem;">movie</mat-icon>
+                <span>{{ (list.movies.length || list._count?.movies || 0) }} films</span>
+                @if (list.isPublic) {
+                  <span class="ml-auto flex items-center gap-1">
+                    <mat-icon style="font-size: 1rem; width: 1rem; height: 1rem;">public</mat-icon>
+                    Publiek
+                  </span>
+                }
+              </div>
+              @if (list.movies.length > 0) {
+                <div class="poster-strip">
+                  @for (entry of list.movies.slice(0, 3); track entry.movieId) {
+                    <img class="poster-thumb" [src]="posterUrl(entry.movie?.poster_path)" [alt]="entry.movie?.title ?? ''" />
+                  }
+                  @if (list.movies.length > 3) {
+                    <div class="poster-thumb poster-more">+{{ list.movies.length - 3 }}</div>
+                  }
+                </div>
+              }
+            </a>
+          }
+        </div>
+      }
+
+      <button mat-fab class="new-watchlist-fab" (click)="createWatchlist()" aria-label="Nieuwe watchlist" title="Nieuwe watchlist">
+        <mat-icon>add</mat-icon>
+      </button>
+    </div>

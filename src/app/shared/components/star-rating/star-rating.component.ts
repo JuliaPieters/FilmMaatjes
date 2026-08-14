@@ -5,58 +5,8 @@ import { MatTooltip } from '@angular/material/tooltip';
 @Component({
   selector: 'app-star-rating',
   imports: [MatIcon, MatTooltip],
-  template: `
-    <div class="flex items-center gap-0.5" [class]="containerClass()">
-      @for (star of stars; track star) {
-        <button
-          type="button"
-          class="star-btn p-0.5 transition-all duration-150"
-          [class.readonly]="readonly()"
-          [class.cursor-default]="readonly()"
-          [class.cursor-pointer]="!readonly()"
-          (mouseenter)="!readonly() && setHover(star)"
-          (mouseleave)="!readonly() && clearHover()"
-          (click)="!readonly() && select(star)"
-          [matTooltip]="!readonly() ? starLabel(star) : ''"
-        >
-          <mat-icon
-            [class]="getStarClass(star)"
-            [style.font-size]="size() + 'px'"
-            [style.width]="size() + 'px'"
-            [style.height]="size() + 'px'"
-          >
-            {{ getStarIcon(star) }}
-          </mat-icon>
-        </button>
-      }
-      @if (showValue() && currentRating() > 0) {
-        <span class="ml-1 text-sm font-medium text-text-secondary">
-          {{ currentRating() }}/5
-        </span>
-      }
-    </div>
-  `,
-  styles: [`
-    .star-btn {
-      background: none;
-      border: none;
-      line-height: 1;
-      display: inline-flex;
-      align-items: center;
-    }
-    .star-btn:focus-visible {
-      outline: 2px solid var(--color-accent);
-      border-radius: 4px;
-    }
-
-    @media (hover: none) {
-      .star-btn:not(.readonly) {
-        min-width: 44px;
-        min-height: 44px;
-        justify-content: center;
-      }
-    }
-  `],
+  templateUrl: './star-rating.component.html',
+  styleUrl: './star-rating.component.scss',
 })
 export class StarRatingComponent {
   readonly value = model<number>(0);

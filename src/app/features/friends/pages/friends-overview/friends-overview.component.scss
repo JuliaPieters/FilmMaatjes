@@ -1,0 +1,141 @@
+    .friends-grid {
+      display: grid;
+      grid-template-columns: repeat(1, 1fr);
+      gap: 1rem;
+
+      @media (min-width: 768px) {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      @media (min-width: 1024px) {
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
+
+    .friend-avatar {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--color-accent), var(--color-accent-light));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      font-weight: 700;
+      color: white;
+      font-size: 1.125rem;
+      overflow: hidden;
+
+      img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+    }
+
+    /* Mobile (<768px) — scrollable tab row, list-style cards, larger touch targets.
+       Desktop (>=768px) styling above is left untouched. */
+    @media (max-width: 767px) {
+      /* noinspection CssUnusedSymbol */
+      ::ng-deep .friends-tabs .mat-mdc-tab-header {
+        border-bottom: 1px solid rgba(var(--color-white-rgb), 0.06);
+      }
+
+      /* noinspection CssUnusedSymbol */
+      ::ng-deep .friends-tabs .mat-mdc-tab-labels {
+        overflow-x: auto;
+        scrollbar-width: none;
+      }
+
+      /* noinspection CssUnusedSymbol */
+      ::ng-deep .friends-tabs .mat-mdc-tab-labels::-webkit-scrollbar {
+        display: none;
+      }
+
+      /* noinspection CssUnusedSymbol */
+      ::ng-deep .friends-tabs .mdc-tab {
+        min-width: auto;
+        padding: 0 12px;
+        height: auto;
+      }
+
+      /* noinspection CssUnusedSymbol */
+      ::ng-deep .friends-tabs .mdc-tab__content {
+        padding: 14px 0;
+      }
+
+      /* noinspection CssUnusedSymbol */
+      ::ng-deep .friends-tabs .mdc-tab__text-label {
+        font-size: 14px !important;
+        font-weight: 500 !important;
+        color: var(--color-text-meta) !important;
+        letter-spacing: normal !important;
+      }
+
+      /* noinspection CssUnusedSymbol */
+      ::ng-deep .friends-tabs .mdc-tab--active .mdc-tab__text-label {
+        color: var(--color-accent-light) !important;
+      }
+
+      /* noinspection CssUnusedSymbol */
+      ::ng-deep .friends-tabs .mdc-tab-indicator__content--underline {
+        border-color: var(--color-accent) !important;
+        border-top-width: 2px !important;
+      }
+
+      .friend-name {
+        font-size: 15px;
+        font-weight: 600;
+      }
+
+      .friend-username {
+        font-size: 13px;
+        color: var(--color-text-muted);
+      }
+
+      .request-accept-btn,
+      .request-decline-btn,
+      .status-btn {
+        width: 44px !important;
+        height: 44px !important;
+        line-height: 44px !important;
+        padding: 0 !important;
+      }
+
+      .request-accept-btn {
+        background: rgba(var(--color-accent-rgb), 0.15) !important;
+        border-radius: 50%;
+      }
+
+      .request-accept-btn mat-icon {
+        color: var(--color-accent-light) !important;
+      }
+
+      .request-decline-btn mat-icon {
+        color: var(--color-text-secondary) !important;
+      }
+
+      .status-icon-add {
+        color: var(--color-accent-light) !important;
+      }
+
+      /* noinspection CssUnusedSymbol */
+      ::ng-deep .friends-search-field .mdc-text-field--filled {
+        border-radius: 8px 8px 0 0;
+      }
+
+      /* noinspection CssUnusedSymbol */
+      ::ng-deep .friends-search-field .mat-mdc-form-field-flex {
+        height: 52px;
+        align-items: center;
+      }
+
+      /* noinspection CssUnusedSymbol */
+      ::ng-deep .friends-search-field .mat-mdc-form-field-infix {
+        min-height: 52px;
+        padding-top: 0;
+        padding-bottom: 0;
+        display: flex;
+        align-items: center;
+      }
+    }

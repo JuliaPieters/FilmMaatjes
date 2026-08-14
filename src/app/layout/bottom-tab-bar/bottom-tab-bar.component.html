@@ -1,0 +1,15 @@
+    <nav class="tab-bar">
+      @for (tab of tabs; track tab.route) {
+        <a
+          [routerLink]="tab.route"
+          routerLinkActive
+          #rla="routerLinkActive"
+          [routerLinkActiveOptions]="{ exact: tab.exact }"
+          [class.tab-active]="rla.isActive"
+          class="tab-item"
+        >
+          <mat-icon class="tab-icon">{{ tab.icon }}</mat-icon>
+          <span class="tab-label">{{ tab.label }}</span>
+        </a>
+      }
+    </nav>
