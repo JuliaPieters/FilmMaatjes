@@ -29,7 +29,11 @@
               (click)="toggleFriend(friend.id)"
             >
               <div class="friend-avatar">
-                <span>{{ friend.displayName.charAt(0).toUpperCase() }}</span>
+                @if (friend.avatar) {
+                  <img [src]="friend.avatar" [alt]="friend.displayName" />
+                } @else {
+                  <span>{{ friend.displayName.charAt(0).toUpperCase() }}</span>
+                }
               </div>
               <span class="friend-name">{{ friend.displayName }}</span>
               <div class="selection-indicator">

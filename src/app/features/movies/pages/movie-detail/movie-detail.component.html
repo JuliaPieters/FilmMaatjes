@@ -197,7 +197,11 @@
               <div class="review-card glass-card p-4">
                 <div class="review-header">
                   <div class="reviewer-avatar">
-                    <span>{{ (review.user?.displayName ?? 'U').charAt(0).toUpperCase() }}</span>
+                    @if (review.user?.avatar) {
+                      <img [src]="review.user!.avatar!" [alt]="review.user!.displayName" />
+                    } @else {
+                      <span>{{ (review.user?.displayName ?? 'U').charAt(0).toUpperCase() }}</span>
+                    }
                   </div>
                   <div class="reviewer-info">
                     <p class="reviewer-name">{{ review.user?.displayName ?? 'Gebruiker' }}</p>

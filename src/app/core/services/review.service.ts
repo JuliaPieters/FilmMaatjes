@@ -2,7 +2,7 @@ import { inject, Injectable, signal } from '@angular/core';
 import { Observable, from, of, throwError } from 'rxjs';
 import { catchError, map, tap } from 'rxjs/operators';
 import {
-  collection, query, where, getDocs, addDoc, updateDoc, deleteDoc, doc,
+  collection, query, where, getDocs, getDoc, addDoc, updateDoc, deleteDoc, doc,
 } from 'firebase/firestore';
 import { Review, CreateReviewDto, UpdateReviewDto } from '../models/review.model';
 import { AuthService } from '../../features/auth/services/auth.service';
@@ -18,8 +18,8 @@ export class ReviewService {
   getMovieReviews(movieId: number): Observable<Review[]> {
     return from(
       getDocs(query(collection(db, 'reviews'), where('movieId', '==', movieId)))
-        .then(snap => snap.docs
-          .map(d => {
+        .then(async snap => {
+          const reviews = snap.docs.map(d => {
             const data = d.data();
             return {
               id: d.id,
@@ -42,9 +42,13 @@ export class ReviewService {
               likesCount: 0,
               likedByCurrentUser: false,
             } as Review;
-          })
-          .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
-        )
+          });
+
+          const avatarByUserId = await this.fetchAvatars(reviews.map(r => r.userId));
+          return reviews
+            .map(r => ({ ...r, user: { ...r.user!, avatar: avatarByUserId.get(r.userId) ?? null } }))
+            .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+        })
     ).pipe(
       tap(reviews => this._movieReviews.set(reviews)),
       catchError(() => {
@@ -52,6 +56,14 @@ export class ReviewService {
         return of([]);
       }),
     );
+  }
+
+  private async fetchAvatars(userIds: string[]): Promise<Map<string, string | null>> {
+    const uniqueIds = Array.from(new Set(userIds));
+    const snaps = await Promise.all(uniqueIds.map(id => getDoc(doc(db, 'users', id))));
+    const avatarByUserId = new Map<string, string | null>();
+    snaps.forEach((snap, i) => avatarByUserId.set(uniqueIds[i], snap.exists() ? (snap.data()['avatar'] ?? null) : null));
+    return avatarByUserId;
   }
 
   createReview(dto: CreateReviewDto): Observable<Review> {
@@ -107,35 +119,38 @@ export class ReviewService {
   getUserReviews(userId: string): Observable<Review[]> {
     return from(
       getDocs(query(collection(db, 'reviews'), where('userId', '==', userId)))
-        .then(snap => snap.docs
-          .map(d => {
-            const data = d.data();
-            return {
-              id: d.id,
-              movieId: data['movieId'],
-              movieTitle: data['movieTitle'] ?? undefined,
-              moviePosterPath: data['moviePosterPath'] ?? null,
-              userId: data['userId'],
-              rating: data['rating'],
-              content: data['content'],
-              createdAt: data['createdAt'],
-              updatedAt: data['updatedAt'],
-              user: {
-                id: data['userId'],
-                username: data['username'] ?? 'gebruiker',
-                displayName: data['displayName'] ?? 'Gebruiker',
-                email: '',
-                avatar: null,
-                bio: null,
-                createdAt: '',
-                _count: { watchlists: 0, reviews: 0, friends: 0 },
-              },
-              likesCount: 0,
-              likedByCurrentUser: false,
-            } as Review;
-          })
-          .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
-        )
+        .then(async snap => {
+          const avatarByUserId = await this.fetchAvatars([userId]);
+          const avatar = avatarByUserId.get(userId) ?? null;
+          return snap.docs
+            .map(d => {
+              const data = d.data();
+              return {
+                id: d.id,
+                movieId: data['movieId'],
+                movieTitle: data['movieTitle'] ?? undefined,
+                moviePosterPath: data['moviePosterPath'] ?? null,
+                userId: data['userId'],
+                rating: data['rating'],
+                content: data['content'],
+                createdAt: data['createdAt'],
+                updatedAt: data['updatedAt'],
+                user: {
+                  id: data['userId'],
+                  username: data['username'] ?? 'gebruiker',
+                  displayName: data['displayName'] ?? 'Gebruiker',
+                  email: '',
+                  avatar,
+                  bio: null,
+                  createdAt: '',
+                  _count: { watchlists: 0, reviews: 0, friends: 0 },
+                },
+                likesCount: 0,
+                likedByCurrentUser: false,
+              } as Review;
+            })
+            .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+        })
     ).pipe(catchError(() => of([])));
   }
 
