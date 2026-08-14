@@ -37,6 +37,10 @@
   gap: 0.75rem;
   margin-bottom: 1.5rem;
 
+  > * {
+    min-width: 0;
+  }
+
   @media (min-width: 480px) { grid-template-columns: repeat(3, 1fr); }
   @media (min-width: 640px) { grid-template-columns: repeat(4, 1fr); }
 }
@@ -68,7 +72,7 @@
 .friend-name {
   font-size: 0.8125rem; font-weight: 600; color: var(--color-text-primary);
   text-align: center; overflow: hidden; text-overflow: ellipsis;
-  white-space: nowrap; width: 100%;
+  white-space: nowrap; width: 100%; min-width: 0;
 }
 
 .selection-indicator {

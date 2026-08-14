@@ -86,6 +86,10 @@ import { MovieService } from '../../../movies/services/movie.service';
       grid-template-columns: repeat(1, 1fr);
       gap: 1rem;
 
+      > * {
+        min-width: 0;
+      }
+
       @media (min-width: 640px) {
         grid-template-columns: repeat(2, 1fr);
       }

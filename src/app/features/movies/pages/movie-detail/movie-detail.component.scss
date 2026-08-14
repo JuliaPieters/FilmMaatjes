@@ -194,6 +194,10 @@
   grid-template-columns: repeat(3, 1fr);
   gap: 1rem;
 
+  > * {
+    min-width: 0;
+  }
+
   @media (min-width: 480px) {
     grid-template-columns: repeat(4, 1fr);
   }
