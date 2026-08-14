@@ -172,6 +172,10 @@ img {
   gap: 1rem;
   align-items: start;
 
+  > * {
+    min-width: 0;
+  }
+
   @media (min-width: 640px) {
     grid-template-columns: repeat(3, 1fr);
   }
