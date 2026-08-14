@@ -54,7 +54,7 @@ export class UserLibraryService {
   }
 
   readonly watchedMovies = computed<LibraryEntry[]>(() => {
-    const gezien = this.watchlistService.watchlists().find(wl => wl.name === 'Gezien');
+    const gezien = this.watchlistService.watchlists().find(watchlist => watchlist.name === 'Gezien');
     if (!gezien) return [];
     return (gezien.movies ?? [])
       .filter(m => m.movie)
@@ -103,7 +103,7 @@ export class UserLibraryService {
   }
 
   isWatched(movieId: number): boolean {
-    const gezien = this.watchlistService.watchlists().find(wl => wl.name === 'Gezien');
+    const gezien = this.watchlistService.watchlists().find(watchlist => watchlist.name === 'Gezien');
     return (gezien?.movies ?? []).some(m => m.movieId === movieId);
   }
 
@@ -113,7 +113,7 @@ export class UserLibraryService {
 
   toggleWatched(movie: TmdbMovie): boolean {
     const newState = !this.isWatched(movie.id);
-    const gezienList = this.watchlistService.watchlists().find(wl => wl.name === 'Gezien');
+    const gezienList = this.watchlistService.watchlists().find(watchlist => watchlist.name === 'Gezien');
     if (gezienList) {
       if (newState) {
         this.watchlistService.addMovie(gezienList.id, movie).subscribe();

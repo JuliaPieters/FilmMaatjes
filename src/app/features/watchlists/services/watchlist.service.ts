@@ -129,7 +129,7 @@ export class WatchlistService {
 
     return from(addDoc(collection(db, 'watchlists'), data)).pipe(
       map(ref => ({ id: ref.id, ...data, movies: [] } as Watchlist)),
-      tap(wl => this._watchlists.update(prev => [...prev, wl])),
+      tap(watchlist => this._watchlists.update(prev => [...prev, watchlist])),
       catchError(() => of({} as Watchlist)),
     );
   }
@@ -178,12 +178,12 @@ export class WatchlistService {
         .then(() => updateDoc(doc(db, 'watchlists', watchlistId), { '_count.movies': increment(1) }))
     ).pipe(
       tap(() => {
-        this._watchlists.update(prev => prev.map(wl => {
-          if (wl.id !== watchlistId || (wl.movies ?? []).some(m => m.movieId === movie.id)) return wl;
+        this._watchlists.update(prev => prev.map(watchlist => {
+          if (watchlist.id !== watchlistId || (watchlist.movies ?? []).some(m => m.movieId === movie.id)) return watchlist;
           return {
-            ...wl,
-            movies: [...(wl.movies ?? []), { id: String(movie.id), ...entry }],
-            _count: { movies: (wl._count?.movies ?? 0) + 1 },
+            ...watchlist,
+            movies: [...(watchlist.movies ?? []), { id: String(movie.id), ...entry }],
+            _count: { movies: (watchlist._count?.movies ?? 0) + 1 },
           };
         }));
       }),
@@ -197,12 +197,12 @@ export class WatchlistService {
         .then(() => updateDoc(doc(db, 'watchlists', watchlistId), { '_count.movies': increment(-1) }))
     ).pipe(
       tap(() => {
-        this._watchlists.update(prev => prev.map(wl => {
-          if (wl.id !== watchlistId) return wl;
+        this._watchlists.update(prev => prev.map(watchlist => {
+          if (watchlist.id !== watchlistId) return watchlist;
           return {
-            ...wl,
-            movies: (wl.movies ?? []).filter(m => m.movieId !== movieId),
-            _count: { movies: Math.max(0, (wl._count?.movies ?? 0) - 1) },
+            ...watchlist,
+            movies: (watchlist.movies ?? []).filter(m => m.movieId !== movieId),
+            _count: { movies: Math.max(0, (watchlist._count?.movies ?? 0) - 1) },
           };
         }));
       }),
@@ -211,10 +211,10 @@ export class WatchlistService {
   }
 
   isMovieInWatchlist(watchlistId: string, movieId: number): boolean {
-    return this._watchlists().find(wl => wl.id === watchlistId)?.movies?.some(m => m.movieId === movieId) ?? false;
+    return this._watchlists().find(watchlist => watchlist.id === watchlistId)?.movies?.some(m => m.movieId === movieId) ?? false;
   }
 
   isMovieInAnyWatchlist(movieId: number): boolean {
-    return this._watchlists().some(wl => (wl.movies ?? []).some(m => m.movieId === movieId));
+    return this._watchlists().some(watchlist => (watchlist.movies ?? []).some(m => m.movieId === movieId));
   }
 }

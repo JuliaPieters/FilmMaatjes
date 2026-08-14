@@ -9,13 +9,13 @@
         <p class="sheet-empty">Je hebt nog geen watchlists.</p>
       } @else {
         <div class="sheet-list">
-          @for (wl of watchlistService.watchlists(); track wl.id) {
-            <button type="button" class="sheet-item" (click)="toggle(wl.id)">
-              <span class="sheet-item-icon" [class.active]="isIn(wl.id)">
-                <mat-icon>{{ isIn(wl.id) ? 'bookmark' : 'bookmark_add' }}</mat-icon>
+          @for (watchlist of watchlistService.watchlists(); track watchlist.id) {
+            <button type="button" class="sheet-item" (click)="toggle(watchlist.id)">
+              <span class="sheet-item-icon" [class.active]="isIn(watchlist.id)">
+                <mat-icon>{{ isIn(watchlist.id) ? 'bookmark' : 'bookmark_add' }}</mat-icon>
               </span>
-              <span class="sheet-item-name">{{ wl.name }}</span>
-              @if (isIn(wl.id)) {
+              <span class="sheet-item-name">{{ watchlist.name }}</span>
+              @if (isIn(watchlist.id)) {
                 <mat-icon class="sheet-item-check">check</mat-icon>
               }
             </button>

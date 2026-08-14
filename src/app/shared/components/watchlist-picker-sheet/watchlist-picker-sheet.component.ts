@@ -26,14 +26,14 @@ export class WatchlistPickerSheetComponent {
   }
 
   protected toggle(watchlistId: string): void {
-    const wl = this.watchlistService.watchlists().find(w => w.id === watchlistId);
-    if (!wl) return;
+    const watchlist = this.watchlistService.watchlists().find(w => w.id === watchlistId);
+    if (!watchlist) return;
     if (this.isIn(watchlistId)) {
       this.watchlistService.removeMovie(watchlistId, this.data.movie.id).subscribe();
-      this.notifications.success(`Verwijderd uit "${wl.name}"`);
+      this.notifications.success(`Verwijderd uit "${watchlist.name}"`);
     } else {
       this.watchlistService.addMovie(watchlistId, this.data.movie).subscribe();
-      this.notifications.success(`Toegevoegd aan "${wl.name}"`);
+      this.notifications.success(`Toegevoegd aan "${watchlist.name}"`);
     }
   }
 

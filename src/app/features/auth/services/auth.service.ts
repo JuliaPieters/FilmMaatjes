@@ -88,8 +88,8 @@ export class AuthService {
     return from(
       signInWithEmailAndPassword(auth, credentials.email, credentials.password).then(() => undefined as void),
     ).pipe(
-      catchError(err => {
-        return throwError(() => ({ error: { message: this.mapError(err.code) } }));
+      catchError(error => {
+        return throwError(() => ({ error: { message: this.mapError(error.code) } }));
       }),
       finalize(() => this._loading.set(false)),
     );
@@ -124,8 +124,8 @@ export class AuthService {
         });
       }),
     ).pipe(
-      catchError(err => {
-        return throwError(() => ({ error: { message: this.mapError(err.code) } }));
+      catchError(error => {
+        return throwError(() => ({ error: { message: this.mapError(error.code) } }));
       }),
       finalize(() => this._loading.set(false)),
     );
@@ -197,11 +197,11 @@ export class AuthService {
     const fbUser = auth.currentUser;
     if (!fbUser || !fbUser.email) throw new Error('Niet ingelogd');
     const credential = EmailAuthProvider.credential(fbUser.email, currentPassword);
-    await reauthenticateWithCredential(fbUser, credential).catch(err => {
-      throw new Error(this.mapError(err.code));
+    await reauthenticateWithCredential(fbUser, credential).catch(error => {
+      throw new Error(this.mapError(error.code));
     });
-    await verifyBeforeUpdateEmail(fbUser, newEmail).catch(err => {
-      throw new Error(this.mapError(err.code));
+    await verifyBeforeUpdateEmail(fbUser, newEmail).catch(error => {
+      throw new Error(this.mapError(error.code));
     });
   }
 
@@ -209,11 +209,11 @@ export class AuthService {
     const fbUser = auth.currentUser;
     if (!fbUser || !fbUser.email) throw new Error('Niet ingelogd');
     const credential = EmailAuthProvider.credential(fbUser.email, currentPassword);
-    await reauthenticateWithCredential(fbUser, credential).catch(err => {
-      throw new Error(this.mapError(err.code));
+    await reauthenticateWithCredential(fbUser, credential).catch(error => {
+      throw new Error(this.mapError(error.code));
     });
-    await updatePassword(fbUser, newPassword).catch(err => {
-      throw new Error(this.mapError(err.code));
+    await updatePassword(fbUser, newPassword).catch(error => {
+      throw new Error(this.mapError(error.code));
     });
   }
 

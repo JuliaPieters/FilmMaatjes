@@ -79,7 +79,7 @@ export class ProfileComponent implements OnInit {
   );
 
   protected readonly friendWatchedCount = computed(() => {
-    const gezien = this.friendProfileWatchlists().find(wl => wl.name === 'Gezien');
+    const gezien = this.friendProfileWatchlists().find(watchlist => watchlist.name === 'Gezien');
     return gezien?.movies?.length ?? gezien?._count?.movies ?? 0;
   });
 
@@ -165,8 +165,8 @@ export class ProfileComponent implements OnInit {
         );
         const enriched = reviews.map(r => {
           if (r.moviePosterPath) return r;
-          const idx = missing.findIndex(m => m.id === r.id);
-          const result = details[idx];
+          const index = missing.findIndex(m => m.id === r.id);
+          const result = details[index];
           if (result?.status === 'fulfilled') {
             return { ...r, movieTitle: result.value.title, moviePosterPath: result.value.poster_path };
           }

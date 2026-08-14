@@ -81,8 +81,8 @@ export class RegisterComponent {
         this.notifications.success('Account aangemaakt! Welkom bij FilmMaatjes 🎬');
         this.router.navigate(['/dashboard']);
       },
-      error: err => {
-        const message = err?.error?.message ?? 'Aanmelden mislukt. Probeer het opnieuw.';
+      error: error => {
+        const message = error?.error?.message ?? 'Aanmelden mislukt. Probeer het opnieuw.';
         this.error.set(message);
       },
     });

@@ -214,29 +214,29 @@
                     <p>Geen watchlists om weer te geven.</p>
                   </div>
                 } @else {
-                  <div class="public-wl-list">
-                    @for (wl of publicWatchlists(); track wl.id) {
-                      <div class="public-wl-section">
-                        <button class="public-wl-header glass-card" (click)="toggleWatchlist(wl.id)">
-                          <div class="wl-icon"><mat-icon>bookmark</mat-icon></div>
+                  <div class="public-watchlist-list">
+                    @for (watchlist of publicWatchlists(); track watchlist.id) {
+                      <div class="public-watchlist-section">
+                        <button class="public-watchlist-header glass-card" (click)="toggleWatchlist(watchlist.id)">
+                          <div class="watchlist-icon"><mat-icon>bookmark</mat-icon></div>
                           <div class="flex-1 min-w-0 text-left">
-                            <p class="wl-name">{{ wl.name }}</p>
-                            <p class="wl-count">{{ wl.movies.length || wl._count?.movies || 0 }} films</p>
+                            <p class="watchlist-name">{{ watchlist.name }}</p>
+                            <p class="watchlist-count">{{ watchlist.movies.length || watchlist._count?.movies || 0 }} films</p>
                           </div>
-                          <mat-icon class="wl-chevron" [class.rotated]="expandedWatchlistId() === wl.id">
+                          <mat-icon class="watchlist-chevron" [class.rotated]="expandedWatchlistId() === watchlist.id">
                             expand_more
                           </mat-icon>
                         </button>
 
-                        @if (expandedWatchlistId() === wl.id) {
-                          @if (wl.movies.length === 0) {
+                        @if (expandedWatchlistId() === watchlist.id) {
+                          @if (watchlist.movies.length === 0) {
                             <div class="empty-state py-8">
                               <mat-icon>movie_off</mat-icon>
                               <p>Geen films in deze watchlist.</p>
                             </div>
                           } @else {
                             <div class="card-grid mt-4 pb-4">
-                              @for (entry of wl.movies; track entry.movieId) {
+                              @for (entry of watchlist.movies; track entry.movieId) {
                                 @if (entry.movie) {
                                   <app-movie-card [movie]="entry.movie" />
                                 }
@@ -352,13 +352,13 @@
                     <a mat-stroked-button routerLink="/watchlists">Watchlists beheren</a>
                   </div>
                 } @else {
-                  <div class="wl-grid">
-                    @for (wl of watchlistService.watchlists(); track wl.id) {
-                      <a class="wl-card glass-card" routerLink="/watchlists">
-                        <div class="wl-icon"><mat-icon>bookmark</mat-icon></div>
+                  <div class="watchlist-grid">
+                    @for (watchlist of watchlistService.watchlists(); track watchlist.id) {
+                      <a class="watchlist-card glass-card" routerLink="/watchlists">
+                        <div class="watchlist-icon"><mat-icon>bookmark</mat-icon></div>
                         <div>
-                          <p class="wl-name">{{ wl.name }}</p>
-                          <p class="wl-count">{{ wl._count?.movies ?? wl.movies.length }} films</p>
+                          <p class="watchlist-name">{{ watchlist.name }}</p>
+                          <p class="watchlist-count">{{ watchlist._count?.movies ?? watchlist.movies.length }} films</p>
                         </div>
                       </a>
                     }

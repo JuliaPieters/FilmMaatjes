@@ -33,13 +33,13 @@ export class MovieActionsService {
     }
 
     if (lists.length === 1) {
-      const wl = lists[0];
-      if (this.watchlistService.isMovieInWatchlist(wl.id, movie.id)) {
-        this.watchlistService.removeMovie(wl.id, movie.id).subscribe();
-        this.notifications.success(`Verwijderd uit "${wl.name}"`);
+      const watchlist = lists[0];
+      if (this.watchlistService.isMovieInWatchlist(watchlist.id, movie.id)) {
+        this.watchlistService.removeMovie(watchlist.id, movie.id).subscribe();
+        this.notifications.success(`Verwijderd uit "${watchlist.name}"`);
       } else {
-        this.watchlistService.addMovie(wl.id, movie).subscribe();
-        this.notifications.success(`Toegevoegd aan "${wl.name}"`);
+        this.watchlistService.addMovie(watchlist.id, movie).subscribe();
+        this.notifications.success(`Toegevoegd aan "${watchlist.name}"`);
       }
       return;
     }

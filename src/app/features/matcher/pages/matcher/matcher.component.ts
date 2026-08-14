@@ -95,7 +95,7 @@ export class MatcherComponent implements OnInit {
     // Movies watched by any friend (from Gezien watchlist)
     const friendWatchedIds = new Set<number>(
       friendIds.flatMap(fid =>
-        (this.watchlistService.getWatchlistsForUser(fid).find(wl => wl.name === 'Gezien')?.movies ?? [])
+        (this.watchlistService.getWatchlistsForUser(fid).find(watchlist => watchlist.name === 'Gezien')?.movies ?? [])
           .map(m => m.movieId)
       )
     );
@@ -104,13 +104,13 @@ export class MatcherComponent implements OnInit {
     // Watchlist intent: movies in any non-Gezien watchlist (intent signal)
     const watchlistIds = new Set<number>([
       ...this.watchlistService.watchlists()
-        .filter(wl => wl.name !== 'Gezien')
-        .flatMap(wl => wl.movies ?? [])
+        .filter(watchlist => watchlist.name !== 'Gezien')
+        .flatMap(watchlist => watchlist.movies ?? [])
         .map(m => m.movieId),
       ...friendIds.flatMap(fid =>
         this.watchlistService.getWatchlistsForUser(fid)
-          .filter(wl => wl.name !== 'Gezien')
-          .flatMap(wl => wl.movies ?? [])
+          .filter(watchlist => watchlist.name !== 'Gezien')
+          .flatMap(watchlist => watchlist.movies ?? [])
           .map(m => m.movieId)
       ),
     ]);
@@ -124,24 +124,24 @@ export class MatcherComponent implements OnInit {
         }
       }
     };
-    for (const wl of this.watchlistService.watchlists().filter(w => w.name !== 'Gezien')) {
-      indexWatchlistGenres(wl.movies ?? []);
+    for (const watchlist of this.watchlistService.watchlists().filter(w => w.name !== 'Gezien')) {
+      indexWatchlistGenres(watchlist.movies ?? []);
     }
     for (const fid of friendIds) {
-      for (const wl of this.watchlistService.getWatchlistsForUser(fid).filter(w => w.name !== 'Gezien')) {
-        indexWatchlistGenres(wl.movies ?? []);
+      for (const watchlist of this.watchlistService.getWatchlistsForUser(fid).filter(w => w.name !== 'Gezien')) {
+        indexWatchlistGenres(watchlist.movies ?? []);
       }
     }
 
     // Build genre preference profiles
     const myProfile = this.matching.buildGenreProfile(myRated);
 
-    const friendProfiles = friendIds.map((fid, idx) => {
-      const reviewMap = friendReviewMaps[idx];
+    const friendProfiles = friendIds.map((fid, index) => {
+      const reviewMap = friendReviewMaps[index];
       // Build from Gezien watchlist + actual review ratings
       const gezienEntries: LibraryEntry[] = (
         this.watchlistService.getWatchlistsForUser(fid)
-          .find(wl => wl.name === 'Gezien')?.movies ?? []
+          .find(watchlist => watchlist.name === 'Gezien')?.movies ?? []
       )
         .filter(m => m.movie)
         .map(m => ({

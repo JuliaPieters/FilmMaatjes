@@ -414,20 +414,20 @@
 }
 
 // Watchlist accordion
-.wl-accordion {
+.watchlist-accordion {
   display: flex;
   flex-direction: column;
   gap: 0.375rem;
   margin-bottom: 0.5rem;
 }
 
-.wl-group {
+.watchlist-group {
   border-radius: 10px;
   overflow: hidden;
   border: 1px solid rgba(var(--color-white-rgb), 0.07);
 }
 
-.wl-group-header {
+.watchlist-group-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -444,7 +444,7 @@
   &:hover { background: rgba(var(--color-accent-rgb), 0.08); }
 }
 
-.wl-group-title {
+.watchlist-group-title {
   display: flex;
   align-items: center;
   gap: 0.5rem;
@@ -454,7 +454,7 @@
   mat-icon { font-size: 1rem; width: 1rem; height: 1rem; color: var(--color-text-meta); }
 }
 
-.wl-chevron {
+.watchlist-chevron {
   color: var(--color-text-meta);
   font-size: 1.25rem;
   width: 1.25rem;
@@ -488,7 +488,7 @@
   margin-left: 0.375rem;
 }
 
-.wl-loading {
+.watchlist-loading {
   display: flex;
   align-items: center;
   gap: 0.5rem;
@@ -516,7 +516,7 @@
   transition: all 0.15s;
   width: 100%;
 
-  .wl-check {
+  .watchlist-check {
     font-size: 1.25rem;
     width: 1.25rem;
     height: 1.25rem;
@@ -525,20 +525,20 @@
     transition: color 0.15s;
   }
 
-  .wl-name {
+  .watchlist-name {
     font-size: 0.875rem;
     font-weight: 500;
     color: var(--color-text-secondary);
     transition: color 0.15s;
   }
 
-  .wl-owner {
+  .watchlist-owner {
     display: block;
     font-size: 0.75rem;
     color: var(--color-text-meta);
   }
 
-  .wl-count {
+  .watchlist-count {
     font-size: 0.75rem;
     color: var(--color-text-meta);
     white-space: nowrap;
@@ -549,14 +549,14 @@
   &:hover {
     background: rgba(var(--color-accent-rgb), 0.08);
     border-color: rgba(var(--color-accent-rgb), 0.2);
-    .wl-name { color: var(--color-accent-lighter); }
+    .watchlist-name { color: var(--color-accent-lighter); }
   }
 
   &.selected {
     background: rgba(var(--color-accent-rgb), 0.15);
     border-color: rgba(var(--color-accent-rgb), 0.4);
-    .wl-check { color: var(--color-accent-light); }
-    .wl-name { color: var(--color-accent-pale); }
+    .watchlist-check { color: var(--color-accent-light); }
+    .watchlist-name { color: var(--color-accent-pale); }
   }
 
   &.indented {
@@ -565,7 +565,7 @@
   }
 }
 
-.wl-total {
+.watchlist-total {
   display: flex;
   align-items: center;
   gap: 0.375rem;

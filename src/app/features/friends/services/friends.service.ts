@@ -64,10 +64,10 @@ export class FriendsService {
       const friends = await this.fetchUsers(friendIds);
 
       const pendingWithSenders = await Promise.all(
-        pending.map(async req => {
-          const senderSnap = await getDoc(doc(db, 'users', req.senderId));
+        pending.map(async request => {
+          const senderSnap = await getDoc(doc(db, 'users', request.senderId));
           return {
-            ...req,
+            ...request,
             sender: senderSnap.exists() ? ({ id: senderSnap.id, ...senderSnap.data() } as User) : undefined,
           };
         })
@@ -127,7 +127,7 @@ export class FriendsService {
 
     return from(addDoc(collection(db, 'friendRequests'), request)).pipe(
       map(docRef => ({ id: docRef.id, ...request })),
-      tap(req => this._sentRequests.update(prev => [...prev, req])),
+      tap(sentRequest => this._sentRequests.update(prev => [...prev, sentRequest])),
       catchError(() => of({} as FriendRequest)),
     );
   }
@@ -135,8 +135,8 @@ export class FriendsService {
   acceptRequest(requestId: string): Observable<void> {
     return from(updateDoc(doc(db, 'friendRequests', requestId), { status: 'accepted' })).pipe(
       tap(() => {
-        const req = this._pendingRequests().find(r => r.id === requestId);
-        if (req) {
+        const request = this._pendingRequests().find(r => r.id === requestId);
+        if (request) {
           this._pendingRequests.update(prev => prev.filter(r => r.id !== requestId));
           const user = this.authService.user();
           if (user) this.loadAll(user.id);

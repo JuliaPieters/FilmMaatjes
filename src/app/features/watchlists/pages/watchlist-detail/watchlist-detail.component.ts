@@ -25,7 +25,7 @@ export class WatchlistDetailComponent implements OnInit {
   private readonly id = signal<string>('');
 
   protected readonly watchlist = computed<Watchlist | undefined>(() =>
-    this.watchlistService.watchlists().find(wl => wl.id === this.id()),
+    this.watchlistService.watchlists().find(watchlist => watchlist.id === this.id()),
   );
 
   protected readonly movies = computed(() => this.watchlist()?.movies ?? []);
@@ -49,9 +49,9 @@ export class WatchlistDetailComponent implements OnInit {
   }
 
   protected removeMovie(movieId: number): void {
-    const wl = this.watchlist();
-    if (!wl) return;
-    this.watchlistService.removeMovie(wl.id, movieId).subscribe({
+    const watchlist = this.watchlist();
+    if (!watchlist) return;
+    this.watchlistService.removeMovie(watchlist.id, movieId).subscribe({
       next: () => this.notifications.success('Film verwijderd uit watchlist'),
     });
   }

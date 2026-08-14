@@ -51,24 +51,24 @@
               />
             } @else {
               <div class="friends-grid">
-                @for (req of pendingRequests(); track req.id) {
+                @for (request of pendingRequests(); track request.id) {
                   <div class="friend-card glass-card p-4 flex items-center gap-3">
                     <div class="friend-avatar">
-                      @if (req.sender?.avatar) {
-                        <img [src]="req.sender!.avatar!" [alt]="req.sender!.displayName" />
+                      @if (request.sender?.avatar) {
+                        <img [src]="request.sender!.avatar!" [alt]="request.sender!.displayName" />
                       } @else {
-                        <span>{{ req.sender?.displayName?.charAt(0)?.toUpperCase() }}</span>
+                        <span>{{ request.sender?.displayName?.charAt(0)?.toUpperCase() }}</span>
                       }
                     </div>
                     <div class="flex-1 min-w-0">
-                      <p class="friend-name text-text-primary font-semibold">{{ req.sender?.displayName }}</p>
-                      <p class="friend-username text-text-muted text-sm">&#64;{{ req.sender?.username }}</p>
+                      <p class="friend-name text-text-primary font-semibold">{{ request.sender?.displayName }}</p>
+                      <p class="friend-username text-text-muted text-sm">&#64;{{ request.sender?.username }}</p>
                     </div>
                     <div class="flex gap-2">
-                      <button mat-icon-button color="primary" class="request-accept-btn" (click)="acceptRequest(req.id)" title="Accepteren">
+                      <button mat-icon-button color="primary" class="request-accept-btn" (click)="acceptRequest(request.id)" title="Accepteren">
                         <mat-icon>check</mat-icon>
                       </button>
-                      <button mat-icon-button class="request-decline-btn" (click)="declineRequest(req.id)" title="Weigeren">
+                      <button mat-icon-button class="request-decline-btn" (click)="declineRequest(request.id)" title="Weigeren">
                         <mat-icon>close</mat-icon>
                       </button>
                     </div>

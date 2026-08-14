@@ -64,8 +64,8 @@ export class LoginComponent {
         const returnUrl = this.route.snapshot.queryParamMap.get('returnUrl') ?? '/dashboard';
         this.router.navigateByUrl(returnUrl);
       },
-      error: err => {
-        const message = err?.error?.message ?? 'Inloggen mislukt. Controleer je gegevens.';
+      error: error => {
+        const message = error?.error?.message ?? 'Inloggen mislukt. Controleer je gegevens.';
         this.error.set(message);
       },
     });

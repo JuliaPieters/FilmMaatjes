@@ -90,26 +90,26 @@ export class RouletteComponent implements OnInit {
 
   protected readonly availableWatchlists = computed<WatchlistWithOwner[]>(() => {
     const own = this.watchlistService.watchlists()
-      .filter(wl => wl.name !== 'Gezien')
-      .map(wl => ({ ...wl, owner: 'Jij' }));
+      .filter(watchlist => watchlist.name !== 'Gezien')
+      .map(watchlist => ({ ...watchlist, owner: 'Jij' }));
     const friends = this.friendsService.friends();
     const friendLists = friends.flatMap(f =>
       this.watchlistService.getWatchlistsForUser(f.id)
-        .filter(wl => wl.name !== 'Gezien')
-        .map(wl => ({ ...wl, owner: f.displayName || f.username || 'Vriend' })),
+        .filter(watchlist => watchlist.name !== 'Gezien')
+        .map(watchlist => ({ ...watchlist, owner: f.displayName || f.username || 'Vriend' })),
     );
     return [...own, ...friendLists];
   });
 
   protected readonly ownWatchlists = computed(() =>
-    this.availableWatchlists().filter(wl => wl.owner === 'Jij'),
+    this.availableWatchlists().filter(watchlist => watchlist.owner === 'Jij'),
   );
 
   protected readonly friendGroups = computed(() => {
     const groups = new Map<string, WatchlistWithOwner[]>();
-    for (const wl of this.availableWatchlists().filter(wl => wl.owner !== 'Jij')) {
-      if (!groups.has(wl.owner)) groups.set(wl.owner, []);
-      groups.get(wl.owner)!.push(wl);
+    for (const watchlist of this.availableWatchlists().filter(watchlist => watchlist.owner !== 'Jij')) {
+      if (!groups.has(watchlist.owner)) groups.set(watchlist.owner, []);
+      groups.get(watchlist.owner)!.push(watchlist);
     }
     return Array.from(groups.entries()).map(([owner, watchlists]) => ({ owner, watchlists }));
   });
@@ -118,8 +118,8 @@ export class RouletteComponent implements OnInit {
     const ids = this.selectedWatchlistIds();
     if (ids.size === 0) return [];
     const all = this.availableWatchlists()
-      .filter(wl => ids.has(wl.id))
-      .flatMap(wl => (wl.movies ?? []).filter(m => m.movie?.poster_path));
+      .filter(watchlist => ids.has(watchlist.id))
+      .flatMap(watchlist => (watchlist.movies ?? []).filter(m => m.movie?.poster_path));
     const seen = new Set<number>();
     return all.filter(m => {
       if (seen.has(m.movieId)) return false;
@@ -149,7 +149,7 @@ export class RouletteComponent implements OnInit {
         this.watchlistService.loadFriendWatchlists(f.id).subscribe({
           next: lists => {
             // Auto-expand friend group if they have watchlists (excluding Gezien)
-            const hasLists = lists.some(wl => wl.name !== 'Gezien');
+            const hasLists = lists.some(watchlist => watchlist.name !== 'Gezien');
             if (hasLists) {
               this.expandedFriends.update(s => new Set([...s, f.displayName || f.username || 'Vriend']));
             }
@@ -169,19 +169,19 @@ export class RouletteComponent implements OnInit {
     this.watchlistService.getMyWatchlists().subscribe();
   }
 
-  protected movieCount(wl: WatchlistWithOwner): number {
-    return (wl.movies ?? []).length || wl._count?.movies || 0;
+  protected movieCount(watchlist: WatchlistWithOwner): number {
+    return (watchlist.movies ?? []).length || watchlist._count?.movies || 0;
   }
 
   protected selectedCountForGroup(watchlists: WatchlistWithOwner[]): number {
     const ids = this.selectedWatchlistIds();
-    return watchlists.filter(wl => ids.has(wl.id)).length;
+    return watchlists.filter(watchlist => ids.has(watchlist.id)).length;
   }
 
   protected selectAllInGroup(watchlists: WatchlistWithOwner[]): void {
     this.selectedWatchlistIds.update(prev => {
       const next = new Set(prev);
-      watchlists.forEach(wl => next.add(wl.id));
+      watchlists.forEach(watchlist => next.add(watchlist.id));
       return next;
     });
   }
@@ -272,7 +272,7 @@ export class RouletteComponent implements OnInit {
   }
 
   protected selectAllWatchlists(): void {
-    this.selectedWatchlistIds.set(new Set(this.availableWatchlists().map(wl => wl.id)));
+    this.selectedWatchlistIds.set(new Set(this.availableWatchlists().map(watchlist => watchlist.id)));
   }
 
   protected toggleFriendGroup(owner: string): void {
