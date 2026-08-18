@@ -175,7 +175,7 @@
               rows="4"
             ></textarea>
             <div class="flex gap-2 mt-3">
-              <button mat-flat-button color="primary" class="submit-btn" (click)="submitReview()" [disabled]="reviewSubmitting() || !reviewTextModel.trim()">
+              <button mat-flat-button color="primary" class="submit-btn" (click)="submitReview()" [disabled]="reviewSubmitting() || !reviewTextModel.trim() || reviewRating() < 1">
                 {{ reviewSubmitting() ? 'Opslaan...' : (editingReview() ? 'Bijwerken' : 'Plaatsen') }}
               </button>
               <button mat-stroked-button class="cancel-btn" (click)="cancelReview()">Annuleren</button>

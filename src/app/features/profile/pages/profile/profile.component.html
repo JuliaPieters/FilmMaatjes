@@ -196,6 +196,10 @@
                 <mat-icon>bookmark</mat-icon>
                 Watchlists ({{ publicWatchlists().length }})
               </button>
+              <button class="profile-tab" [class.active]="publicActiveTab() === 'rated'" (click)="publicActiveTab.set('rated')">
+                <mat-icon>star</mat-icon>
+                Beoordeeld ({{ friendRatedMovies().length }})
+              </button>
               <button class="profile-tab" [class.active]="publicActiveTab() === 'reviews'" (click)="publicActiveTab.set('reviews')">
                 <mat-icon>rate_review</mat-icon>
                 Reviews ({{ friendReviews().length }})
@@ -245,6 +249,28 @@
                           }
                         }
                       </div>
+                    }
+                  </div>
+                }
+              } @else if (publicActiveTab() === 'rated') {
+                @if (friendRatedMovies().length === 0) {
+                  <div class="empty-state">
+                    <mat-icon>star_border</mat-icon>
+                    <p>Nog geen films beoordeeld.</p>
+                  </div>
+                } @else {
+                  <div class="rated-grid">
+                    @for (entry of friendRatedMovies(); track entry.movieId) {
+                      <a class="rated-item" [routerLink]="['/movies', entry.movieId]">
+                        <div class="rated-poster">
+                          <img [src]="entry.movie.poster_path ? 'https://image.tmdb.org/t/p/w185' + entry.movie.poster_path : '/assets/movie-placeholder.svg'"
+                               [alt]="entry.movie.title" loading="lazy" />
+                        </div>
+                        <div class="rated-info">
+                          <p class="rated-title">{{ entry.movie.title }}</p>
+                          <app-star-rating [value]="entry.rating" [readonly]="true" [size]="16" />
+                        </div>
+                      </a>
                     }
                   </div>
                 }
@@ -300,6 +326,10 @@
                 <mat-icon>bookmark</mat-icon>
                 Watchlists ({{ watchlistCount() }})
               </button>
+              <button class="profile-tab" [class.active]="activeTab() === 'reviews'" (click)="activeTab.set('reviews')">
+                <mat-icon>rate_review</mat-icon>
+                Reviews ({{ ownReviewCount() }})
+              </button>
             </div>
 
             <div class="tab-content mt-6">
@@ -354,11 +384,47 @@
                 } @else {
                   <div class="watchlist-grid">
                     @for (watchlist of watchlistService.watchlists(); track watchlist.id) {
-                      <a class="watchlist-card glass-card" routerLink="/watchlists">
+                      <a class="watchlist-card glass-card" [routerLink]="['/watchlists', watchlist.id]">
                         <div class="watchlist-icon"><mat-icon>bookmark</mat-icon></div>
                         <div>
                           <p class="watchlist-name">{{ watchlist.name }}</p>
                           <p class="watchlist-count">{{ watchlist._count?.movies ?? watchlist.movies.length }} films</p>
+                        </div>
+                      </a>
+                    }
+                  </div>
+                }
+              }
+
+              @if (activeTab() === 'reviews') {
+                @if (ownReviews().length === 0) {
+                  <div class="empty-state">
+                    <mat-icon>rate_review</mat-icon>
+                    <p>Nog geen reviews geschreven.</p>
+                    <a mat-stroked-button routerLink="/movies">Films bekijken</a>
+                  </div>
+                } @else {
+                  <div class="reviews-list">
+                    @for (review of ownReviews(); track review.id) {
+                      <a class="review-card glass-card" [routerLink]="['/movies', review.movieId]">
+                        <div class="review-poster">
+                          @if (review.moviePosterPath) {
+                            <img [src]="'https://image.tmdb.org/t/p/w92' + review.moviePosterPath" [alt]="review.movieTitle" loading="lazy" />
+                          } @else {
+                            <div class="review-poster-placeholder"><mat-icon>movie</mat-icon></div>
+                          }
+                        </div>
+                        <div class="review-body">
+                          @if (review.movieTitle) {
+                            <p class="review-movie-title">{{ review.movieTitle }}</p>
+                          }
+                          <div class="review-top">
+                            <app-star-rating [value]="review.rating" [readonly]="true" [size]="16" />
+                            <span class="review-date">{{ review.createdAt | date: 'd MMM yyyy' }}</span>
+                          </div>
+                          @if (review.content) {
+                            <p class="review-content">{{ review.content }}</p>
+                          }
                         </div>
                       </a>
                     }

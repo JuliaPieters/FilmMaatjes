@@ -60,7 +60,7 @@ export class FriendsService {
       const pending = allRequests.filter(r => r.status === 'pending' && r.receiverId === userId);
       const sent = allRequests.filter(r => r.status === 'pending' && r.senderId === userId);
 
-      const friendIds = accepted.map(r => r.senderId === userId ? r.receiverId : r.senderId);
+      const friendIds = Array.from(new Set(accepted.map(r => r.senderId === userId ? r.receiverId : r.senderId)));
       const friends = await this.fetchUsers(friendIds);
 
       const pendingWithSenders = await Promise.all(
@@ -108,7 +108,13 @@ export class FriendsService {
       Promise.all([
         getDocs(query(collection(db, 'friendRequests'), where('senderId', '==', userId), where('status', '==', 'accepted'))),
         getDocs(query(collection(db, 'friendRequests'), where('receiverId', '==', userId), where('status', '==', 'accepted'))),
-      ]).then(([sentSnap, receivedSnap]) => sentSnap.size + receivedSnap.size),
+      ]).then(([sentSnap, receivedSnap]) => {
+        const friendIds = new Set([
+          ...sentSnap.docs.map(d => d.data()['receiverId'] as string),
+          ...receivedSnap.docs.map(d => d.data()['senderId'] as string),
+        ]);
+        return friendIds.size;
+      }),
     ).pipe(
       catchError(() => of(0)),
     );
@@ -118,6 +124,10 @@ export class FriendsService {
     const currentUser = this.authService.user();
     if (!currentUser) return of({} as FriendRequest);
 
+    if (this._sentRequests().some(r => r.receiverId === userId) || this._friends().some(f => f.id === userId)) {
+      return of({} as FriendRequest);
+    }
+
     const request = {
       senderId: currentUser.id,
       receiverId: userId,
@@ -125,8 +135,20 @@ export class FriendsService {
       createdAt: new Date().toISOString(),
     };
 
-    return from(addDoc(collection(db, 'friendRequests'), request)).pipe(
-      map(docRef => ({ id: docRef.id, ...request })),
+    return from(
+      getDocs(query(
+        collection(db, 'friendRequests'),
+        where('senderId', '==', currentUser.id),
+        where('receiverId', '==', userId),
+      )).then(async existingSnap => {
+        if (!existingSnap.empty) {
+          const existing = existingSnap.docs[0];
+          return { id: existing.id, ...existing.data() } as FriendRequest;
+        }
+        const docRef = await addDoc(collection(db, 'friendRequests'), request);
+        return { id: docRef.id, ...request };
+      })
+    ).pipe(
       tap(sentRequest => this._sentRequests.update(prev => [...prev, sentRequest])),
       catchError(() => of({} as FriendRequest)),
     );

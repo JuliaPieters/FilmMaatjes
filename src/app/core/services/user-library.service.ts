@@ -1,4 +1,6 @@
 import { computed, effect, inject, Injectable, signal } from '@angular/core';
+import { from, Observable, of } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 import { TmdbMovie } from '../models/movie.model';
 import { AuthService } from '../../features/auth/services/auth.service';
 import { WatchlistService } from '../../features/watchlists/services/watchlist.service';
@@ -82,6 +84,25 @@ export class UserLibraryService {
       }))
       .sort((a, b) => (b.ratedAt ?? '').localeCompare(a.ratedAt ?? ''))
   );
+
+  getRatedMoviesForUser(userId: string): Observable<LibraryEntry[]> {
+    return from(
+      getDocs(collection(db, 'users', userId, 'ratings')).then(snap =>
+        snap.docs
+          .map(d => d.data() as RatingEntry)
+          .filter(v => v.rating > 0)
+          .map(v => ({
+            movieId: v.movieId,
+            movie: v.movie,
+            watched: false,
+            watchedAt: null,
+            rating: v.rating,
+            ratedAt: v.ratedAt,
+          }))
+          .sort((a, b) => (b.ratedAt ?? '').localeCompare(a.ratedAt ?? ''))
+      )
+    ).pipe(catchError(() => of([])));
+  }
 
   getTopGenres(options?: { minRating?: number; weighted?: boolean; limit?: number }): number[] {
     const minRating = options?.minRating ?? 0;

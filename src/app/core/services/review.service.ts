@@ -159,4 +159,30 @@ export class ReviewService {
     if (!user) return null;
     return this._movieReviews().find(r => r.movieId === movieId && r.userId === user.id) ?? null;
   }
+
+  getUserReviewForMovieRemote(movieId: number): Observable<Review | null> {
+    const user = this.authService.user();
+    if (!user) return of(null);
+    return from(
+      getDocs(query(collection(db, 'reviews'), where('movieId', '==', movieId), where('userId', '==', user.id)))
+        .then(snap => {
+          if (snap.empty) return null;
+          const d = snap.docs[0];
+          const data = d.data();
+          return {
+            id: d.id,
+            movieId: data['movieId'],
+            movieTitle: data['movieTitle'] ?? undefined,
+            moviePosterPath: data['moviePosterPath'] ?? null,
+            userId: data['userId'],
+            rating: data['rating'],
+            content: data['content'],
+            createdAt: data['createdAt'],
+            updatedAt: data['updatedAt'],
+            likesCount: 0,
+            likedByCurrentUser: false,
+          } as Review;
+        })
+    ).pipe(catchError(() => of(null)));
+  }
 }

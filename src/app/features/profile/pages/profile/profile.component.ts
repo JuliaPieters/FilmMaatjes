@@ -7,7 +7,7 @@ import { FormsModule } from '@angular/forms';
 import { DatePipe } from '@angular/common';
 import { firstValueFrom } from 'rxjs';
 import { AuthService } from '../../../auth/services/auth.service';
-import { UserLibraryService } from '../../../../core/services/user-library.service';
+import { UserLibraryService, LibraryEntry } from '../../../../core/services/user-library.service';
 import { WatchlistService } from '../../../watchlists/services/watchlist.service';
 import { FriendsService } from '../../../friends/services/friends.service';
 import { ReviewService } from '../../../../core/services/review.service';
@@ -40,7 +40,7 @@ export class ProfileComponent implements OnInit {
   protected readonly user = signal<User | null>(null);
   protected readonly isOwnProfile = signal(false);
   protected readonly loading = signal(false);
-  protected readonly activeTab = signal<'watched' | 'rated' | 'watchlists'>('watched');
+  protected readonly activeTab = signal<'watched' | 'rated' | 'watchlists' | 'reviews'>('watched');
   protected readonly editMode = signal(false);
   protected editDisplayName = '';
   protected editBio = '';
@@ -64,15 +64,17 @@ export class ProfileComponent implements OnInit {
   // Friend profile data
   protected readonly friendProfileWatchlists = signal<Watchlist[]>([]);
   protected readonly friendReviews = signal<Review[]>([]);
+  protected readonly friendRatedMovies = signal<LibraryEntry[]>([]);
   protected readonly friendActualCount = signal<number | null>(null);
   protected readonly loadingFriendData = signal(false);
   protected readonly expandedWatchlistId = signal<string | null>(null);
-  protected readonly publicActiveTab = signal<'watchlists' | 'reviews'>('watchlists');
+  protected readonly publicActiveTab = signal<'watchlists' | 'reviews' | 'rated'>('watchlists');
 
   protected readonly watchedCount = computed(() => this.library.watchedMovies().length);
   protected readonly ratedCount = computed(() => this.library.ratedMovies().length);
   protected readonly watchlistCount = computed(() => this.watchlistService.watchlists().length);
   protected readonly ownReviewCount = signal(0);
+  protected readonly ownReviews = signal<Review[]>([]);
 
   protected readonly publicWatchlists = computed(() =>
     this.friendProfileWatchlists()
@@ -105,7 +107,27 @@ export class ProfileComponent implements OnInit {
         const u = this.authService.user();
         this.user.set(u);
         if (u) {
-          this.reviewService.getUserReviews(u.id).subscribe(reviews => this.ownReviewCount.set(reviews.length));
+          this.reviewService.getUserReviews(u.id).subscribe(async reviews => {
+            this.ownReviewCount.set(reviews.length);
+
+            const missing = reviews.filter(r => !r.moviePosterPath);
+            if (missing.length === 0) {
+              this.ownReviews.set(reviews);
+              return;
+            }
+            const details = await Promise.allSettled(
+              missing.map(r => firstValueFrom(this.movieService.getMovieDetail(r.movieId)))
+            );
+            this.ownReviews.set(reviews.map(r => {
+              if (r.moviePosterPath) return r;
+              const index = missing.findIndex(m => m.id === r.id);
+              const result = details[index];
+              if (result?.status === 'fulfilled') {
+                return { ...r, movieTitle: result.value.title, moviePosterPath: result.value.poster_path };
+              }
+              return r;
+            }));
+          });
         }
       }
     });
@@ -149,14 +171,17 @@ export class ProfileComponent implements OnInit {
     this.friendActualCount.set(null);
     this.friendReviews.set([]);
     this.friendProfileWatchlists.set([]);
+    this.friendRatedMovies.set([]);
 
     Promise.all([
       firstValueFrom(this.friendsService.getAcceptedFriendCount(userId)),
       firstValueFrom(this.watchlistService.loadFriendWatchlists(userId)),
       firstValueFrom(this.reviewService.getUserReviews(userId)),
-    ]).then(async ([friendCount, watchlists, reviews]) => {
+      firstValueFrom(this.library.getRatedMoviesForUser(userId)),
+    ]).then(async ([friendCount, watchlists, reviews, ratedMovies]) => {
       this.friendActualCount.set(friendCount);
       this.friendProfileWatchlists.set(watchlists);
+      this.friendRatedMovies.set(ratedMovies);
 
       const missing = reviews.filter(r => !r.moviePosterPath);
       if (missing.length > 0) {

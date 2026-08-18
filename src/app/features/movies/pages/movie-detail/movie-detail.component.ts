@@ -116,17 +116,19 @@ export class MovieDetailComponent implements OnInit {
       this.router.navigate(['/auth/login']);
       return;
     }
-    const existing = this.reviewService.getUserReviewForMovie(this.movie()?.id ?? 0);
-    if (existing) {
-      this.editingReview.set(existing);
-      this.reviewText.set(existing.content);
-      this.reviewRating.set(existing.rating);
-    } else {
-      this.editingReview.set(null);
-      this.reviewText.set('');
-      this.reviewRating.set(this.userRating());
-    }
-    this.showReviewForm.set(true);
+    const movieId = this.movie()?.id ?? 0;
+    this.reviewService.getUserReviewForMovieRemote(movieId).subscribe(existing => {
+      if (existing) {
+        this.editingReview.set(existing);
+        this.reviewText.set(existing.content);
+        this.reviewRating.set(existing.rating);
+      } else {
+        this.editingReview.set(null);
+        this.reviewText.set('');
+        this.reviewRating.set(this.userRating());
+      }
+      this.showReviewForm.set(true);
+    });
   }
 
   protected cancelReview(): void {
@@ -139,6 +141,10 @@ export class MovieDetailComponent implements OnInit {
     const rating = this.reviewRating();
     const movieId = this.movie()?.id;
     if (!text || !movieId) return;
+    if (rating < 1) {
+      this.notifications.error('Kies een aantal sterren voor je review.');
+      return;
+    }
     this.reviewSubmitting.set(true);
 
     const editing = this.editingReview();
@@ -146,8 +152,13 @@ export class MovieDetailComponent implements OnInit {
       ? this.reviewService.updateReview(editing.id, { content: text, rating })
       : this.reviewService.createReview({ movieId, rating, content: text, movieTitle: this.movie()?.title, moviePosterPath: this.movie()?.poster_path });
 
+    const movie = this.movie();
     obs.subscribe({
       next: () => {
+        if (movie && rating !== this.userRating()) {
+          this.libraryService.setRating(movie as unknown as TmdbMovie, rating);
+          this.userRating.set(rating);
+        }
         this.notifications.success(editing ? 'Review bijgewerkt!' : 'Review geplaatst!');
         this.showReviewForm.set(false);
         this.editingReview.set(null);
@@ -200,6 +211,17 @@ export class MovieDetailComponent implements OnInit {
     if (!m) return;
     this.libraryService.setRating(m as unknown as TmdbMovie, rating);
     this.notifications.success(rating > 0 ? `${rating} ster${rating === 1 ? '' : 'ren'} opgeslagen!` : 'Beoordeling verwijderd');
+
+    if (rating > 0) {
+      this.reviewService.getUserReviewForMovieRemote(m.id).subscribe(existing => {
+        if (existing && existing.rating !== rating) {
+          this.reviewService.updateReview(existing.id, { rating }).subscribe();
+          if (this.editingReview()?.id === existing.id) {
+            this.reviewRating.set(rating);
+          }
+        }
+      });
+    }
   }
 
   protected goBack(): void {
