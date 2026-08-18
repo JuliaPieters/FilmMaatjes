@@ -1,4 +1,5 @@
-import { Component, computed, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, DestroyRef, inject, OnInit, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { MatIcon } from '@angular/material/icon';
 import { MatButton, MatIconButton } from '@angular/material/button';
@@ -37,6 +38,7 @@ import { Review } from '../../../../core/models/review.model';
 export class MovieDetailComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
+  private readonly destroyRef = inject(DestroyRef);
   private readonly location = inject(Location);
   protected readonly movieService = inject(MovieService);
   protected readonly authService = inject(AuthService);
@@ -87,16 +89,24 @@ export class MovieDetailComponent implements OnInit {
   });
 
   ngOnInit(): void {
-    const id = Number(this.route.snapshot.paramMap.get('id'));
-    if (!id || isNaN(id)) {
-      this.router.navigate(['/movies']);
-      return;
-    }
-    this.loadMovie(id);
+    this.route.paramMap
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(params => {
+        const id = Number(params.get('id'));
+        if (!id || isNaN(id)) {
+          this.router.navigate(['/movies']);
+          return;
+        }
+        this.loadMovie(id);
+      });
   }
 
   private loadMovie(id: number): void {
     this.loading.set(true);
+    this.error.set(null);
+    this.movie.set(null);
+    this.showReviewForm.set(false);
+    this.editingReview.set(null);
     this.movieService.getMovieDetail(id).subscribe({
       next: movie => {
         this.movie.set(movie);
