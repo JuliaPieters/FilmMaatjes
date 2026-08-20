@@ -123,6 +123,8 @@ export class ProfileComponent implements OnInit {
   });
 
   protected readonly unlockedAchievementCount = computed(() => this.achievements().filter(a => a.unlocked).length);
+  private seenAchievementIds: Set<string> | null = null;
+  private readonly seenAchievementIdsLoaded = signal(false);
 
   protected readonly displayWatchlistCount = computed(() => {
     if (this.isOwnProfile()) return this.watchlistService.watchlists().length;
@@ -146,6 +148,11 @@ export class ProfileComponent implements OnInit {
         const u = this.authService.user();
         this.user.set(u);
         if (u) {
+          this.achievementsService.getSeenAchievementIds(u.id).then(ids => {
+            this.seenAchievementIds = ids;
+            this.seenAchievementIdsLoaded.set(true);
+          });
+
           this.reviewService.getUserReviews(u.id).subscribe(async reviews => {
             this.ownReviewCount.set(reviews.length);
 
@@ -169,6 +176,20 @@ export class ProfileComponent implements OnInit {
           });
         }
       }
+    });
+
+    effect(() => {
+      if (!this.isOwnProfile() || !this.seenAchievementIdsLoaded()) return;
+      const unlocked = this.achievements().filter(a => a.unlocked);
+      const newlyUnlocked = unlocked.filter(a => !this.seenAchievementIds!.has(a.id));
+      if (newlyUnlocked.length === 0) return;
+
+      for (const badge of newlyUnlocked) {
+        this.notifications.success(`Nieuwe badge behaald: ${badge.title}!`);
+      }
+      this.seenAchievementIds = new Set(unlocked.map(a => a.id));
+      const uid = this.user()?.id;
+      if (uid) this.achievementsService.markAchievementsSeen(uid, [...this.seenAchievementIds]);
     });
   }
 

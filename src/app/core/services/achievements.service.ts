@@ -1,4 +1,6 @@
 import { Injectable } from '@angular/core';
+import { doc, getDoc, setDoc } from 'firebase/firestore';
+import { db } from '../firebase';
 import { Achievement, AchievementTier } from '../models/achievement.model';
 
 export interface AchievementStats {
@@ -72,5 +74,19 @@ export class AchievementsService {
     }));
 
     return [...tiered, ...special];
+  }
+
+  async getSeenAchievementIds(userId: string): Promise<Set<string>> {
+    try {
+      const snap = await getDoc(doc(db, 'users', userId, 'meta', 'achievements'));
+      const ids = (snap.data()?.['unlockedIds'] as string[] | undefined) ?? [];
+      return new Set(ids);
+    } catch {
+      return new Set();
+    }
+  }
+
+  async markAchievementsSeen(userId: string, ids: string[]): Promise<void> {
+    await setDoc(doc(db, 'users', userId, 'meta', 'achievements'), { unlockedIds: ids }, { merge: true });
   }
 }
