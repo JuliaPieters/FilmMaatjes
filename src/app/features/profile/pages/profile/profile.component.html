@@ -48,9 +48,9 @@
                 <div class="streak-badge" [class.milestone]="streakWeeks() % 5 === 0">
                   <mat-icon>local_fire_department</mat-icon>
                   @if (isOwnProfile()) {
-                    <span>{{ streakWeeks() }} week{{ streakWeeks() === 1 ? '' : 'en' }} op rij een film gekeken</span>
+                    <span>{{ streakWeeks() }} {{ streakWeeks() === 1 ? 'week' : 'weken' }} film-streak</span>
                   } @else {
-                    <span>{{ user()?.displayName }} kijkt {{ streakWeeks() }} week{{ streakWeeks() === 1 ? '' : 'en' }} op rij films</span>
+                    <span>{{ user()?.displayName }}: {{ streakWeeks() }} {{ streakWeeks() === 1 ? 'week' : 'weken' }} film-streak</span>
                   }
                 </div>
               } @else if (isOwnProfile()) {
