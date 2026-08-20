@@ -13,6 +13,7 @@ import { FriendsService } from '../../../friends/services/friends.service';
 import { ReviewService } from '../../../../core/services/review.service';
 import { MovieService } from '../../../movies/services/movie.service';
 import { NotificationService } from '../../../../core/services/notification.service';
+import { DuoStreakService } from '../../../../core/services/duo-streak.service';
 import { MovieCardComponent } from '../../../../shared/components/movie-card/movie-card.component';
 import { StarRatingComponent } from '../../../../shared/components/star-rating/star-rating.component';
 import { User } from '../../../../core/models/user.model';
@@ -36,6 +37,7 @@ export class ProfileComponent implements OnInit {
   protected readonly watchlistService = inject(WatchlistService);
   private readonly reviewService = inject(ReviewService);
   private readonly movieService = inject(MovieService);
+  private readonly duoStreak = inject(DuoStreakService);
 
   protected readonly user = signal<User | null>(null);
   protected readonly isOwnProfile = signal(false);
@@ -83,6 +85,14 @@ export class ProfileComponent implements OnInit {
   protected readonly friendWatchedCount = computed(() => {
     const gezien = this.friendProfileWatchlists().find(watchlist => watchlist.name === 'Gezien');
     return gezien?.movies?.length ?? gezien?._count?.movies ?? 0;
+  });
+
+  protected readonly duoStreakWeeks = computed(() => {
+    if (this.isOwnProfile() || !this.isFriend()) return 0;
+    const friendGezien = this.friendProfileWatchlists().find(watchlist => watchlist.name === 'Gezien');
+    const friendDates = (friendGezien?.movies ?? []).map(m => m.addedAt);
+    const myDates = this.library.watchedMovies().map(e => e.watchedAt);
+    return this.duoStreak.getStreakWeeks(myDates, friendDates);
   });
 
   protected readonly displayWatchlistCount = computed(() => {

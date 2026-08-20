@@ -12,7 +12,7 @@ Beschikbare variabelen:
 |---|---|
 | Surfaces | `--color-surface` (+ `-rgb`), `--color-surface-50` (+ `-rgb`), `--color-surface-100` (+ `-rgb`), `--color-surface-200`, `--color-surface-400`, `--color-poster-placeholder` |
 | Accent (paars) | `--color-accent` (+ `-rgb`), `--color-accent-light` (+ `-rgb`), `--color-accent-lighter`, `--color-accent-pale`, `--color-accent-dark`, `--color-violet-deep`, `--color-indigo-rgb` |
-| Status | `--color-gold`, `--color-success` (+ `-rgb`), `--color-danger`, `--color-danger-strong` (+ `-rgb`), `--color-info` (+ `-rgb`), `--color-pink` (+ `-rgb`), `--color-cyan`, `--color-orange`, `--color-amber` |
+| Status | `--color-gold`, `--color-success` (+ `-rgb`), `--color-danger`, `--color-danger-strong` (+ `-rgb`), `--color-info` (+ `-rgb`), `--color-pink` (+ `-rgb`), `--color-cyan`, `--color-orange` (+ `-rgb`), `--color-amber` |
 | Tekst | `--color-text-primary`, `--color-text-secondary`, `--color-text-soft`, `--color-text-meta`, `--color-text-muted`, `--color-text-body` |
 | Overig | `--color-border`, `--color-white-rgb`, `--color-black-rgb`, `--color-scrollbar-thumb` |
 

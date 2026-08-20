@@ -44,6 +44,13 @@
                 <p class="profile-bio">{{ user()!.bio }}</p>
               }
 
+              @if (duoStreakWeeks() > 0) {
+                <div class="duo-streak-badge">
+                  <mat-icon>local_fire_department</mat-icon>
+                  <span>{{ duoStreakWeeks() }} week{{ duoStreakWeeks() === 1 ? '' : 'en' }} op rij samen aan het kijken</span>
+                </div>
+              }
+
               <div class="profile-stats">
                 @if (!isOwnProfile()) {
                   <div class="stat">
