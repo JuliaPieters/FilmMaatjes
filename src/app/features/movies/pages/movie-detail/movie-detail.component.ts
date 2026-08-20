@@ -1,4 +1,4 @@
-import { Component, computed, DestroyRef, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, DestroyRef, effect, inject, OnInit, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { MatIcon } from '@angular/material/icon';
@@ -17,6 +17,7 @@ import { WatchlistService } from '../../../watchlists/services/watchlist.service
 import { MovieActionsService } from '../../../../core/services/movie-actions.service';
 import { ReviewService } from '../../../../core/services/review.service';
 import { Review } from '../../../../core/models/review.model';
+import { FriendsService } from '../../../friends/services/friends.service';
 
 @Component({
   selector: 'app-movie-detail',
@@ -47,6 +48,7 @@ export class MovieDetailComponent implements OnInit {
   protected readonly watchlistService = inject(WatchlistService);
   protected readonly reviewService = inject(ReviewService);
   private readonly movieActions = inject(MovieActionsService);
+  private readonly friendsService = inject(FriendsService);
 
   private readonly ratingLabels = ['Slecht', 'Matig', 'Goed', 'Heel goed', 'Uitstekend'];
 
@@ -88,7 +90,31 @@ export class MovieDetailComponent implements OnInit {
     return m ? this.libraryService.isWatched(m.id) : false;
   });
 
+  protected readonly friendsWithMovieOnWatchlist = computed(() => {
+    const m = this.movie();
+    if (!m) return [];
+    const friendIds = this.friendsService.friends().map(f => f.id);
+    const matchingIds = new Set(this.watchlistService.getFriendIdsWithMovieInWatchlist(m.id, friendIds));
+    return this.friendsService.friends().filter(f => matchingIds.has(f.id));
+  });
+
+  protected readonly friendsWithMovieLabel = computed(() => {
+    const friends = this.friendsWithMovieOnWatchlist();
+    if (friends.length === 0) return null;
+    if (friends.length === 1) return `Ook op ${friends[0].displayName}'s watchlist`;
+    return `Ook op de watchlist van ${friends[0].displayName} en ${friends.length - 1} anderen`;
+  });
+
+  constructor() {
+    effect(() => {
+      for (const friend of this.friendsService.friends()) {
+        this.watchlistService.loadFriendWatchlists(friend.id).subscribe();
+      }
+    });
+  }
+
   ngOnInit(): void {
+    this.friendsService.getMyFriends().subscribe();
     this.route.paramMap
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(params => {

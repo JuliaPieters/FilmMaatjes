@@ -217,4 +217,12 @@ export class WatchlistService {
   isMovieInAnyWatchlist(movieId: number): boolean {
     return this._watchlists().some(watchlist => (watchlist.movies ?? []).some(m => m.movieId === movieId));
   }
+
+  getFriendIdsWithMovieInWatchlist(movieId: number, friendIds: string[]): string[] {
+    return friendIds.filter(id =>
+      this.getWatchlistsForUser(id).some(watchlist =>
+        watchlist.name !== 'Gezien' && (watchlist.movies ?? []).some(m => m.movieId === movieId),
+      ),
+    );
+  }
 }

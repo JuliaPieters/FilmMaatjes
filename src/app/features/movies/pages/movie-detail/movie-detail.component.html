@@ -111,6 +111,13 @@
             </button>
           </div>
 
+          @if (friendsWithMovieLabel(); as label) {
+            <p class="friends-watchlist-hint">
+              <mat-icon>bookmark</mat-icon>
+              {{ label }}
+            </p>
+          }
+
           <div class="rating-section">
             <p class="rating-label text-sm text-text-secondary mb-2">Jouw beoordeling:</p>
             <app-star-rating
