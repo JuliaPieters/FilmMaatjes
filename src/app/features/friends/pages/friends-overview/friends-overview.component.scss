@@ -40,6 +40,53 @@
       100% { transform: scale(1) rotate(0deg); }
     }
 
+    .leaderboard {
+      padding: 1.25rem;
+    }
+
+    .leaderboard-title {
+      display: flex; align-items: center; gap: 0.5rem;
+      font-size: 0.9375rem; font-weight: 700; color: var(--color-text-primary);
+      margin: 0 0 1rem;
+      mat-icon { color: var(--color-orange); font-size: 1.125rem; width: 1.125rem; height: 1.125rem; }
+    }
+
+    .leaderboard-list {
+      display: flex; flex-direction: column; gap: 0.5rem;
+    }
+
+    .leaderboard-row {
+      display: flex; align-items: center; gap: 0.75rem;
+      padding: 0.5rem 0.625rem; border-radius: 10px;
+
+      &.me {
+        background: rgba(var(--color-accent-rgb), 0.1);
+        border: 1px solid rgba(var(--color-accent-rgb), 0.25);
+      }
+    }
+
+    .leaderboard-rank {
+      width: 1.5rem; flex-shrink: 0; text-align: center;
+      font-size: 0.8125rem; font-weight: 700; color: var(--color-text-meta);
+    }
+
+    .leaderboard-avatar {
+      width: 32px; height: 32px; border-radius: 50%;
+      background: linear-gradient(135deg, var(--color-accent), var(--color-accent-light));
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0; font-weight: 700; color: white; font-size: 0.875rem; overflow: hidden;
+      img { width: 100%; height: 100%; object-fit: cover; }
+    }
+
+    .leaderboard-name {
+      flex: 1; min-width: 0; font-size: 0.875rem; font-weight: 600; color: var(--color-text-primary);
+      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
+
+    .leaderboard-weeks {
+      flex-shrink: 0; font-size: 0.8125rem; font-weight: 700; color: var(--color-orange);
+    }
+
     .friend-avatar {
       width: 44px;
       height: 44px;

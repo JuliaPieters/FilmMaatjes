@@ -2,6 +2,31 @@
     <div class="page-container">
       <h1 class="text-3xl font-bold text-text-primary tracking-tight mb-6">Vrienden</h1>
 
+      @if (streakLeaderboard()[0]?.weeks) {
+        <div class="leaderboard glass-card mb-6">
+          <p class="leaderboard-title">
+            <mat-icon>local_fire_department</mat-icon>
+            Streak-ranglijst
+          </p>
+          <div class="leaderboard-list">
+            @for (entry of streakLeaderboard(); track entry.id; let i = $index) {
+              <div class="leaderboard-row" [class.me]="entry.isMe">
+                <span class="leaderboard-rank">{{ i + 1 }}</span>
+                <div class="leaderboard-avatar">
+                  @if (entry.avatar) {
+                    <img [src]="entry.avatar" [alt]="entry.displayName" />
+                  } @else {
+                    <span>{{ entry.displayName.charAt(0).toUpperCase() }}</span>
+                  }
+                </div>
+                <span class="leaderboard-name">{{ entry.displayName }}</span>
+                <span class="leaderboard-weeks">{{ entry.weeks }} {{ entry.weeks === 1 ? 'week' : 'weken' }}</span>
+              </div>
+            }
+          </div>
+        </div>
+      }
+
       <mat-tab-group animationDuration="200ms" class="friends-tabs">
         <mat-tab label="Mijn vrienden">
           @if (loadingFriends()) {

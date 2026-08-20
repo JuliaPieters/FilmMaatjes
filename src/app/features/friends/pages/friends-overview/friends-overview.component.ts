@@ -14,6 +14,8 @@ import { EmptyStateComponent } from '../../../../shared/components/empty-state/e
 import { NotificationService } from '../../../../core/services/notification.service';
 import { WatchlistService } from '../../../watchlists/services/watchlist.service';
 import { WatchStreakService } from '../../../../core/services/watch-streak.service';
+import { UserLibraryService } from '../../../../core/services/user-library.service';
+import { AuthService } from '../../../auth/services/auth.service';
 
 @Component({
   selector: 'app-friends-overview',
@@ -40,6 +42,8 @@ export class FriendsOverviewComponent implements OnInit {
   private readonly notifications = inject(NotificationService);
   private readonly watchlistService = inject(WatchlistService);
   private readonly watchStreak = inject(WatchStreakService);
+  private readonly library = inject(UserLibraryService);
+  private readonly authService = inject(AuthService);
 
   protected readonly friends = this.friendsService.friends;
   protected readonly pendingRequests = this.friendsService.pendingRequests;
@@ -59,6 +63,25 @@ export class FriendsOverviewComponent implements OnInit {
       streaks[friend.id] = this.watchStreak.getStreakWeeks(friendDates);
     }
     return streaks;
+  });
+
+  protected readonly streakLeaderboard = computed(() => {
+    const me = this.authService.user();
+    const myEntry = me ? [{
+      id: me.id,
+      displayName: 'Jij',
+      avatar: me.avatar,
+      weeks: this.watchStreak.getStreakWeeks(this.library.watchedMovies().map(e => e.watchedAt)),
+      isMe: true,
+    }] : [];
+    const friendEntries = this.friends().map(friend => ({
+      id: friend.id,
+      displayName: friend.displayName,
+      avatar: friend.avatar,
+      weeks: this.friendStreaks()[friend.id] ?? 0,
+      isMe: false,
+    }));
+    return [...myEntry, ...friendEntries].sort((a, b) => b.weeks - a.weeks);
   });
 
   constructor() {
