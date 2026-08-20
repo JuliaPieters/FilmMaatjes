@@ -213,6 +213,10 @@
                 <mat-icon>rate_review</mat-icon>
                 Reviews ({{ friendReviews().length }})
               </button>
+              <button class="profile-tab" [class.active]="publicActiveTab() === 'badges'" (click)="publicActiveTab.set('badges')">
+                <mat-icon>military_tech</mat-icon>
+                Badges ({{ unlockedAchievementCount() }})
+              </button>
             </div>
             <div class="tab-content mt-6">
               @if (loadingFriendData()) {
@@ -283,7 +287,7 @@
                     }
                   </div>
                 }
-              } @else {
+              } @else if (publicActiveTab() === 'reviews') {
                 @if (friendReviews().length === 0) {
                   <div class="empty-state">
                     <mat-icon>rate_review</mat-icon>
@@ -316,6 +320,8 @@
                     }
                   </div>
                 }
+              } @else {
+                <ng-container [ngTemplateOutlet]="badgesGrid" />
               }
             </div>
           }
@@ -338,6 +344,10 @@
               <button class="profile-tab" [class.active]="activeTab() === 'reviews'" (click)="activeTab.set('reviews')">
                 <mat-icon>rate_review</mat-icon>
                 Reviews ({{ ownReviewCount() }})
+              </button>
+              <button class="profile-tab" [class.active]="activeTab() === 'badges'" (click)="activeTab.set('badges')">
+                <mat-icon>military_tech</mat-icon>
+                Badges ({{ unlockedAchievementCount() }})
               </button>
             </div>
 
@@ -440,8 +450,25 @@
                   </div>
                 }
               }
+
+              @if (activeTab() === 'badges') {
+                <ng-container [ngTemplateOutlet]="badgesGrid" />
+              }
             </div>
           }
         }
       </div>
     </div>
+
+    <ng-template #badgesGrid>
+      <p class="badges-summary">{{ unlockedAchievementCount() }} / {{ achievements().length }} badges behaald</p>
+      <div class="badges-grid">
+        @for (badge of achievements(); track badge.id) {
+          <div class="badge-tile" [class.locked]="!badge.unlocked" [class]="'tier-' + badge.tier">
+            <div class="badge-icon"><mat-icon>{{ badge.icon }}</mat-icon></div>
+            <p class="badge-title">{{ badge.title }}</p>
+            <p class="badge-description">{{ badge.description }}</p>
+          </div>
+        }
+      </div>
+    </ng-template>

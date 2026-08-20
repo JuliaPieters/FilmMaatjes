@@ -212,6 +212,66 @@
       display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;
     }
 
+    .badges-summary {
+      font-size: 0.8125rem; color: var(--color-text-meta); margin: 0 0 1rem;
+    }
+
+    .badges-grid {
+      display: grid; gap: 1rem;
+      grid-template-columns: repeat(2, 1fr);
+      @media (min-width: 640px) { grid-template-columns: repeat(3, 1fr); }
+      @media (min-width: 1024px) { grid-template-columns: repeat(4, 1fr); }
+    }
+
+    .badge-tile {
+      display: flex; flex-direction: column; align-items: center; text-align: center;
+      gap: 0.5rem; padding: 1.25rem 0.75rem; border-radius: 14px;
+      background: rgba(var(--color-surface-50-rgb), 0.6);
+      border: 1px solid rgba(var(--color-white-rgb), 0.06);
+      transition: transform 0.15s ease, border-color 0.15s ease;
+
+      .badge-icon {
+        width: 52px; height: 52px; border-radius: 50%;
+        display: flex; align-items: center; justify-content: center;
+        border: 2px solid var(--color-text-muted);
+        mat-icon { font-size: 1.5rem; width: 1.5rem; height: 1.5rem; color: var(--color-text-muted); }
+      }
+
+      .badge-title { font-size: 0.8125rem; font-weight: 700; color: var(--color-text-primary); margin: 0; }
+      .badge-description { font-size: 0.75rem; color: var(--color-text-meta); margin: 0; line-height: 1.4; }
+
+      &.locked { opacity: 0.45; }
+
+      &.tier-brons:not(.locked) {
+        border-color: rgba(var(--color-bronze-rgb), 0.35);
+        .badge-icon { border-color: var(--color-bronze); background: rgba(var(--color-bronze-rgb), 0.12); mat-icon { color: var(--color-bronze); } }
+      }
+
+      &.tier-zilver:not(.locked) {
+        border-color: rgba(var(--color-silver-rgb), 0.35);
+        .badge-icon { border-color: var(--color-silver); background: rgba(var(--color-silver-rgb), 0.12); mat-icon { color: var(--color-silver); } }
+      }
+
+      &.tier-goud:not(.locked) {
+        border-color: rgba(var(--color-gold-rgb), 0.4);
+        .badge-icon { border-color: var(--color-gold); background: rgba(var(--color-gold-rgb), 0.15); mat-icon { color: var(--color-gold); } }
+      }
+
+      &.tier-special:not(.locked) {
+        border-color: rgba(var(--color-accent-rgb), 0.4);
+        .badge-icon { border-color: var(--color-accent); background: rgba(var(--color-accent-rgb), 0.15); mat-icon { color: var(--color-accent-light); } }
+      }
+
+      &:hover:not(.locked) { transform: translateY(-2px); }
+
+      @media (max-width: 767px) {
+        padding: 1rem 0.5rem;
+        .badge-icon { width: 44px; height: 44px; mat-icon { font-size: 1.25rem; width: 1.25rem; height: 1.25rem; } }
+        .badge-title { font-size: 0.75rem; }
+        .badge-description { font-size: 0.6875rem; }
+      }
+    }
+
     .edit-form { border: 1px solid rgba(var(--color-accent-rgb),0.3); }
     .edit-fields { display: flex; flex-direction: column; gap: 1rem; }
     .field-group { display: flex; flex-direction: column; gap: 0.375rem; }

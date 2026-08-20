@@ -4,7 +4,7 @@ import { ActivatedRoute, RouterLink } from '@angular/router';
 import { MatIcon } from '@angular/material/icon';
 import { MatButton } from '@angular/material/button';
 import { FormsModule } from '@angular/forms';
-import { DatePipe } from '@angular/common';
+import { DatePipe, NgTemplateOutlet } from '@angular/common';
 import { firstValueFrom } from 'rxjs';
 import { AuthService } from '../../../auth/services/auth.service';
 import { UserLibraryService, LibraryEntry } from '../../../../core/services/user-library.service';
@@ -14,15 +14,17 @@ import { ReviewService } from '../../../../core/services/review.service';
 import { MovieService } from '../../../movies/services/movie.service';
 import { NotificationService } from '../../../../core/services/notification.service';
 import { WatchStreakService } from '../../../../core/services/watch-streak.service';
+import { AchievementsService, AchievementStats } from '../../../../core/services/achievements.service';
 import { MovieCardComponent } from '../../../../shared/components/movie-card/movie-card.component';
 import { StarRatingComponent } from '../../../../shared/components/star-rating/star-rating.component';
 import { User } from '../../../../core/models/user.model';
 import { Watchlist } from '../../../../core/models/watchlist.model';
 import { Review } from '../../../../core/models/review.model';
+import { TmdbMovie } from '../../../../core/models/movie.model';
 
 @Component({
   selector: 'app-profile',
-  imports: [RouterLink, MatIcon, MatButton, FormsModule, DatePipe, MovieCardComponent, StarRatingComponent],
+  imports: [RouterLink, MatIcon, MatButton, FormsModule, DatePipe, MovieCardComponent, StarRatingComponent, NgTemplateOutlet],
   templateUrl: './profile.component.html',
   styleUrl: './profile.component.scss',
 })
@@ -38,11 +40,12 @@ export class ProfileComponent implements OnInit {
   private readonly reviewService = inject(ReviewService);
   private readonly movieService = inject(MovieService);
   private readonly watchStreak = inject(WatchStreakService);
+  private readonly achievementsService = inject(AchievementsService);
 
   protected readonly user = signal<User | null>(null);
   protected readonly isOwnProfile = signal(false);
   protected readonly loading = signal(false);
-  protected readonly activeTab = signal<'watched' | 'rated' | 'watchlists' | 'reviews'>('watched');
+  protected readonly activeTab = signal<'watched' | 'rated' | 'watchlists' | 'reviews' | 'badges'>('watched');
   protected readonly editMode = signal(false);
   protected editDisplayName = '';
   protected editBio = '';
@@ -70,7 +73,7 @@ export class ProfileComponent implements OnInit {
   protected readonly friendActualCount = signal<number | null>(null);
   protected readonly loadingFriendData = signal(false);
   protected readonly expandedWatchlistId = signal<string | null>(null);
-  protected readonly publicActiveTab = signal<'watchlists' | 'reviews' | 'rated'>('watchlists');
+  protected readonly publicActiveTab = signal<'watchlists' | 'reviews' | 'rated' | 'badges'>('watchlists');
 
   protected readonly watchedCount = computed(() => this.library.watchedMovies().length);
   protected readonly ratedCount = computed(() => this.library.ratedMovies().length);
@@ -93,6 +96,33 @@ export class ProfileComponent implements OnInit {
       : (this.friendProfileWatchlists().find(watchlist => watchlist.name === 'Gezien')?.movies ?? []).map(m => m.addedAt);
     return this.watchStreak.getStreakWeeks(dates);
   });
+
+  protected readonly achievements = computed(() => {
+    const own = this.isOwnProfile();
+    const ratedMovies = own ? this.library.ratedMovies() : this.friendRatedMovies();
+    const reviews = own ? this.ownReviews() : this.friendReviews();
+    const watchedMovies: TmdbMovie[] = own
+      ? this.library.watchedMovies().map(e => e.movie)
+      : (this.friendProfileWatchlists().find(watchlist => watchlist.name === 'Gezien')?.movies ?? [])
+          .map(m => m.movie)
+          .filter((m): m is TmdbMovie => !!m);
+
+    const stats: AchievementStats = {
+      watchedCount: own ? this.watchedCount() : this.friendWatchedCount(),
+      ratedCount: ratedMovies.length,
+      fiveStarCount: ratedMovies.filter(e => e.rating === 5).length,
+      hasOneStarRating: ratedMovies.some(e => e.rating === 1),
+      reviewCount: reviews.length,
+      hasLateNightReview: reviews.some(r => new Date(r.createdAt).getHours() < 5),
+      friendCount: own ? this.friendsService.friends().length : (this.friendActualCount() ?? this.user()?._count?.friends ?? 0),
+      streakWeeks: this.streakWeeks(),
+      distinctGenreCount: new Set(watchedMovies.flatMap(m => m.genre_ids ?? [])).size,
+    };
+
+    return this.achievementsService.getAchievements(stats);
+  });
+
+  protected readonly unlockedAchievementCount = computed(() => this.achievements().filter(a => a.unlocked).length);
 
   protected readonly displayWatchlistCount = computed(() => {
     if (this.isOwnProfile()) return this.watchlistService.watchlists().length;
