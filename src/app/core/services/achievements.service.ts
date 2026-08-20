@@ -16,7 +16,7 @@ export interface AchievementStats {
 interface TieredAchievementDef {
   key: string;
   icon: string;
-  title: string;
+  titles: [string, string, string];
   unit: string;
   thresholds: [number, number, number];
   value: (stats: AchievementStats) => number;
@@ -33,13 +33,13 @@ interface SpecialAchievementDef {
 const TIER_LABELS: Exclude<AchievementTier, 'special'>[] = ['brons', 'zilver', 'goud'];
 
 const TIERED_ACHIEVEMENTS: TieredAchievementDef[] = [
-  { key: 'cinefiel', icon: 'movie', title: 'Cinefiel', unit: 'films gezien', thresholds: [10, 50, 100], value: s => s.watchedCount },
-  { key: 'criticus', icon: 'star', title: 'Criticus', unit: 'films beoordeeld', thresholds: [5, 25, 100], value: s => s.ratedCount },
-  { key: 'recensent', icon: 'rate_review', title: 'Recensent', unit: 'reviews geschreven', thresholds: [1, 10, 50], value: s => s.reviewCount },
-  { key: 'sociale-vlinder', icon: 'people', title: 'Sociale vlinder', unit: 'vrienden', thresholds: [1, 5, 15], value: s => s.friendCount },
-  { key: 'volhouder', icon: 'local_fire_department', title: 'Volhouder', unit: 'weken film-streak', thresholds: [4, 12, 26], value: s => s.streakWeeks },
-  { key: 'genre-avonturier', icon: 'explore', title: 'Genre-avonturier', unit: 'verschillende genres gezien', thresholds: [5, 10, 15], value: s => s.distinctGenreCount },
-  { key: 'verliefd', icon: 'favorite', title: 'Verliefd', unit: 'keer 5 sterren gegeven', thresholds: [5, 20, 50], value: s => s.fiveStarCount },
+  { key: 'cinefiel', icon: 'movie', titles: ['Filmkijker', 'Cinefiel', 'Filmfanaat'], unit: 'films gezien', thresholds: [10, 50, 100], value: s => s.watchedCount },
+  { key: 'criticus', icon: 'star', titles: ['Beoordelaar', 'Criticus', 'Sterrenrechter'], unit: 'films beoordeeld', thresholds: [5, 25, 100], value: s => s.ratedCount },
+  { key: 'recensent', icon: 'rate_review', titles: ['Eerste indruk', 'Recensent', 'Veelschrijver'], unit: 'reviews geschreven', thresholds: [1, 10, 50], value: s => s.reviewCount },
+  { key: 'sociale-vlinder', icon: 'people', titles: ['Eerste vriend', 'Sociale vlinder', 'Populair'], unit: 'vrienden', thresholds: [1, 5, 15], value: s => s.friendCount },
+  { key: 'volhouder', icon: 'local_fire_department', titles: ['Op dreef', 'Volhouder', 'Onstuitbaar'], unit: 'weken film-streak', thresholds: [4, 12, 26], value: s => s.streakWeeks },
+  { key: 'genre-avonturier', icon: 'explore', titles: ['Nieuwsgierig', 'Genre-avonturier', 'Genre-meester'], unit: 'verschillende genres gezien', thresholds: [5, 10, 15], value: s => s.distinctGenreCount },
+  { key: 'verliefd', icon: 'favorite', titles: ['Fan', 'Verliefd', 'Onvoorwaardelijk'], unit: 'keer 5 sterren gegeven', thresholds: [5, 20, 50], value: s => s.fiveStarCount },
 ];
 
 const SPECIAL_ACHIEVEMENTS: SpecialAchievementDef[] = [
@@ -56,7 +56,7 @@ export class AchievementsService {
         id: `${def.key}-${TIER_LABELS[i]}`,
         icon: def.icon,
         tier: TIER_LABELS[i],
-        title: def.title,
+        title: def.titles[i],
         description: `${threshold}+ ${def.unit}`,
         unlocked: def.value(stats) >= threshold,
       })),
