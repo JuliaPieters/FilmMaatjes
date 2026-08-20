@@ -47,11 +47,7 @@
               @if (streakWeeks() > 0) {
                 <div class="streak-badge" [class.milestone]="streakWeeks() % 5 === 0">
                   <mat-icon>local_fire_department</mat-icon>
-                  @if (isOwnProfile()) {
-                    <span>{{ streakWeeks() }} {{ streakWeeks() === 1 ? 'week' : 'weken' }} film-streak</span>
-                  } @else {
-                    <span>{{ user()?.displayName }}: {{ streakWeeks() }} {{ streakWeeks() === 1 ? 'week' : 'weken' }} film-streak</span>
-                  }
+                  <span>{{ streakWeeks() }} {{ streakWeeks() === 1 ? 'week' : 'weken' }} film-streak</span>
                 </div>
               } @else if (isOwnProfile()) {
                 <p class="no-streaks">Nog geen actieve kijk-streak — vink deze week een film af als "Gezien".</p>
