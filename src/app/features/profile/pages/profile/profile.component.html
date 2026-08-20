@@ -44,30 +44,17 @@
                 <p class="profile-bio">{{ user()!.bio }}</p>
               }
 
-              @if (duoStreakWeeks() > 0) {
-                <div class="duo-streak-badge" [class.milestone]="duoStreakWeeks() % 5 === 0">
+              @if (streakWeeks() > 0) {
+                <div class="streak-badge" [class.milestone]="streakWeeks() % 5 === 0">
                   <mat-icon>local_fire_department</mat-icon>
-                  <span>{{ duoStreakWeeks() }} week{{ duoStreakWeeks() === 1 ? '' : 'en' }} op rij samen aan het kijken</span>
+                  @if (isOwnProfile()) {
+                    <span>{{ streakWeeks() }} week{{ streakWeeks() === 1 ? '' : 'en' }} op rij een film gekeken</span>
+                  } @else {
+                    <span>{{ user()?.displayName }} kijkt {{ streakWeeks() }} week{{ streakWeeks() === 1 ? '' : 'en' }} op rij films</span>
+                  }
                 </div>
-              }
-
-              @if (isOwnProfile()) {
-                @if (myActiveStreaks().length > 0) {
-                  <div class="my-streaks">
-                    @for (entry of myActiveStreaks(); track entry.friend.id) {
-                      <a
-                        class="streak-chip"
-                        [class.milestone]="entry.weeks % 5 === 0"
-                        [routerLink]="['/profile', entry.friend.username]"
-                      >
-                        <mat-icon>local_fire_department</mat-icon>
-                        {{ entry.weeks }} met {{ entry.friend.displayName }}
-                      </a>
-                    }
-                  </div>
-                } @else {
-                  <p class="no-streaks">Nog geen actieve kijk-streaks met vrienden — vink samen deze week iets af als "Gezien".</p>
-                }
+              } @else if (isOwnProfile()) {
+                <p class="no-streaks">Nog geen actieve kijk-streak — vink deze week een film af als "Gezien".</p>
               }
 
               <div class="profile-stats">

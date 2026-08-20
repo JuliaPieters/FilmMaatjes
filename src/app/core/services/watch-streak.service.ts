@@ -1,22 +1,20 @@
 import { Injectable } from '@angular/core';
 
 @Injectable({ providedIn: 'root' })
-export class DuoStreakService {
-  getStreakWeeks(myWatchedDates: (string | null)[], friendWatchedDates: (string | null)[], now = new Date()): number {
-    const myWeeks = this.toWeekKeys(myWatchedDates);
-    const friendWeeks = this.toWeekKeys(friendWatchedDates);
+export class WatchStreakService {
+  getStreakWeeks(watchedDates: (string | null)[], now = new Date()): number {
+    const activeWeeks = this.toWeekKeys(watchedDates);
 
-    const bothActiveWeeksAgo = (weeksAgo: number): boolean => {
+    const activeWeeksAgo = (weeksAgo: number): boolean => {
       const date = new Date(now);
       date.setDate(date.getDate() - weeksAgo * 7);
-      const key = this.weekKey(date);
-      return myWeeks.has(key) && friendWeeks.has(key);
+      return activeWeeks.has(this.weekKey(date));
     };
 
-    // Huidige week telt pas mee zodra er gedeelde activiteit is; anders start de telling bij vorige week, zodat de streak niet meteen breekt zolang de week nog loopt.
-    let weeksAgo = bothActiveWeeksAgo(0) ? 0 : 1;
+    // Huidige week telt pas mee zodra er activiteit is; anders start de telling bij vorige week, zodat de streak niet meteen breekt zolang de week nog loopt.
+    let weeksAgo = activeWeeksAgo(0) ? 0 : 1;
     let streak = 0;
-    while (bothActiveWeeksAgo(weeksAgo)) {
+    while (activeWeeksAgo(weeksAgo)) {
       streak++;
       weeksAgo++;
     }
