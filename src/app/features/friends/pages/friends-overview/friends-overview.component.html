@@ -27,6 +27,12 @@
                     <p class="friend-name text-text-primary font-semibold truncate">{{ friend.displayName }}</p>
                     <p class="friend-username text-text-muted text-sm truncate">&#64;{{ friend.username }}</p>
                   </div>
+                  @if (friendStreaks()[friend.id] > 0) {
+                    <div class="streak-chip" [class.milestone]="friendStreaks()[friend.id] % 5 === 0">
+                      <mat-icon>local_fire_department</mat-icon>
+                      {{ friendStreaks()[friend.id] }}
+                    </div>
+                  }
                   <mat-icon class="text-text-muted">chevron_right</mat-icon>
                 </a>
               }

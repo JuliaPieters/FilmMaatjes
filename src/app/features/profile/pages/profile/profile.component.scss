@@ -51,6 +51,17 @@
       border-radius: 100px; background: rgba(var(--color-orange-rgb), 0.15);
       color: var(--color-orange); font-size: 0.8125rem; font-weight: 600;
       mat-icon { font-size: 1rem; width: 1rem; height: 1rem; }
+
+      &.milestone {
+        background: var(--color-orange); color: white;
+        mat-icon { animation: streak-badge-pop 0.6s cubic-bezier(0.34, 1.56, 0.64, 1); }
+      }
+    }
+
+    @keyframes streak-badge-pop {
+      0% { transform: scale(0.6) rotate(-15deg); }
+      60% { transform: scale(1.35) rotate(10deg); }
+      100% { transform: scale(1) rotate(0deg); }
     }
 
     .profile-stats {

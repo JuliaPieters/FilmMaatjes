@@ -45,7 +45,7 @@
               }
 
               @if (duoStreakWeeks() > 0) {
-                <div class="duo-streak-badge">
+                <div class="duo-streak-badge" [class.milestone]="duoStreakWeeks() % 5 === 0">
                   <mat-icon>local_fire_department</mat-icon>
                   <span>{{ duoStreakWeeks() }} week{{ duoStreakWeeks() === 1 ? '' : 'en' }} op rij samen aan het kijken</span>
                 </div>

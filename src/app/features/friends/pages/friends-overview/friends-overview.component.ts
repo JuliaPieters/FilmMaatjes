@@ -1,4 +1,4 @@
-import { Component, computed, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, effect, inject, OnInit, signal } from '@angular/core';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { MatIcon } from '@angular/material/icon';
@@ -12,6 +12,9 @@ import { User } from '../../../../core/models/user.model';
 import { LoadingSpinnerComponent } from '../../../../shared/components/loading-spinner/loading-spinner.component';
 import { EmptyStateComponent } from '../../../../shared/components/empty-state/empty-state.component';
 import { NotificationService } from '../../../../core/services/notification.service';
+import { WatchlistService } from '../../../watchlists/services/watchlist.service';
+import { UserLibraryService } from '../../../../core/services/user-library.service';
+import { DuoStreakService } from '../../../../core/services/duo-streak.service';
 
 @Component({
   selector: 'app-friends-overview',
@@ -36,6 +39,9 @@ import { NotificationService } from '../../../../core/services/notification.serv
 export class FriendsOverviewComponent implements OnInit {
   private readonly friendsService = inject(FriendsService);
   private readonly notifications = inject(NotificationService);
+  private readonly watchlistService = inject(WatchlistService);
+  private readonly library = inject(UserLibraryService);
+  private readonly duoStreak = inject(DuoStreakService);
 
   protected readonly friends = this.friendsService.friends;
   protected readonly pendingRequests = this.friendsService.pendingRequests;
@@ -46,6 +52,25 @@ export class FriendsOverviewComponent implements OnInit {
 
   protected readonly friendIds = computed(() => new Set(this.friendsService.friends().map(f => f.id)));
   protected readonly sentRequestIds = computed(() => new Set(this.friendsService.sentRequests().map(r => r.receiverId)));
+
+  protected readonly friendStreaks = computed<Record<string, number>>(() => {
+    const myDates = this.library.watchedMovies().map(e => e.watchedAt);
+    const streaks: Record<string, number> = {};
+    for (const friend of this.friends()) {
+      const gezien = this.watchlistService.getWatchlistsForUser(friend.id).find(w => w.name === 'Gezien');
+      const friendDates = (gezien?.movies ?? []).map(m => m.addedAt);
+      streaks[friend.id] = this.duoStreak.getStreakWeeks(myDates, friendDates);
+    }
+    return streaks;
+  });
+
+  constructor() {
+    effect(() => {
+      for (const friend of this.friendsService.friends()) {
+        this.watchlistService.loadFriendWatchlists(friend.id).subscribe();
+      }
+    });
+  }
 
   ngOnInit(): void {
     this.friendsService.reloadFromStorage();
