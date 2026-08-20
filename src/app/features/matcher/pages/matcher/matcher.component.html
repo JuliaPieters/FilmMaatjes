@@ -91,17 +91,17 @@
       </div>
 
       <div class="results-grid">
-        @for (result of results(); track result.type) {
-          <div class="result-card glass-card">
+        @for (result of results(); track result.type; let i = $index) {
+          <div class="result-card glass-card reveal-card" [class.best-match]="result.type === 'best'" [style.animation-delay.ms]="cardDelayMs(i)">
             <div class="badge-score-row">
               <div class="result-badge" [style.background]="getMatchColor(result.type) + '22'" [style.color]="getMatchColor(result.type)">
-                <mat-icon>{{ result.icon }}</mat-icon>
+                <mat-icon [style.animation-delay.ms]="cardDelayMs(i) + 350">{{ result.icon }}</mat-icon>
                 {{ result.label }}
               </div>
 
               <div class="match-score-row">
-                <div class="match-score" [style.color]="getMatchColor(result.type)">
-                  {{ result.matchScore }}% Match
+                <div class="match-score score-pop" [style.color]="getMatchColor(result.type)" [style.animation-delay.ms]="scoreLandDelayMs(i)">
+                  {{ displayedScores()[result.type] }}% Match
                 </div>
                 <div class="match-confidence" [style.color]="getConfidenceColor(result.confidence)">
                   {{ getConfidenceLabel(result.confidence) }}

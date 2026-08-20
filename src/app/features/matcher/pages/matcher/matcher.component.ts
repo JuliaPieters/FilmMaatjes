@@ -43,6 +43,10 @@ export class MatcherComponent implements OnInit {
   protected readonly loading = signal(false);
   protected readonly results = signal<MatchResult[]>([]);
   protected readonly step = signal<'select' | 'results'>('select');
+  protected readonly displayedScores = signal<Record<string, number>>({});
+  private scoreAnimationToken = 0;
+  private readonly cardStaggerMs = 250;
+  private readonly scoreCountMs = 1300;
 
   constructor() {
     effect(() => {
@@ -300,10 +304,12 @@ export class MatcherComponent implements OnInit {
             }
             this.results.set(results);
             this.loading.set(false);
+            this.animateScores(results);
           },
           error: () => {
             this.results.set(results);
             this.loading.set(false);
+            this.animateScores(results);
           },
         });
       },
@@ -318,6 +324,36 @@ export class MatcherComponent implements OnInit {
     this.step.set('select');
     this.results.set([]);
     this.selectedFriends.set(new Set());
+    this.scoreAnimationToken++;
+    this.displayedScores.set({});
+  }
+
+  protected cardDelayMs(index: number): number {
+    return index * this.cardStaggerMs;
+  }
+
+  protected scoreLandDelayMs(index: number): number {
+    return this.cardDelayMs(index) + this.scoreCountMs;
+  }
+
+  private animateScores(results: MatchResult[]): void {
+    const token = ++this.scoreAnimationToken;
+    this.displayedScores.set(Object.fromEntries(results.map(r => [r.type, 0])));
+
+    results.forEach((result, index) => {
+      setTimeout(() => {
+        if (token !== this.scoreAnimationToken) return;
+        const start = performance.now();
+        const tick = (now: number): void => {
+          if (token !== this.scoreAnimationToken) return;
+          const progress = Math.min(1, (now - start) / this.scoreCountMs);
+          const eased = 1 - Math.pow(1 - progress, 3);
+          this.displayedScores.update(scores => ({ ...scores, [result.type]: Math.round(eased * result.matchScore) }));
+          if (progress < 1) requestAnimationFrame(tick);
+        };
+        requestAnimationFrame(tick);
+      }, this.cardDelayMs(index));
+    });
   }
 
   protected getMatchColor(type: string): string {
