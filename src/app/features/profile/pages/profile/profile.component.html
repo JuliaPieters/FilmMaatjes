@@ -51,6 +51,25 @@
                 </div>
               }
 
+              @if (isOwnProfile()) {
+                @if (myActiveStreaks().length > 0) {
+                  <div class="my-streaks">
+                    @for (entry of myActiveStreaks(); track entry.friend.id) {
+                      <a
+                        class="streak-chip"
+                        [class.milestone]="entry.weeks % 5 === 0"
+                        [routerLink]="['/profile', entry.friend.username]"
+                      >
+                        <mat-icon>local_fire_department</mat-icon>
+                        {{ entry.weeks }} met {{ entry.friend.displayName }}
+                      </a>
+                    }
+                  </div>
+                } @else {
+                  <p class="no-streaks">Nog geen actieve kijk-streaks met vrienden — vink samen deze week iets af als "Gezien".</p>
+                }
+              }
+
               <div class="profile-stats">
                 @if (!isOwnProfile()) {
                   <div class="stat">

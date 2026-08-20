@@ -95,6 +95,20 @@ export class ProfileComponent implements OnInit {
     return this.duoStreak.getStreakWeeks(myDates, friendDates);
   });
 
+  // Eigen profiel: streak per vriend, zodat je in één oogopslag ziet of je er nog eentje hebt lopen.
+  protected readonly myActiveStreaks = computed(() => {
+    if (!this.isOwnProfile()) return [];
+    const myDates = this.library.watchedMovies().map(e => e.watchedAt);
+    return this.friendsService.friends()
+      .map(friend => {
+        const gezien = this.watchlistService.getWatchlistsForUser(friend.id).find(w => w.name === 'Gezien');
+        const friendDates = (gezien?.movies ?? []).map(m => m.addedAt);
+        return { friend, weeks: this.duoStreak.getStreakWeeks(myDates, friendDates) };
+      })
+      .filter(entry => entry.weeks > 0)
+      .sort((a, b) => b.weeks - a.weeks);
+  });
+
   protected readonly displayWatchlistCount = computed(() => {
     if (this.isOwnProfile()) return this.watchlistService.watchlists().length;
     if (!this.loadingFriendData() && this.friendProfileWatchlists().length > 0) return this.publicWatchlists().length;
@@ -112,6 +126,13 @@ export class ProfileComponent implements OnInit {
   });
 
   constructor() {
+    effect(() => {
+      if (!this.isOwnProfile()) return;
+      for (const friend of this.friendsService.friends()) {
+        this.watchlistService.loadFriendWatchlists(friend.id).subscribe();
+      }
+    });
+
     effect(() => {
       if (this.isOwnProfile()) {
         const u = this.authService.user();
