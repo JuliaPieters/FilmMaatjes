@@ -1,5 +1,21 @@
 {
   "buildCommand": "node scripts/set-env.js && npm run build",
   "outputDirectory": "dist/FilmMaatjes/browser",
-  "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }]
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ],
+  "headers": [
+    {
+      "source": "/(ngsw-worker.js|ngsw.json|site.webmanifest)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "no-cache"
+        }
+      ]
+    }
+  ]
 }
