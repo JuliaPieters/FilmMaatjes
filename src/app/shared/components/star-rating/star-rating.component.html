@@ -1,22 +1,38 @@
-<div class="stars" [class.interactive]="!readonly()" [class]="containerClass()" (mouseleave)="clearHover()">
+<div
+  class="stars"
+  [class]="containerClass()"
+  [attr.role]="readonly() ? 'img' : 'slider'"
+  [attr.aria-label]="readonly() ? ariaText(value()) : 'Beoordeling'"
+  [attr.aria-valuemin]="readonly() ? null : 0"
+  [attr.aria-valuemax]="readonly() ? null : 5"
+  [attr.aria-valuenow]="readonly() ? null : value()"
+  [attr.aria-valuetext]="readonly() ? null : ariaText(value())"
+  [attr.tabindex]="readonly() ? null : 0"
+  (keydown)="onKeydown($event)"
+  (mouseleave)="clearHover()"
+>
   @for (star of stars; track star) {
     @if (readonly()) {
-      <mat-icon class="star" [class.on]="star <= activeValue()" [class.icon-filled]="star <= activeValue()" [style.font-size.px]="size()">star</mat-icon>
+      <span class="star" [style.--star-size.px]="size()">
+        <mat-icon class="star-base">star</mat-icon>
+        <mat-icon class="star-fill icon-filled" [style.clip-path]="fillClip(star)">star</mat-icon>
+      </span>
     } @else {
       <button
         type="button"
-        class="star-btn"
+        tabindex="-1"
+        class="star star-btn"
         [style.--star-size.px]="size()"
-        (mouseenter)="setHover(star)"
-        (click)="select(star)"
-        [attr.aria-label]="star + ' ster' + (star === 1 ? '' : 'ren') + ': ' + starLabel(star)"
-        [attr.aria-pressed]="star <= value()"
+        (mousemove)="onHover($event, star)"
+        (click)="onSelect($event, star)"
+        [attr.aria-hidden]="true"
       >
-        <mat-icon class="star" [class.on]="star <= activeValue()" [class.icon-filled]="star <= activeValue()" [style.font-size.px]="size()">star</mat-icon>
+        <mat-icon class="star-base">star</mat-icon>
+        <mat-icon class="star-fill icon-filled" [style.clip-path]="fillClip(star)">star</mat-icon>
       </button>
     }
   }
   @if (showValue() && value() > 0) {
-    <span class="star-value">{{ value() }}/5 · {{ starLabel(value()) }}</span>
+    <span class="star-value">{{ format(value()) }}/5 · {{ label(value()) }}</span>
   }
 </div>

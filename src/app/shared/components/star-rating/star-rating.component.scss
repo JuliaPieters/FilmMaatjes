@@ -7,22 +7,35 @@
   align-items: center;
   flex-wrap: wrap;
   gap: 1px;
+  border-radius: 12px;
+  outline-offset: 4px;
 }
 
+/* Grijze ster als basis, gouden ster erover die voor de helft of helemaal zichtbaar is */
 .star {
-  color: var(--color-text-muted);
-  transition: color 0.12s var(--ease), transform 0.12s var(--ease);
-
-  &.on {
-    color: var(--color-gold);
-  }
-}
-
-/* Elke ster een raakvlak van minimaal 44px op touch, compacter met muis */
-.star-btn {
+  position: relative;
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  flex-shrink: 0;
+
+  .mat-icon {
+    font-size: var(--star-size, 24px);
+  }
+}
+
+.star-base {
+  color: var(--color-text-muted);
+}
+
+.star-fill {
+  position: absolute;
+  color: var(--color-gold);
+  transition: clip-path 0.08s linear;
+}
+
+/* Raakvlak van minimaal 44px op touch, compacter met muis */
+.star-btn {
   min-width: calc(var(--star-size, 24px) + 12px);
   min-height: calc(var(--star-size, 24px) + 12px);
   padding: 0;
@@ -31,8 +44,8 @@
   background: none;
   cursor: pointer;
 
-  &:active .star {
-    transform: scale(0.85);
+  &:active .mat-icon {
+    transform: scale(0.88);
   }
 
   @media (hover: none) {

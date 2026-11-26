@@ -19,6 +19,7 @@ import { MovieActionsService } from '../../../../core/services/movie-actions.ser
 import { ReviewService } from '../../../../core/services/review.service';
 import { Review } from '../../../../core/models/review.model';
 import { FriendsService } from '../../../friends/services/friends.service';
+import { formatRating, formatStars, ratingLabel } from '../../../../shared/utils/rating';
 
 @Component({
   selector: 'app-movie-detail',
@@ -51,7 +52,6 @@ export class MovieDetailComponent implements OnInit {
   private readonly movieActions = inject(MovieActionsService);
   private readonly friendsService = inject(FriendsService);
 
-  private readonly ratingLabels = ['Slecht', 'Matig', 'Goed', 'Heel goed', 'Uitstekend'];
 
   protected readonly movie = signal<TmdbMovieDetail | null>(null);
   protected readonly loading = signal(true);
@@ -194,7 +194,7 @@ export class MovieDetailComponent implements OnInit {
     const rating = this.reviewRating();
     const movieId = this.movie()?.id;
     if (!text || !movieId) return;
-    if (rating < 1) {
+    if (rating <= 0) {
       this.notifications.error('Kies een aantal sterren voor je review.');
       return;
     }
@@ -249,9 +249,8 @@ export class MovieDetailComponent implements OnInit {
     this.movieActions.toggleWatchlist(m as unknown as TmdbMovie);
   }
 
-  protected ratingLabelFor(rating: number): string {
-    return this.ratingLabels[rating - 1] ?? '';
-  }
+  protected readonly formatRating = formatRating;
+  protected readonly ratingLabel = ratingLabel;
 
   protected toggleWatched(): void {
     const m = this.movie();
@@ -269,7 +268,7 @@ export class MovieDetailComponent implements OnInit {
       return;
     }
     this.libraryService.setRating(m as unknown as TmdbMovie, rating);
-    this.notifications.success(rating > 0 ? `${rating} ster${rating === 1 ? '' : 'ren'} opgeslagen!` : 'Beoordeling verwijderd');
+    this.notifications.success(rating > 0 ? `${formatStars(rating)} opgeslagen!` : 'Beoordeling verwijderd');
 
     if (rating > 0) {
       this.reviewService.getUserReviewForMovieRemote(m.id).subscribe(existing => {

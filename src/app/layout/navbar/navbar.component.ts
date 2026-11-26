@@ -8,6 +8,7 @@ import { MatDivider } from '@angular/material/divider';
 import { AuthService } from '../../features/auth/services/auth.service';
 import { FriendActivityService } from '../../core/services/friend-activity.service';
 import { FriendActivity } from '../../core/models/friend-activity.model';
+import { formatStars } from '../../shared/utils/rating';
 
 @Component({
   selector: 'app-navbar',
@@ -29,6 +30,7 @@ export class NavbarComponent {
   protected readonly authService = inject(AuthService);
   protected readonly activityService = inject(FriendActivityService);
   private readonly datePipe = inject(DatePipe);
+  protected readonly formatStars = formatStars;
 
   protected markNotificationsSeen(): void {
     this.activityService.markAllSeen();

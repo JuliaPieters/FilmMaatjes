@@ -84,7 +84,7 @@
             @if (item.type === 'review') {
               schreef een review bij <strong>{{ item.movieTitle }}</strong>
             } @else {
-              gaf <strong>{{ item.movieTitle }}</strong> {{ item.rating }} ster{{ item.rating === 1 ? '' : 'ren' }}
+              gaf <strong>{{ item.movieTitle }}</strong> {{ formatStars(item.rating) }}
             }
           </span>
           <span class="notification-time">{{ formatActivityTime(item.createdAt) }}</span>

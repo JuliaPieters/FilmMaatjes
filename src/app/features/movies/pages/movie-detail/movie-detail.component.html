@@ -130,7 +130,7 @@
             <div class="rating-head">
               <span class="rating-title">Jouw beoordeling</span>
               <span class="rating-label" [class.set]="userRating() > 0">
-                {{ userRating() > 0 ? userRating() + '/5 · ' + ratingLabelFor(userRating()) : 'Tik op een ster' }}
+                {{ userRating() > 0 ? formatRating(userRating()) + '/5 · ' + ratingLabel(userRating()) : 'Tik op een ster' }}
               </span>
             </div>
             <app-star-rating [(value)]="userRating" [size]="34" (ratingChange)="onRate($event)" />
@@ -203,7 +203,7 @@
               <button
                 mat-flat-button
                 type="submit"
-                [disabled]="reviewSubmitting() || !reviewTextModel.trim() || reviewRating() < 1"
+                [disabled]="reviewSubmitting() || !reviewTextModel.trim() || reviewRating() <= 0"
               >
                 {{ reviewSubmitting() ? 'Opslaan…' : editingReview() ? 'Bijwerken' : 'Plaatsen' }}
               </button>
