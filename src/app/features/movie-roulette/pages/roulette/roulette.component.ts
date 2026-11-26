@@ -1,4 +1,4 @@
-import { Component, computed, effect, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, DestroyRef, effect, inject, OnInit, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { MatIcon } from '@angular/material/icon';
 import { MatButton } from '@angular/material/button';
@@ -14,6 +14,7 @@ import { NotificationService } from '../../../../core/services/notification.serv
 import { TmdbMovie } from '../../../../core/models/movie.model';
 import { Watchlist } from '../../../../core/models/watchlist.model';
 import { EmptyStateComponent } from '../../../../shared/components/empty-state/empty-state.component';
+import { MascotComponent } from '../../../../shared/components/mascot/mascot.component';
 import { RouletteFilterSheetComponent, RouletteFilterSheetData } from './roulette-filter-sheet.component';
 
 type RouletteMode = 'random' | 'watchlists' | 'recommended';
@@ -29,7 +30,7 @@ interface Genre {
 
 @Component({
   selector: 'app-roulette',
-  imports: [RouterLink, MatIcon, MatButton, MatSlider, MatSliderThumb, FormsModule, DecimalPipe, EmptyStateComponent],
+  imports: [RouterLink, MatIcon, MatButton, MatSlider, MatSliderThumb, FormsModule, DecimalPipe, EmptyStateComponent, MascotComponent],
   templateUrl: './roulette.component.html',
   styleUrl: './roulette.component.scss',
 })
@@ -45,6 +46,13 @@ export class RouletteComponent implements OnInit {
   protected readonly result = signal<TmdbMovie | null>(null);
   protected readonly showResult = signal(false);
   protected readonly spinCount = signal(0);
+  /** 3-2-1 vóór de onthulling; null = geen aftellen zichtbaar. */
+  protected readonly countdown = signal<number | null>(null);
+
+  private readonly countdownStepMs = 500;
+  private spinStartedAt = 0;
+  private minSpinMs = 2000;
+  private spinTimers: ReturnType<typeof setTimeout>[] = [];
 
   // Mode
   protected readonly mode = signal<RouletteMode>('random');
@@ -150,6 +158,8 @@ export class RouletteComponent implements OnInit {
   );
 
   constructor() {
+    inject(DestroyRef).onDestroy(() => this.clearSpinTimers());
+
     effect(() => {
       const friends = this.friendsService.friends();
       if (friends.length === 0) return;
@@ -212,10 +222,7 @@ export class RouletteComponent implements OnInit {
   }
 
   private spinRandom(): void {
-    this.spinning.set(true);
-    this.showResult.set(false);
-    this.result.set(null);
-    this.spinCount.update(n => n + 1);
+    this.beginSpin();
 
     this.movieService.discoverRandom({
       genreIds: this.selectedGenreIds(),
@@ -225,48 +232,92 @@ export class RouletteComponent implements OnInit {
     }).subscribe({
       next: page => {
         const movies = page.results.filter(m => m.poster_path);
-        if (movies.length === 0) { this.spinning.set(false); return; }
-        const pick = movies[Math.floor(Math.random() * movies.length)];
-        setTimeout(() => { this.result.set(pick); this.spinning.set(false); this.showResult.set(true); }, 2000);
+        if (movies.length === 0) { this.stopSpin(); return; }
+        this.reveal(movies[Math.floor(Math.random() * movies.length)]);
       },
-      error: () => this.spinning.set(false),
+      error: () => this.stopSpin(),
     });
   }
 
   private spinFromWatchlists(): void {
     const movies = this.selectedMovies();
     if (movies.length === 0) {
-      this.notifications.info('Selecteer een watchlist met films om te draaien.');
+      this.notifications.info('Kies eerst een watchlist met films, dan kan het rad draaien.');
       return;
     }
-    this.spinning.set(true);
-    this.showResult.set(false);
-    this.result.set(null);
-    this.spinCount.update(n => n + 1);
+    this.beginSpin();
     const entry = movies[Math.floor(Math.random() * movies.length)];
-    setTimeout(() => { this.result.set(entry.movie!); this.spinning.set(false); this.showResult.set(true); }, 2000);
+    this.reveal(entry.movie!);
   }
 
   private spinRecommended(): void {
     const genres = this.topGenreIds();
     if (genres.length === 0) {
-      this.notifications.info('Beoordeel minstens één film met 4 sterren of meer voor aanbevelingen.');
+      this.notifications.info('Geef eerst een film 4 sterren of meer, dan weten we wat je leuk vindt.');
       return;
     }
-    this.spinning.set(true);
-    this.showResult.set(false);
-    this.result.set(null);
-    this.spinCount.update(n => n + 1);
+    this.beginSpin();
 
     this.movieService.discoverRandom({ genreIds: genres, minRating: 6 }).subscribe({
       next: page => {
         const movies = page.results.filter(m => m.poster_path);
-        if (movies.length === 0) { this.spinning.set(false); return; }
-        const pick = movies[Math.floor(Math.random() * movies.length)];
-        setTimeout(() => { this.result.set(pick); this.spinning.set(false); this.showResult.set(true); }, 2000);
+        if (movies.length === 0) { this.stopSpin(); return; }
+        this.reveal(movies[Math.floor(Math.random() * movies.length)]);
       },
-      error: () => this.spinning.set(false),
+      error: () => this.stopSpin(),
     });
+  }
+
+  /**
+   * Start een draai: aftellen 3-2-1 (overgeslagen bij prefers-reduced-motion), daarna
+   * de rollende tegels tot de film onthuld wordt. Het ophalen loopt tijdens het aftellen.
+   */
+  private beginSpin(): void {
+    this.clearSpinTimers();
+    this.spinning.set(true);
+    this.showResult.set(false);
+    this.result.set(null);
+    this.spinCount.update(n => n + 1);
+    this.spinStartedAt = performance.now();
+
+    const reducedMotion = typeof window !== 'undefined'
+      && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+    if (reducedMotion) {
+      this.countdown.set(null);
+      this.minSpinMs = 1200;
+      return;
+    }
+
+    // 3 → 2 → 1 → rollende tegels (~1s) → onthulling
+    this.minSpinMs = this.countdownStepMs * 3 + 1000;
+    this.countdown.set(3);
+    this.spinTimers.push(
+      setTimeout(() => this.countdown.set(2), this.countdownStepMs),
+      setTimeout(() => this.countdown.set(1), this.countdownStepMs * 2),
+      setTimeout(() => this.countdown.set(null), this.countdownStepMs * 3),
+    );
+  }
+
+  /** Onthult de film zodra de minimale spanningstijd voorbij is. */
+  private reveal(movie: TmdbMovie): void {
+    const wait = Math.max(0, this.spinStartedAt + this.minSpinMs - performance.now());
+    this.spinTimers.push(setTimeout(() => {
+      this.countdown.set(null);
+      this.result.set(movie);
+      this.spinning.set(false);
+      this.showResult.set(true);
+    }, wait));
+  }
+
+  private stopSpin(): void {
+    this.clearSpinTimers();
+    this.countdown.set(null);
+    this.spinning.set(false);
+  }
+
+  private clearSpinTimers(): void {
+    this.spinTimers.forEach(clearTimeout);
+    this.spinTimers = [];
   }
 
   protected toggleWatchlist(id: string): void {

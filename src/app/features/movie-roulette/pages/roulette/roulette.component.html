@@ -3,7 +3,7 @@
     <div>
       <span class="icon-tile lg hero-icon"><mat-icon>casino</mat-icon></span>
       <h1 class="page-title">Film Roulette</h1>
-      <p class="page-subtitle">Geen idee wat je wilt kijken? Laat het lot beslissen.</p>
+      <p class="page-subtitle">Eén druk op de knop en je avond is geregeld.</p>
     </div>
   </header>
 
@@ -77,7 +77,7 @@
               </div>
 
               <div class="field-group">
-                <span class="field-label">Minimale beoordeling: {{ minRating() > 0 ? minRating() + '/10' : 'Alles' }}</span>
+                <span class="field-label">Minimale beoordeling: {{ minRating() > 0 ? minRating() + '/10' : 'maakt niet uit' }}</span>
                 <mat-slider min="0" max="9" step="1" class="rating-slider">
                   <input matSliderThumb [(ngModel)]="minRatingValue" aria-label="Minimale beoordeling" />
                 </mat-slider>
@@ -90,9 +90,9 @@
               <div class="card">
                 <app-empty-state
                   [compact]="true"
-                  icon="bookmark"
+                  mascot="zwaai"
                   title="Nog geen watchlists"
-                  description="Maak er een aan via de Watchlists-pagina."
+                  description="Maak er een aan, dan draaien we straks daaruit."
                   actionLabel="Naar watchlists"
                   actionRoute="/watchlists"
                 />
@@ -124,7 +124,7 @@
                 @if (loadingFriendWatchlists() && friendGroups().length === 0) {
                   <div class="wl-loading">
                     <span class="spinner small"></span>
-                    <span>Vrienden laden…</span>
+                    <span>Watchlists van je maatjes ophalen…</span>
                   </div>
                 }
 
@@ -168,9 +168,9 @@
               <div class="card">
                 <app-empty-state
                   [compact]="true"
-                  icon="star"
-                  title="Nog geen favorieten"
-                  description="Beoordeel minstens één film met 4 sterren of meer om aanbevelingen te activeren."
+                  mascot="zwaai"
+                  title="We kennen je smaak nog niet"
+                  description="Geef een paar films 4 sterren of meer, dan weten we wat je leuk vindt."
                 />
               </div>
             } @else {
@@ -184,7 +184,7 @@
                   </div>
                 </div>
                 <p class="panel-hint">
-                  Gebaseerd op films die jij 4 of 5 sterren gaf. We zoeken hoog beoordeelde films in deze genres.
+                  Gebaseerd op films die jij 4 of 5 sterren gaf. We zoeken goed beoordeelde films in dezelfde hoek.
                 </p>
               </div>
             }
@@ -195,21 +195,29 @@
       <!-- Podium + draaiknop -->
       <section class="stage-column">
         <div class="stage">
-          @if (spinning()) {
+          @if (spinning() && countdown() !== null) {
+            <div class="stage-state" aria-live="assertive">
+              @for (n of [countdown()]; track n) {
+                <span class="countdown-number">{{ n }}</span>
+              }
+              <p class="stage-text">Daar gaan we…</p>
+            </div>
+          } @else if (spinning()) {
             <div class="stage-state" aria-live="polite">
               <div class="reel">
                 <span class="reel-tile"><mat-icon>movie</mat-icon></span>
                 <span class="reel-tile"><mat-icon>local_movies</mat-icon></span>
                 <span class="reel-tile"><mat-icon>theaters</mat-icon></span>
               </div>
-              <p class="stage-text">Film kiezen…</p>
+              <p class="stage-text">Even de filmbak schudden…</p>
             </div>
           } @else if (showResult() && result()) {
             @let movie = result()!;
             <article class="result fade-in-up">
               <div class="result-poster">
                 <img [src]="movieService.getPosterUrl(movie.poster_path, 'w500')" [alt]="movie.title" />
-                <span class="result-badge"><mat-icon>auto_awesome</mat-icon>Jouw film!</span>
+                <app-mascot class="result-mascot" pose="action" [size]="76" />
+                <span class="result-badge">Jouw film!</span>
               </div>
               <h2 class="result-title">{{ movie.title }}</h2>
               <p class="result-meta">
@@ -230,14 +238,14 @@
                 </a>
                 <button mat-stroked-button type="button" (click)="spinAgain()">
                   <mat-icon>refresh</mat-icon>
-                  Nog een keer
+                  Nog eens draaien
                 </button>
               </div>
             </article>
           } @else {
             <div class="stage-state">
-              <span class="idle-dial"><mat-icon>casino</mat-icon></span>
-              <p class="stage-text">Druk op de knop en laat Film Roulette een film voor je kiezen.</p>
+              <app-mascot pose="knipoog" [size]="128" [float]="true" />
+              <p class="stage-text idle-text">Geen idee wat je wilt kijken? Laat het lot beslissen 🎬</p>
             </div>
           }
         </div>
@@ -245,7 +253,7 @@
         @if (!showResult()) {
           <button mat-flat-button type="button" class="spin-btn" [disabled]="spinning()" (click)="spin()">
             <mat-icon [class.rotating]="spinning()">{{ spinning() ? 'autorenew' : 'casino' }}</mat-icon>
-            {{ spinning() ? 'Kiezen…' : spinCount() === 0 ? 'Film kiezen!' : 'Opnieuw draaien' }}
+            {{ spinning() ? 'Draaien…' : spinCount() === 0 ? 'Draai maar' : 'Nog eens draaien' }}
           </button>
         }
       </section>

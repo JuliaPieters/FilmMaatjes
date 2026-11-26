@@ -316,20 +316,38 @@
   color: var(--color-text-meta);
 }
 
-.idle-dial {
+.idle-text {
+  max-width: 16rem;
+  font-size: 0.9375rem;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+}
+
+// Aftellen 3-2-1: elk cijfer wordt opnieuw gerenderd, dus de pop speelt per tel
+.countdown-number {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 112px;
-  height: 112px;
+  width: 128px;
+  height: 128px;
   border-radius: 50%;
-  border: 1px dashed rgba(var(--color-accent-rgb), 0.4);
-  background: rgba(var(--color-accent-rgb), 0.08);
-  color: var(--color-accent-light);
+  background: rgba(var(--color-accent-rgb), 0.12);
+  border: 1px solid rgba(var(--color-accent-rgb), 0.3);
+  box-shadow: 0 0 48px rgba(var(--color-accent-rgb), 0.3);
+  color: var(--color-text-primary);
+  font-size: 4.5rem;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -0.04em;
+  font-variant-numeric: tabular-nums;
+  animation: countdown-pop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
 
-  .mat-icon {
-    font-size: 52px;
-  }
+@keyframes countdown-pop {
+  0% { opacity: 0; transform: scale(0.4); }
+  45% { opacity: 1; transform: scale(1.12); }
+  75% { transform: scale(0.97); }
+  100% { opacity: 1; transform: scale(1); }
 }
 
 // Spin-animatie: drie tegels die om de beurt kantelen
@@ -409,7 +427,7 @@
   align-items: center;
   gap: 0.25rem;
   height: 28px;
-  padding: 0 0.75rem;
+  padding: 0 0.875rem;
   border-radius: 999px;
   background: var(--color-accent);
   color: var(--color-text-primary);
@@ -417,10 +435,20 @@
   font-weight: 700;
   white-space: nowrap;
   box-shadow: 0 6px 16px rgba(var(--color-accent-rgb), 0.4);
+}
 
-  .mat-icon {
-    font-size: 14px;
-  }
+// Klappie gluurt over de rechterbovenhoek van de poster
+.result-mascot {
+  position: absolute;
+  top: -30px;
+  right: -34px;
+  z-index: 1;
+  animation: mascot-peek 0.55s cubic-bezier(0.34, 1.56, 0.64, 1) 0.25s both;
+}
+
+@keyframes mascot-peek {
+  from { opacity: 0; transform: translate(-16px, 16px) rotate(-18deg) scale(0.6); }
+  to { opacity: 1; transform: rotate(8deg); }
 }
 
 .result-title {

@@ -2,7 +2,7 @@
   <header class="page-header">
     <div>
       <h1 class="page-title">Mijn watchlists</h1>
-      <p class="page-subtitle">Bewaar films die je nog wilt kijken, alleen of samen.</p>
+      <p class="page-subtitle">Alles wat je nog wilt zien, netjes op een rij. Voor jezelf of samen.</p>
     </div>
     <button mat-flat-button class="header-new-btn" type="button" (click)="createWatchlist()">
       <mat-icon>add</mat-icon>
@@ -11,12 +11,12 @@
   </header>
 
   @if (loading()) {
-    <app-loading-spinner message="Watchlists laden..." />
+    <app-loading-spinner message="Je lijsten ophalen..." />
   } @else if (watchlists().length === 0) {
     <app-empty-state
-      icon="bookmark"
-      title="Nog geen watchlists"
-      description="Maak een watchlist aan om films bij te houden die je wilt kijken."
+      mascot="zwaai"
+      title="Je watchlist is nog leeg"
+      description="Tijd om te ontdekken. Maak een lijst en verzamel de films die je niet wilt missen."
     >
       <button mat-flat-button type="button" class="empty-create-btn" (click)="createWatchlist()">
         <mat-icon>add</mat-icon>
@@ -71,7 +71,7 @@
                 }
               </div>
             } @else {
-              <p class="wl-empty-note">Nog geen films in deze lijst</p>
+              <p class="wl-empty-note">Nog leeg, wacht op z'n eerste film</p>
             }
           </a>
 

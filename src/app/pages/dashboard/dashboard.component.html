@@ -2,11 +2,70 @@
   <header class="page-header">
     <div>
       <h1 class="page-title welcome-title">
-        Hoi, <span class="gradient-text">{{ firstName() }}</span>!
+        {{ greeting }}, <span class="gradient-text">{{ firstName() }}</span>
       </h1>
-      <p class="page-subtitle">Wat ga je vandaag kijken?</p>
+      <p class="page-subtitle">Zin in een film? Dit staat er vandaag voor je klaar 🍿</p>
     </div>
   </header>
+
+  @if (hasApiKey) {
+    @if (featuredLoading()) {
+      <div class="featured featured-skeleton" aria-hidden="true">
+        <div class="featured-content">
+          <span class="skeleton-line w-30"></span>
+          <span class="skeleton-line w-60 tall"></span>
+          <span class="skeleton-line w-80"></span>
+        </div>
+      </div>
+    } @else if (featured(); as f) {
+      <section class="featured fade-in-up" aria-labelledby="featured-title">
+        <img
+          class="featured-img"
+          [src]="movieService.getBackdropUrl(f.backdrop_path, 'w780')"
+          [attr.srcset]="movieService.getBackdropUrl(f.backdrop_path, 'w780') + ' 780w, ' + movieService.getBackdropUrl(f.backdrop_path, 'w1280') + ' 1280w'"
+          sizes="(max-width: 767px) 100vw, 1100px"
+          alt=""
+        />
+        <div class="featured-fade"></div>
+        <div class="featured-content">
+          <span class="featured-eyebrow">Vanavond kijken?</span>
+          <h2 id="featured-title" class="featured-title">{{ f.title }}</h2>
+          <div class="featured-meta">
+            @if (f.release_date) {
+              <span>{{ movieService.formatYear(f.release_date) }}</span>
+            }
+            @if (f.vote_average > 0) {
+              <span class="featured-score">
+                <mat-icon class="icon-filled">star</mat-icon>
+                {{ f.vote_average | number: '1.1-1' }}
+              </span>
+            }
+          </div>
+          @if (f.overview) {
+            <p class="featured-overview">{{ f.overview }}</p>
+          }
+          <div class="featured-actions">
+            <a mat-flat-button [routerLink]="['/movies', f.id]">
+              <mat-icon class="icon-filled">play_arrow</mat-icon>
+              Bekijk film
+            </a>
+            <button
+              type="button"
+              class="icon-btn featured-watchlist"
+              [class.active]="featuredInWatchlist()"
+              [class.pop]="featuredPopped()"
+              [attr.aria-pressed]="featuredInWatchlist()"
+              [attr.aria-label]="featuredInWatchlist() ? 'Op je watchlist — wijzigen' : 'Toevoegen aan watchlist'"
+              (click)="toggleFeaturedWatchlist()"
+              (animationend)="featuredPopped.set(false)"
+            >
+              <mat-icon [class.icon-filled]="featuredInWatchlist()">bookmark</mat-icon>
+            </button>
+          </div>
+        </div>
+      </section>
+    }
+  }
 
   <nav class="quick-actions" aria-label="Snelacties">
     <a routerLink="/roulette" class="card quick-action">

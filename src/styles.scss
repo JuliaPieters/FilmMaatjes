@@ -74,6 +74,8 @@ $app-theme: mat.define-theme((
   --color-orange: #fb923c;
   --color-orange-rgb: 251, 146, 60;
   --color-amber: #fbbf24;
+  --color-blush: #ff8fc4;
+  --color-blush-rgb: 255, 143, 196;
 
   /* Text */
   --color-text-primary: #f1f5f9;
@@ -195,11 +197,14 @@ $app-theme: mat.define-theme((
   box-sizing: border-box;
 }
 
+html {
+  background-color: var(--color-surface);
+}
+
 html,
 body {
   margin: 0;
   min-height: 100%;
-  background-color: var(--color-surface);
   color: var(--color-text-primary);
   font-family: 'Inter', system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
@@ -217,7 +222,23 @@ html {
 }
 
 body {
+  position: relative;
   overscroll-behavior-y: contain;
+}
+
+/* Sfeerlicht: zachte gloed van "het doek" bovenaan plus een nauwelijks zichtbare
+   filmkorrel, zodat het donker warm aanvoelt in plaats van plat digitaal zwart.
+   Vaste laag onder alle content; kost niets bij het scrollen. */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-image:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0.05 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"),
+    radial-gradient(60rem 28rem at 15% -8rem, rgba(var(--color-accent-rgb), 0.22), transparent 70%),
+    radial-gradient(44rem 22rem at 95% -6rem, rgba(var(--color-blush-rgb), 0.1), transparent 70%);
 }
 
 /* Lege body-achtergrond tijdens het laden van de app voorkomt een witte flits */
@@ -959,6 +980,31 @@ textarea.field-input {
 @keyframes spin-slow {
   from { transform: rotate(0deg); }
   to { transform: rotate(360deg); }
+}
+
+/* Kort "plopje" als feedback op een actie (ster, gezien, watchlist) */
+@keyframes pop {
+  0% { transform: scale(1); }
+  35% { transform: scale(1.28); }
+  65% { transform: scale(0.94); }
+  100% { transform: scale(1); }
+}
+
+.pop {
+  animation: pop 0.38s var(--ease);
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+
+/* Paars → roze voor sociale momenten (vrienden, matches) */
+.social-gradient-text {
+  background: linear-gradient(120deg, var(--color-accent-light) 0%, var(--color-blush) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
 .fade-in-up {

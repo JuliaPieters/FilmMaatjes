@@ -1,8 +1,8 @@
 <div class="page-container">
   <header class="page-header">
     <div>
-      <h1 class="page-title">Vrienden</h1>
-      <p class="page-subtitle">Kijk samen, deel je smaak en vind je volgende film.</p>
+      <h1 class="page-title"><span class="social-gradient-text">Je filmmaatjes</span></h1>
+      <p class="page-subtitle">Met wie kijk jij je volgende film? Deel je smaak en ontdek samen.</p>
     </div>
   </header>
 
@@ -29,12 +29,12 @@
     @switch (activeTab()) {
       @case ('friends') {
         @if (loadingFriends()) {
-          <app-loading-spinner message="Vrienden laden..." />
+          <app-loading-spinner message="Je maatjes ophalen..." />
         } @else if (friends().length === 0) {
           <app-empty-state
-            icon="group"
-            title="Nog geen vrienden"
-            description="Zoek je vrienden op naam of gebruikersnaam en stuur ze een verzoek."
+            mascot="zwaai"
+            title="Nog geen filmmaatjes"
+            description="Films kijken is leuker samen. Zoek je vrienden op naam of gebruikersnaam en stuur ze een verzoek."
           >
             <button mat-flat-button class="mt-6" (click)="activeTab.set('search')">
               <mat-icon>person_add</mat-icon>
@@ -77,9 +77,9 @@
 
         @if (pendingRequests().length === 0) {
           <app-empty-state
-            icon="mark_email_read"
-            title="Geen openstaande verzoeken"
-            description="Nieuwe vriendschapsverzoeken verschijnen hier."
+            mascot="zwaai"
+            title="Even geen nieuwe verzoeken"
+            description="Zodra iemand je filmmaatje wil worden, zie je dat hier."
             [compact]="true"
           />
         } @else {
@@ -100,7 +100,7 @@
                   </span>
                 </a>
                 <div class="row-actions">
-                  <button type="button" class="icon-btn active" (click)="acceptRequest(request.id)" aria-label="Accepteren">
+                  <button type="button" class="icon-btn accept-btn" (click)="acceptRequest(request.id)" aria-label="Accepteren">
                     <mat-icon>check</mat-icon>
                   </button>
                   <button type="button" class="icon-btn danger" (click)="declineRequest(request.id)" aria-label="Weigeren">
@@ -135,9 +135,9 @@
           <app-loading-spinner [diameter]="28" minHeight="120px" />
         } @else if (searchResults().length === 0 && searchControl.value?.trim()) {
           <app-empty-state
-            icon="person_search"
+            mascot="knipoog"
             title="Niemand gevonden"
-            description="Controleer de spelling of probeer een gebruikersnaam."
+            description="Klappie kon niemand vinden met die naam. Check de spelling of probeer een gebruikersnaam."
             [compact]="true"
           />
         } @else if (searchResults().length > 0) {
@@ -176,7 +176,7 @@
             }
           </div>
         } @else {
-          <p class="search-hint">Typ minimaal één letter om te zoeken.</p>
+          <p class="search-hint">Typ een naam om je maatjes te vinden.</p>
         }
       }
     }

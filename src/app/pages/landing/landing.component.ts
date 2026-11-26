@@ -5,6 +5,7 @@ import { MatButton } from '@angular/material/button';
 import { MovieService } from '../../features/movies/services/movie.service';
 import { TmdbMovie } from '../../core/models/movie.model';
 import { MovieCardComponent } from '../../shared/components/movie-card/movie-card.component';
+import { MascotComponent } from '../../shared/components/mascot/mascot.component';
 
 interface Feature {
   icon: string;
@@ -17,7 +18,7 @@ interface Feature {
 
 @Component({
   selector: 'app-landing',
-  imports: [RouterLink, MatIcon, MatButton, MovieCardComponent],
+  imports: [RouterLink, MatIcon, MatButton, MovieCardComponent, MascotComponent],
   templateUrl: './landing.component.html',
   styleUrl: './landing.component.scss',
 })
@@ -31,28 +32,28 @@ export class LandingComponent implements OnInit {
     {
       icon: 'star',
       title: 'Beoordeel films',
-      description: 'Geef je mening met een beoordeling van 1 tot 5 sterren en schrijf uitgebreide reviews.',
+      description: 'Deel sterren uit (halve mogen ook) en schrijf erbij wat je ervan vond.',
       color: 'var(--color-gold)',
       rgbVar: '--color-gold-rgb',
     },
     {
       icon: 'bookmark',
       title: 'Watchlists',
-      description: 'Maak persoonlijke lijsten aan voor films die je wilt kijken of al hebt gezien.',
+      description: 'Nooit meer vergeten welke film je nog wilde zien. Maak lijsten voor elke stemming.',
       color: 'var(--color-accent-light)',
       rgbVar: '--color-accent-rgb',
     },
     {
       icon: 'people',
       title: 'Vrienden',
-      description: 'Volg vrienden, bekijk hun beoordelingen en ontdek films samen.',
+      description: 'Zie wat je maatjes kijken en goed vinden, en kies samen je volgende film.',
       color: 'var(--color-info)',
       rgbVar: '--color-info-rgb',
     },
     {
       icon: 'casino',
       title: 'Film Roulette',
-      description: 'Geen idee wat je wilt kijken? Laat ons een willekeurige film voor je kiezen!',
+      description: 'Geen idee wat je wilt kijken? Draai aan het rad en laat het lot beslissen.',
       color: 'var(--color-pink)',
       rgbVar: '--color-pink-rgb',
     },

@@ -2,10 +2,11 @@ import { Component, input } from '@angular/core';
 import { MatIcon } from '@angular/material/icon';
 import { MatButton } from '@angular/material/button';
 import { RouterLink } from '@angular/router';
+import { MascotComponent, MascotPose } from '../mascot/mascot.component';
 
 @Component({
   selector: 'app-empty-state',
-  imports: [MatIcon, MatButton, RouterLink],
+  imports: [MatIcon, MatButton, RouterLink, MascotComponent],
   templateUrl: './empty-state.component.html',
   styles: `
     .empty-state {
@@ -48,6 +49,10 @@ import { RouterLink } from '@angular/router';
       }
     }
 
+    .empty-mascot {
+      margin-bottom: 1rem;
+    }
+
     .empty-title {
       margin: 0;
       font-size: 1.125rem;
@@ -75,4 +80,6 @@ export class EmptyStateComponent {
   readonly actionLabel = input<string>('');
   readonly actionRoute = input<string>('');
   readonly compact = input<boolean>(false);
+  /** Toon Klappie in plaats van het icoon. */
+  readonly mascot = input<MascotPose | null>(null);
 }

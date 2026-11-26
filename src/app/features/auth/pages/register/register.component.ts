@@ -6,6 +6,7 @@ import { MatFormField, MatLabel, MatError, MatHint } from '@angular/material/for
 import { MatInput } from '@angular/material/input';
 import { MatButton, MatIconButton } from '@angular/material/button';
 import { MatIcon } from '@angular/material/icon';
+import { MascotComponent } from '../../../../shared/components/mascot/mascot.component';
 import { AuthService } from '../../services/auth.service';
 import { NotificationService } from '../../../../core/services/notification.service';
 
@@ -43,6 +44,7 @@ class ConfirmPasswordErrorMatcher implements ErrorStateMatcher {
     MatButton,
     MatIconButton,
     MatIcon,
+    MascotComponent,
   ],
   templateUrl: './register.component.html',
   styleUrl: './register.component.scss',

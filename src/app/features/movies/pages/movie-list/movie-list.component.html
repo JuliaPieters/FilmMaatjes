@@ -2,7 +2,7 @@
   <header class="page-header">
     <div>
       <h1 class="page-title">Films</h1>
-      <p class="page-subtitle">Zoek een titel of blader door de categorieën.</p>
+      <p class="page-subtitle">Zin in iets specifieks? Zoek het op, of laat je verrassen door de categorieën.</p>
     </div>
   </header>
 
@@ -12,7 +12,7 @@
       #searchInput
       type="search"
       class="search-input"
-      placeholder="Zoek een filmtitel…"
+      placeholder="Welke film zoek je?"
       aria-label="Zoek een film"
       autocomplete="off"
       enterkeyhint="search"
@@ -46,18 +46,18 @@
     </div>
 
     @if (searchLoading() && searchResults().length === 0) {
-      <app-loading-spinner message="Zoeken…" minHeight="280px" />
+      <app-loading-spinner message="Even zoeken…" minHeight="280px" />
     } @else if (searchError() && searchResults().length === 0) {
-      <app-empty-state icon="wifi_off" title="Er ging iets mis" [description]="searchError()!">
-        <button mat-stroked-button type="button" (click)="retrySearch()">Opnieuw proberen</button>
+      <app-empty-state icon="wifi_off" title="Oeps, dat ging mis" [description]="searchError()!">
+        <button mat-stroked-button type="button" class="empty-btn" (click)="retrySearch()">Opnieuw proberen</button>
       </app-empty-state>
     } @else if (searchResults().length === 0) {
       <app-empty-state
-        icon="search_off"
-        title="Geen films gevonden"
-        [description]="'We vonden niets voor “' + activeQuery() + '”. Controleer de spelling of probeer een andere titel.'"
+        mascot="knipoog"
+        title="Die staat (nog) niet in de rol"
+        [description]="'Klappie vond niets voor “' + activeQuery() + '”. Check de spelling of probeer een andere titel.'"
       >
-        <button mat-stroked-button type="button" (click)="clearSearch()">Zoekopdracht wissen</button>
+        <button mat-stroked-button type="button" class="empty-btn" (click)="clearSearch()">Zoekopdracht wissen</button>
       </app-empty-state>
     } @else {
       <div class="card-grid">
@@ -86,13 +86,13 @@
     </nav>
 
     @if (error() && movies().length === 0) {
-      <app-empty-state icon="wifi_off" title="Er ging iets mis" [description]="error()!">
-        <button mat-stroked-button type="button" (click)="retryCategory()">Opnieuw proberen</button>
+      <app-empty-state icon="wifi_off" title="Oeps, dat ging mis" [description]="error()!">
+        <button mat-stroked-button type="button" class="empty-btn" (click)="retryCategory()">Opnieuw proberen</button>
       </app-empty-state>
     } @else if (movies().length === 0 && loading()) {
-      <app-loading-spinner message="Films laden…" minHeight="320px" />
+      <app-loading-spinner message="Popcorn poffen… 🍿" minHeight="320px" />
     } @else if (movies().length === 0) {
-      <app-empty-state icon="movie" title="Geen films" description="Er zijn in deze categorie nu geen films beschikbaar." />
+      <app-empty-state mascot="zwaai" title="Even niks te zien hier" description="Er staan in deze categorie nu geen films. Probeer een andere rij." />
     } @else {
       <div class="card-grid">
         @for (movie of movies(); track movie.id) {

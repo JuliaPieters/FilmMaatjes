@@ -1,4 +1,4 @@
-import { Component, computed, inject, input, output } from '@angular/core';
+import { Component, computed, inject, input, output, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { DecimalPipe } from '@angular/common';
 import { MatIcon } from '@angular/material/icon';
@@ -26,6 +26,9 @@ export class MovieCardComponent {
   private readonly watchlistService = inject(WatchlistService);
   private readonly movieActions = inject(MovieActionsService);
 
+  /** Knop die net is aangetikt, voor een kort plopje. */
+  protected readonly popped = signal<'watchlist' | 'watched' | null>(null);
+
   protected readonly isWatched = computed(() => this.libraryService.isWatched(this.movie().id));
   protected readonly isInAnyWatchlist = computed(() => this.watchlistService.isMovieInAnyWatchlist(this.movie().id));
 
@@ -38,6 +41,7 @@ export class MovieCardComponent {
   protected onMarkWatched(event: MouseEvent): void {
     event.preventDefault();
     event.stopPropagation();
+    this.pop('watched');
     this.movieActions.toggleWatched(this.movie());
     this.markWatched.emit(this.movie());
   }
@@ -45,7 +49,13 @@ export class MovieCardComponent {
   protected onAddToWatchlist(event: MouseEvent): void {
     event.preventDefault();
     event.stopPropagation();
+    this.pop('watchlist');
     this.movieActions.toggleWatchlist(this.movie());
     this.addToWatchlist.emit(this.movie());
+  }
+
+  private pop(button: 'watchlist' | 'watched'): void {
+    this.popped.set(null);
+    requestAnimationFrame(() => this.popped.set(button));
   }
 }

@@ -170,7 +170,7 @@ export class MovieListComponent {
       error: () => {
         // Pagina terugzetten zodat "opnieuw proberen" dezelfde pagina ophaalt
         if (this.page() > 1) this.page.update(p => p - 1);
-        this.error.set('Films konden niet worden geladen.');
+        this.error.set('De films wilden even niet laden. Probeer het nog eens.');
         this.loading.set(false);
       },
     });
@@ -238,7 +238,7 @@ export class MovieListComponent {
       },
       error: () => {
         if (page > 1) this.searchPage.update(p => p - 1);
-        this.searchError.set('Zoeken is mislukt. Controleer je verbinding.');
+        this.searchError.set('Zoeken lukte niet. Check je verbinding en probeer opnieuw.');
         this.searchLoading.set(false);
       },
     });

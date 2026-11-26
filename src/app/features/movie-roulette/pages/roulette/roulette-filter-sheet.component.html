@@ -34,7 +34,7 @@
   </div>
 
   <div class="field-group">
-    <span class="field-label">Minimale beoordeling: {{ data.minRating() > 0 ? data.minRating() + '/10' : 'Alles' }}</span>
+    <span class="field-label">Minimale beoordeling: {{ data.minRating() > 0 ? data.minRating() + '/10' : 'maakt niet uit' }}</span>
     <mat-slider min="0" max="9" step="1" class="rating-slider">
       <input matSliderThumb [(ngModel)]="minRatingValue" aria-label="Minimale beoordeling" />
     </mat-slider>

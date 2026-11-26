@@ -215,7 +215,7 @@ export class ProfileComponent implements OnInit {
     const u = this.user();
     if (!u) return;
     this.friendsService.sendRequest(u.id).subscribe({
-      next: () => this.notifications.success('Vriendschapsverzoek verstuurd!'),
+      next: () => this.notifications.success('Verzoek verstuurd, duimen maar'),
       error: () => this.notifications.error('Versturen mislukt.'),
     });
   }
@@ -259,7 +259,7 @@ export class ProfileComponent implements OnInit {
     try {
       await this.authService.uploadAvatar(file);
       this.user.set(this.authService.user());
-      this.notifications.success('Profielfoto bijgewerkt!');
+      this.notifications.success('Nieuwe profielfoto staat erop');
     } catch {
       this.notifications.error('Uploaden mislukt. Probeer het opnieuw.');
     } finally {
@@ -326,7 +326,7 @@ export class ProfileComponent implements OnInit {
     }).then(() => {
       this.user.set(this.authService.user());
       this.editMode.set(false);
-      this.notifications.success('Profiel bijgewerkt!');
+      this.notifications.success('Profiel bijgewerkt');
     }).catch(() => {
       this.notifications.error('Opslaan mislukt. Probeer het opnieuw.');
     });

@@ -1,20 +1,20 @@
 <div class="page-container">
   <header class="page-header">
     <div>
-      <h1 class="page-title">Aanbevolen voor jou</h1>
+      <h1 class="page-title">Speciaal voor jou uitgekozen</h1>
       <p class="page-subtitle">
-        {{ topGenres().length > 0 ? 'Op basis van jouw kijkgeschiedenis en beoordelingen' : 'Populair onder filmliefhebbers' }}
+        {{ topGenres().length > 0 ? 'Gekozen op basis van wat jij kijkt en goed vindt' : 'Om mee te beginnen: films waar iedereen fan van is' }}
       </p>
     </div>
   </header>
 
   @if (loading()) {
-    <app-loading-spinner message="Aanbevelingen laden..." />
+    <app-loading-spinner message="Klappie zoekt iets leuks voor je uit..." />
   } @else if (groups().length === 0) {
     <app-empty-state
-      icon="auto_awesome"
-      title="Nog geen aanbevelingen"
-      description="Beoordeel een paar films om gepersonaliseerde aanbevelingen te krijgen."
+      mascot="zwaai"
+      title="Klappie leert je nog kennen"
+      description="Geef een paar films sterren, dan weet hij wat jij leuk vindt en tipt hij je de volgende."
       actionLabel="Films ontdekken"
       actionRoute="/movies"
     />

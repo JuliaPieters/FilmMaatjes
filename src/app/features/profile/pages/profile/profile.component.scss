@@ -2,6 +2,7 @@
   height: 120px;
   background:
     radial-gradient(120% 140% at 0% 0%, rgba(var(--color-accent-rgb), 0.45) 0%, transparent 55%),
+    radial-gradient(70% 120% at 100% 100%, rgba(var(--color-blush-rgb), 0.18) 0%, transparent 60%),
     linear-gradient(135deg, var(--color-violet-deep) 0%, var(--color-surface-200) 55%, var(--color-surface) 100%);
 
   @media (min-width: 768px) {

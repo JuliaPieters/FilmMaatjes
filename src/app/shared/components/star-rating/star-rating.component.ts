@@ -20,6 +20,8 @@ export class StarRatingComponent {
 
   protected readonly stars = [1, 2, 3, 4, 5];
   private readonly hovered = signal(0);
+  /** Ster die net gekozen is, voor een kort plopje. */
+  protected readonly popped = signal(0);
 
   private readonly displayed = computed(() => normalizeRating(this.hovered() || this.value()));
 
@@ -81,5 +83,7 @@ export class StarRatingComponent {
     if (rating === this.value()) return;
     this.value.set(rating);
     this.ratingChange.emit(rating);
+    this.popped.set(0);
+    if (rating > 0) requestAnimationFrame(() => this.popped.set(Math.ceil(rating)));
   }
 }

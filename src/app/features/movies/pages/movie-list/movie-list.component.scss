@@ -91,3 +91,8 @@
     max-width: none;
   }
 }
+
+// Knop in een lege staat (ng-content van app-empty-state) wat lucht geven
+.empty-btn {
+  margin-top: 1.5rem;
+}

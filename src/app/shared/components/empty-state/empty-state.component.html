@@ -1,7 +1,11 @@
 <div class="empty-state" [class.compact]="compact()">
-  <div class="empty-icon">
-    <mat-icon>{{ icon() }}</mat-icon>
-  </div>
+  @if (mascot()) {
+    <app-mascot class="empty-mascot" [pose]="mascot()!" [size]="compact() ? 96 : 132" [float]="true" />
+  } @else {
+    <div class="empty-icon">
+      <mat-icon>{{ icon() }}</mat-icon>
+    </div>
+  }
   <h3 class="empty-title">{{ title() }}</h3>
   @if (description()) {
     <p class="empty-description">{{ description() }}</p>

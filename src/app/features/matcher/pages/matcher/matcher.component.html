@@ -1,18 +1,22 @@
 <div class="page-container">
+  @if (celebrate()) {
+    <app-confetti />
+  }
+
   <header class="page-header hero-header">
     <div>
-      <span class="icon-tile lg hero-icon"><mat-icon>people</mat-icon></span>
-      <h1 class="page-title">Film Matcher</h1>
-      <p class="page-subtitle">Kies je filmmaatjes en vind de perfecte film om samen te kijken.</p>
+      <span class="icon-tile lg hero-icon"><mat-icon>favorite</mat-icon></span>
+      <h1 class="page-title"><span class="social-gradient-text">Film Matcher</span></h1>
+      <p class="page-subtitle">Kies je filmmaatjes, dan zoeken wij een film waar jullie allemaal zin in hebben.</p>
     </div>
   </header>
 
   @if (step() === 'select') {
     @if (friends().length === 0) {
       <app-empty-state
-        icon="people"
-        title="Nog geen vrienden"
-        description="Voeg vrienden toe om samen films te matchen."
+        mascot="zwaai"
+        title="Samen kijken is leuker"
+        description="Voeg eerst een paar filmmaatjes toe, dan zoeken we films die jullie allebei leuk vinden."
         actionLabel="Vrienden zoeken"
         actionRoute="/friends"
       />
@@ -20,8 +24,8 @@
       <section class="select-step">
         <div class="section-header">
           <div>
-            <h2 class="section-title">Met wie kijk je?</h2>
-            <p class="section-subtitle">We analyseren jullie gedeelde smaak — van beste match tot wildcard.</p>
+            <h2 class="section-title">Met wie kijk je vanavond?</h2>
+            <p class="section-subtitle">We leggen jullie smaak naast elkaar — van beste match tot verrassende wildcard.</p>
           </div>
         </div>
 
@@ -50,8 +54,8 @@
         <div class="find-bar">
           <p class="find-count" [class.active]="selectedFriends().size > 0">
             {{ selectedFriends().size === 0
-              ? 'Selecteer minstens één vriend'
-              : selectedFriends().size + (selectedFriends().size === 1 ? ' vriend' : ' vrienden') + ' geselecteerd' }}
+              ? 'Kies minstens één filmmaatje'
+              : 'Jij + ' + selectedFriends().size + (selectedFriends().size === 1 ? ' maatje' : ' maatjes') }}
           </p>
           <button mat-flat-button type="button" class="find-btn" [disabled]="selectedFriends().size === 0" (click)="findMatches()">
             <mat-icon>auto_awesome</mat-icon>
@@ -64,12 +68,17 @@
 
   @if (step() === 'results') {
     @if (loading()) {
-      <app-loading-spinner message="Jullie smaak analyseren…" minHeight="320px" />
+      <div class="matcher-loading" role="status" aria-live="polite">
+        <app-mascot pose="action" [size]="112" [float]="true" />
+        <p class="loading-title">Klappie zoekt de perfecte film…</p>
+        <p class="loading-sub">Jullie smaak wordt naast elkaar gelegd</p>
+        <span class="spinner" aria-hidden="true"></span>
+      </div>
     } @else if (results().length === 0) {
       <app-empty-state
-        icon="movie_off"
-        title="Geen matches gevonden"
-        description="Probeer meer films te beoordelen of kies andere vrienden."
+        mascot="zwaai"
+        title="Even geen match"
+        description="Klappie vond deze keer niks. Beoordeel wat meer films of probeer het met andere maatjes."
       >
         <button mat-stroked-button type="button" class="empty-retry" (click)="reset()">Opnieuw proberen</button>
       </app-empty-state>
@@ -79,7 +88,7 @@
           <mat-icon>arrow_back</mat-icon>
         </button>
         <div class="results-heading">
-          <h2 class="section-title">Jullie matches</h2>
+          <h2 class="section-title">Popcorn klaar? Dit zijn jullie matches 🍿</h2>
           <p class="section-subtitle results-names">
             Jij &amp;
             @for (id of selectedFriends(); track id; let last = $last) {
@@ -87,6 +96,7 @@
             }
           </p>
         </div>
+        <app-mascot class="results-mascot" pose="action" [size]="64" />
       </div>
 
       <div class="results-grid">
@@ -132,7 +142,7 @@
             </a>
 
             <div class="reasons">
-              <p class="reasons-label">Waarom dit?</p>
+              <p class="reasons-label">Waarom dit een goeie is</p>
               <ul class="reason-list">
                 @for (reason of result.reasons; track reason) {
                   <li class="reason-item">
@@ -149,7 +159,7 @@
       <div class="results-footer">
         <button mat-stroked-button type="button" (click)="findMatches()">
           <mat-icon>refresh</mat-icon>
-          Nieuwe suggesties
+          Verras ons opnieuw
         </button>
       </div>
     }

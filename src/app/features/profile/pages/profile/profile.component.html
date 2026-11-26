@@ -2,12 +2,12 @@
 
 <div class="page-container profile-page">
   @if (loading()) {
-    <app-loading-spinner message="Profiel laden..." />
+    <app-loading-spinner message="Profiel ophalen..." />
   } @else if (!user()) {
     <app-empty-state
-      icon="person_off"
-      title="Gebruiker niet gevonden"
-      description="Dit profiel bestaat niet (meer)."
+      mascot="knipoog"
+      title="Dit profiel is van de aftiteling verdwenen"
+      description="Klappie kan deze gebruiker niet (meer) vinden."
       actionLabel="Naar vrienden"
       actionRoute="/friends"
     />
@@ -219,7 +219,7 @@
         @switch (activeTab()) {
           @case ('watched') {
             @if (library.watchedMovies().length === 0) {
-              <app-empty-state icon="visibility" title="Nog niets gezien" description="Markeer films als gezien om ze hier te verzamelen." actionLabel="Films ontdekken" actionRoute="/movies" [compact]="true" />
+              <app-empty-state mascot="zwaai" title="Nog niets gezien" description="Film gekeken? Markeer 'm als gezien en je verzameling groeit hier." actionLabel="Films ontdekken" actionRoute="/movies" [compact]="true" />
             } @else {
               <div class="card-grid">
                 @for (entry of library.watchedMovies(); track entry.movieId) {
@@ -233,7 +233,7 @@
           }
           @case ('watchlists') {
             @if (watchlistService.watchlists().length === 0) {
-              <app-empty-state icon="bookmark" title="Nog geen lijsten" actionLabel="Lijsten beheren" actionRoute="/watchlists" [compact]="true" />
+              <app-empty-state mascot="zwaai" title="Nog geen lijsten" description="Maak een lijst voor films die je niet wilt vergeten." actionLabel="Lijsten beheren" actionRoute="/watchlists" [compact]="true" />
             } @else {
               <div class="list-grid">
                 @for (watchlist of watchlistService.watchlists(); track watchlist.id) {
@@ -275,7 +275,7 @@
           @switch (publicActiveTab()) {
             @case ('watchlists') {
               @if (publicWatchlists().length === 0) {
-                <app-empty-state icon="bookmark" title="Geen lijsten om te tonen" [compact]="true" />
+                <app-empty-state mascot="zwaai" title="Nog geen lijsten om te tonen" description="Deze filmfan houdt de lijstjes nog even voor zich." [compact]="true" />
               } @else {
                 <div class="accordion">
                   @for (watchlist of publicWatchlists(); track watchlist.id) {
@@ -291,7 +291,7 @@
                       @if (expandedWatchlistId() === watchlist.id) {
                         <div class="accordion-body">
                           @if (watchlist.movies.length === 0) {
-                            <p class="accordion-empty">Geen films in deze lijst.</p>
+                            <p class="accordion-empty">Deze lijst wacht nog op z'n eerste film.</p>
                           } @else {
                             <div class="card-grid">
                               @for (entry of watchlist.movies; track entry.movieId) {
@@ -323,7 +323,12 @@
 
 <ng-template #ratedList let-entries>
   @if (entries.length === 0) {
-    <app-empty-state icon="star" title="Nog geen films beoordeeld" [compact]="true" />
+    <app-empty-state
+      mascot="zwaai"
+      title="Nog geen sterren uitgedeeld"
+      [description]="isOwnProfile() ? 'Geef een film sterren en hij verschijnt hier.' : 'Zodra er films beoordeeld worden, zie je ze hier.'"
+      [compact]="true"
+    />
   } @else {
     <div class="list-grid">
       @for (entry of entries; track entry.movieId) {
@@ -346,7 +351,12 @@
 
 <ng-template #reviewList let-reviews>
   @if (reviews.length === 0) {
-    <app-empty-state icon="rate_review" title="Nog geen reviews" [compact]="true" />
+    <app-empty-state
+      mascot="zwaai"
+      title="Nog geen reviews"
+      [description]="isOwnProfile() ? 'Iets te zeggen over een film? Schrijf je eerste review.' : 'Er zijn nog geen reviews geschreven.'"
+      [compact]="true"
+    />
   } @else {
     <div class="review-list">
       @for (review of reviews; track review.id) {

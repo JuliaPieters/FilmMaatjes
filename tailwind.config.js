@@ -19,6 +19,7 @@ module.exports = {
           dark: '#5b21b6',
         },
         gold: '#f59e0b',
+        blush: '#ff8fc4',
         'text-primary': '#f1f5f9',
         'text-secondary': '#94a3b8',
         'text-muted': '#475569',

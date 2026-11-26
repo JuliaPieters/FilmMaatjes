@@ -1,11 +1,11 @@
 <div class="page-container">
   @if (loading()) {
-    <app-loading-spinner message="Watchlist laden..." />
+    <app-loading-spinner message="Lijst ophalen..." />
   } @else if (!watchlist()) {
     <app-empty-state
-      icon="bookmark"
-      title="Watchlist niet gevonden"
-      description="Deze lijst bestaat niet (meer) of is van iemand anders."
+      mascot="knipoog"
+      title="Deze lijst is zoekgeraakt"
+      description="Klappie kan hem niet vinden. Misschien is hij verwijderd, of is hij van iemand anders."
       actionLabel="Terug naar watchlists"
       actionRoute="/watchlists"
     />
@@ -34,10 +34,10 @@
 
     @if (movies().length === 0) {
       <app-empty-state
-        icon="movie"
-        title="Nog geen films"
-        description="Voeg films toe via de filmdetailpagina of met het bladwijzer-icoon op een filmposter."
-        actionLabel="Films bladeren"
+        mascot="zwaai"
+        title="Deze lijst is nog leeg"
+        description="Tik op het bladwijzer-icoon bij een film en hij belandt hier. Tijd om te ontdekken!"
+        actionLabel="Films ontdekken"
         actionRoute="/movies"
       />
     } @else {

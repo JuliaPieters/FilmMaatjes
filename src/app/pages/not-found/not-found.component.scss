@@ -13,22 +13,20 @@
   text-align: center;
 }
 
+.not-found-mascot {
+  margin-bottom: 0.25rem;
+}
+
 .error-code {
-  font-size: 6rem;
+  margin-bottom: 0.75rem;
+  font-size: 4rem;
   font-weight: 800;
   line-height: 1;
   letter-spacing: -0.05em;
 
   @media (min-width: 768px) {
-    font-size: 8rem;
+    font-size: 5rem;
   }
-}
-
-.error-icon {
-  margin: 0.5rem 0 1.25rem;
-  background: rgba(var(--color-white-rgb), 0.04);
-  border-color: rgba(var(--color-white-rgb), 0.08);
-  color: var(--color-text-meta);
 }
 
 .not-found-text {

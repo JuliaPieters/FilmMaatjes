@@ -55,7 +55,7 @@ export class RecommendationsComponent {
         next: page => {
           if (!isCurrent()) return;
           this.groups.set([{
-            reason: 'Hoog gewaardeerde films',
+            reason: 'Lievelingen van filmfans',
             icon: 'star',
             movies: page.results.filter(m => !watchedIds.has(m.id)).slice(0, 10),
           }]);

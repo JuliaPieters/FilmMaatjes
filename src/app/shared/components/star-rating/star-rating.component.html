@@ -22,6 +22,7 @@
         type="button"
         tabindex="-1"
         class="star star-btn"
+        [class.pop]="popped() === star"
         [style.--star-size.px]="size()"
         (mousemove)="onHover($event, star)"
         (click)="onSelect($event, star)"

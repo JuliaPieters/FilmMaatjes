@@ -1,36 +1,43 @@
 <div class="landing">
   <section class="hero">
     <div class="landing-inner hero-inner">
-      <span class="hero-badge">
-        <mat-icon class="icon-filled">auto_awesome</mat-icon>
-        Films kijken is leuker samen
-      </span>
-
-      <h1 class="hero-title">
-        Ontdek films.<br>
-        <span class="gradient-text">Kijk ze samen.</span>
-      </h1>
-
-      <p class="hero-subtitle">
-        FilmMaatjes is het sociale filmplatform voor filmliefhebbers. Beoordeel films,
-        maak watchlists en vind met je vrienden de film waar iedereen zin in heeft.
-      </p>
-
-      <div class="hero-actions">
-        <a mat-flat-button routerLink="/auth/register" class="hero-btn">
-          <mat-icon>person_add</mat-icon>
-          Gratis aanmelden
-        </a>
-        <a mat-stroked-button routerLink="/movies" class="hero-btn">
-          <mat-icon>explore</mat-icon>
-          Films ontdekken
-        </a>
+      <div class="hero-mascot">
+        <app-mascot class="mascot-mobile" pose="zwaai" [size]="148" [float]="true" alt="Klappie zwaait naar je" />
+        <app-mascot class="mascot-desktop" pose="zwaai" [size]="300" [float]="true" alt="Klappie zwaait naar je" />
       </div>
 
-      <p class="hero-note">
-        <mat-icon>check_circle</mat-icon>
-        Helemaal gratis &bull; Geen creditcard nodig
-      </p>
+      <div class="hero-text">
+        <span class="hero-badge">
+          <mat-icon class="icon-filled">auto_awesome</mat-icon>
+          Films kijken is leuker samen
+        </span>
+
+        <h1 class="hero-title">
+          Hoi filmfan!<br>
+          <span class="gradient-text">Wat kijken we vanavond?</span>
+        </h1>
+
+        <p class="hero-subtitle">
+          Klappie en je vrienden helpen je kiezen. Geef films sterren, zet ze op je watchlist en vind
+          samen die ene film waar iedereen zin in heeft 🍿
+        </p>
+
+        <div class="hero-actions">
+          <a mat-flat-button routerLink="/auth/register" class="hero-btn">
+            <mat-icon>person_add</mat-icon>
+            Gratis aanmelden
+          </a>
+          <a mat-stroked-button routerLink="/movies" class="hero-btn">
+            <mat-icon>explore</mat-icon>
+            Even rondkijken
+          </a>
+        </div>
+
+        <p class="hero-note">
+          <mat-icon>check_circle</mat-icon>
+          Helemaal gratis &bull; In een minuut geregeld
+        </p>
+      </div>
     </div>
   </section>
 
@@ -39,7 +46,7 @@
       <div class="section-header">
         <div>
           <h2 class="section-title">Trending deze week</h2>
-          <p class="section-subtitle">Waar iedereen het nu over heeft</p>
+          <p class="section-subtitle">Hier heeft iedereen het nu over</p>
         </div>
         <a routerLink="/movies" class="see-all-link">
           Alle films
@@ -56,9 +63,9 @@
 
   <section class="landing-inner landing-section">
     <div class="features-header">
-      <h2 class="features-title">Alles voor jouw filmavond</h2>
+      <h2 class="features-title">Alles voor een gezellige filmavond</h2>
       <p class="features-lead">
-        Van beoordelingen tot watchlists en de Film Roulette — FilmMaatjes heeft het allemaal.
+        Van sterren uitdelen tot samen een film kiezen — zonder eindeloos scrollen.
       </p>
     </div>
 
@@ -87,9 +94,9 @@
       <span class="icon-tile lg cta-icon">
         <mat-icon>local_movies</mat-icon>
       </span>
-      <h2 class="cta-title">Klaar voor je volgende filmavond?</h2>
+      <h2 class="cta-title">Popcorn klaar? Dan kunnen we beginnen</h2>
       <p class="cta-subtitle">
-        Maak in een minuut een account aan en ontdek samen met je vrienden je nieuwe favoriete film.
+        Maak een account aan, nodig je maatjes uit en ontdek samen je nieuwe favoriete film.
       </p>
       <div class="cta-actions">
         <a mat-flat-button routerLink="/auth/register" class="cta-btn">

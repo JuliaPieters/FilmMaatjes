@@ -9,15 +9,20 @@ import { FriendsService } from '../../features/friends/services/friends.service'
 import { TmdbMovie } from '../../core/models/movie.model';
 import { MovieCardComponent } from '../../shared/components/movie-card/movie-card.component';
 import { LoadingSpinnerComponent } from '../../shared/components/loading-spinner/loading-spinner.component';
+import { MovieActionsService } from '../../core/services/movie-actions.service';
+import { DecimalPipe } from '@angular/common';
+import { MatButton } from '@angular/material/button';
+import { greetingForHour } from './greeting';
 
 @Component({
   selector: 'app-dashboard',
-  imports: [RouterLink, MatIcon, MovieCardComponent, LoadingSpinnerComponent],
+  imports: [RouterLink, MatIcon, MatButton, DecimalPipe, MovieCardComponent, LoadingSpinnerComponent],
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.scss',
 })
 export class DashboardComponent implements OnInit {
-  private readonly movieService = inject(MovieService);
+  protected readonly movieService = inject(MovieService);
+  private readonly movieActions = inject(MovieActionsService);
   protected readonly authService = inject(AuthService);
   protected readonly library = inject(UserLibraryService);
   private readonly watchlistService = inject(WatchlistService);
@@ -27,6 +32,21 @@ export class DashboardComponent implements OnInit {
   protected readonly popular = signal<TmdbMovie[]>([]);
   protected readonly recommended = signal<TmdbMovie[]>([]);
   protected readonly loading = signal(true);
+  /** Aanbevelingen zijn binnen (of mislukt) — pas dan staat de uitgelichte film vast. */
+  private readonly recommendedDone = signal(false);
+  protected readonly greeting = greetingForHour(new Date().getHours());
+
+  /** "Vanavond kijken?": eerste aanbevolen (anders trending) film met een backdrop. */
+  protected readonly featured = computed<TmdbMovie | null>(() => {
+    const withBackdrop = (list: TmdbMovie[]) => list.find(m => !!m.backdrop_path) ?? null;
+    return withBackdrop(this.recommended()) ?? withBackdrop(this.trending());
+  });
+  protected readonly featuredLoading = computed(() => this.loading() || !this.recommendedDone());
+  protected readonly featuredInWatchlist = computed(() => {
+    const m = this.featured();
+    return m ? this.watchlistService.isMovieInAnyWatchlist(m.id) : false;
+  });
+  protected readonly featuredPopped = signal(false);
   protected readonly hasApiKey = this.movieService.hasApiKey();
 
   protected readonly firstName = computed(() => {
@@ -66,12 +86,24 @@ export class DashboardComponent implements OnInit {
     this.loadRecommendations();
   }
 
+  protected toggleFeaturedWatchlist(): void {
+    const m = this.featured();
+    if (!m) return;
+    this.featuredPopped.set(false);
+    requestAnimationFrame(() => this.featuredPopped.set(true));
+    this.movieActions.toggleWatchlist(m);
+  }
+
   private loadRecommendations(): void {
+    const done = () => this.recommendedDone.set(true);
     const [topGenre] = this.library.getTopGenres({ minRating: 4, limit: 1 });
     if (!topGenre) {
       this.movieService.getTopRated().subscribe({
-        next: page => this.recommended.set(page.results.slice(0, 8)),
-        error: () => {},
+        next: page => {
+          this.recommended.set(page.results.slice(0, 8));
+          done();
+        },
+        error: done,
       });
       return;
     }
@@ -80,8 +112,9 @@ export class DashboardComponent implements OnInit {
       next: page => {
         const watchedIds = new Set(this.library.watchedMovies().map(e => e.movieId));
         this.recommended.set(page.results.filter(m => !watchedIds.has(m.id)).slice(0, 8));
+        done();
       },
-      error: () => {},
+      error: done,
     });
   }
 }

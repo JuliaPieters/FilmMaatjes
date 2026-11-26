@@ -5,16 +5,20 @@
 } @else if (error() || !movie()) {
   <div class="page-container">
     <app-empty-state
-      icon="movie_off"
+      mascot="knipoog"
       [title]="error() ?? 'Film niet gevonden'"
-      description="Probeer het later opnieuw of kies een andere film."
+      description="Deze rol is even zoek. Probeer het later opnieuw of kies een andere film."
       actionLabel="Terug naar films"
       actionRoute="/movies"
     />
   </div>
 } @else {
   @let m = movie()!;
-  <article class="detail fade-in-up">
+  <article
+    class="detail fade-in-up"
+    [class.tinted]="posterColorReady()"
+    [style.--poster-rgb]="posterColor()"
+  >
     <!-- Hero -->
     <div class="hero" [class.no-image]="!m.backdrop_path">
       @if (m.backdrop_path) {
@@ -27,6 +31,7 @@
         </button>
       </div>
     </div>
+    <div class="poster-glow" aria-hidden="true"></div>
 
     <div class="page-container detail-body">
       <!-- Kop: poster + titel/meta; op desktop staat alles naast de poster -->
@@ -121,16 +126,19 @@
                   </a>
                 }
               </div>
-              <p class="friends-text">{{ label }}</p>
+              <div class="friends-text">
+                <span class="friends-eyebrow social-gradient-text">Samen kijken?</span>
+                <p>{{ label }}</p>
+              </div>
             </div>
           }
 
           <!-- Jouw beoordeling -->
           <div class="card rating-card">
             <div class="rating-head">
-              <span class="rating-title">Jouw beoordeling</span>
+              <span class="rating-title">Wat vond jij ervan?</span>
               <span class="rating-label" [class.set]="userRating() > 0">
-                {{ userRating() > 0 ? formatRating(userRating()) + '/5 · ' + ratingLabel(userRating()) : 'Tik op een ster' }}
+                {{ userRating() > 0 ? formatRating(userRating()) + '/5 · ' + ratingLabel(userRating()) : 'Tik een ster aan' }}
               </span>
             </div>
             <app-star-rating [(value)]="userRating" [size]="34" (ratingChange)="onRate($event)" />
@@ -182,7 +190,7 @@
 
         @if (showReviewForm()) {
           <form class="card review-form" (ngSubmit)="submitReview()">
-            <h3 class="form-title">{{ editingReview() ? 'Review bewerken' : 'Review schrijven' }}</h3>
+            <h3 class="form-title">{{ editingReview() ? 'Review bewerken' : 'Vertel het je filmmaatjes' }}</h3>
             <div class="field-group">
               <span class="field-label">Beoordeling</span>
               <app-star-rating [(value)]="reviewRating" [size]="30" [showValue]="true" />
@@ -194,7 +202,7 @@
                 name="reviewText"
                 class="field-input"
                 rows="4"
-                placeholder="Wat vond je van deze film?"
+                placeholder="Wat bleef je bij? Graag zonder spoilers."
                 [(ngModel)]="reviewTextModel"
               ></textarea>
             </div>
@@ -213,7 +221,12 @@
 
         @if (reviewService.movieReviews().length === 0) {
           @if (!showReviewForm()) {
-            <app-empty-state icon="rate_review" title="Nog geen reviews" description="Wees de eerste die laat weten wat je ervan vond." [compact]="true">
+            <app-empty-state
+              mascot="zwaai"
+              title="Nog geen reviews"
+              description="Jij mag de spits afbijten — wat vond je ervan?"
+              [compact]="true"
+            >
               @if (!authService.isAuthenticated()) {
                 <a mat-stroked-button routerLink="/auth/login">Inloggen om te reviewen</a>
               }

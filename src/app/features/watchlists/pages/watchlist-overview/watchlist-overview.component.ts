@@ -49,7 +49,7 @@ export class WatchlistOverviewComponent {
     if (!name?.trim()) return;
 
     this.watchlistService.create({ name: name.trim() }).subscribe({
-      next: () => this.notifications.success('Watchlist aangemaakt!'),
+      next: () => this.notifications.success('Watchlist aangemaakt, vul hem maar'),
       error: () => this.notifications.error('Aanmaken mislukt. Probeer opnieuw.'),
     });
   }
@@ -60,7 +60,7 @@ export class WatchlistOverviewComponent {
     if (!confirm(`Weet je zeker dat je "${list.name}" wilt verwijderen?`)) return;
 
     this.watchlistService.delete(list.id).subscribe({
-      next: () => this.notifications.success('Watchlist verwijderd.'),
+      next: () => this.notifications.success('Watchlist verwijderd'),
       error: () => this.notifications.error('Verwijderen mislukt.'),
     });
   }

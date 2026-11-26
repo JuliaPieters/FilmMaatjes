@@ -3,8 +3,22 @@
 }
 
 .tab-count.highlight {
-  background: var(--color-gold);
+  background: var(--color-blush);
   color: var(--color-surface);
+}
+
+// Sociaal moment: accepteren krijgt het blush-accent
+.accept-btn {
+  background: rgba(var(--color-blush-rgb), 0.16);
+  border-color: rgba(var(--color-blush-rgb), 0.35);
+  color: var(--color-blush);
+
+  @media (hover: hover) {
+    &:hover:not(:disabled) {
+      background: rgba(var(--color-blush-rgb), 0.26);
+      color: var(--color-blush);
+    }
+  }
 }
 
 .panel-toolbar {

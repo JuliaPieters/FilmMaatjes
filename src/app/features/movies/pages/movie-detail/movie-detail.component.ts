@@ -19,6 +19,7 @@ import { MovieActionsService } from '../../../../core/services/movie-actions.ser
 import { ReviewService } from '../../../../core/services/review.service';
 import { Review } from '../../../../core/models/review.model';
 import { FriendsService } from '../../../friends/services/friends.service';
+import { PosterColorService } from '../../../../core/services/poster-color.service';
 import { formatRating, formatStars, ratingLabel } from '../../../../shared/utils/rating';
 
 @Component({
@@ -51,12 +52,17 @@ export class MovieDetailComponent implements OnInit {
   protected readonly reviewService = inject(ReviewService);
   private readonly movieActions = inject(MovieActionsService);
   private readonly friendsService = inject(FriendsService);
-
+  private readonly posterColorService = inject(PosterColorService);
 
   protected readonly movie = signal<TmdbMovieDetail | null>(null);
   protected readonly loading = signal(true);
   protected readonly error = signal<string | null>(null);
   protected readonly userRating = signal(0);
+
+  /** Sfeerkleur van de poster ("r, g, b"); null = terugvallen op accent. */
+  protected readonly posterColor = signal<string | null>(null);
+  /** Kleurbepaling klaar (ook bij null), zodat de gloed pas dan infadet. */
+  protected readonly posterColorReady = signal(false);
 
   protected readonly reviewText = signal('');
   protected readonly reviewRating = signal(0);
@@ -149,18 +155,29 @@ export class MovieDetailComponent implements OnInit {
     this.loading.set(true);
     this.error.set(null);
     this.movie.set(null);
+    this.posterColor.set(null);
+    this.posterColorReady.set(false);
     this.showReviewForm.set(false);
     this.editingReview.set(null);
     this.movieService.getMovieDetail(id).subscribe({
       next: movie => {
         this.movie.set(movie);
         this.loading.set(false);
+        this.loadPosterColor(movie);
         this.reviewService.getMovieReviews(movie.id).subscribe();
       },
       error: () => {
         this.error.set('Film kon niet worden geladen.');
         this.loading.set(false);
       },
+    });
+  }
+
+  private loadPosterColor(movie: TmdbMovieDetail): void {
+    this.posterColorService.getColor(movie.poster_path).then(color => {
+      if (this.movie()?.id !== movie.id) return; // intussen naar een andere film genavigeerd
+      this.posterColor.set(color);
+      this.posterColorReady.set(true);
     });
   }
 

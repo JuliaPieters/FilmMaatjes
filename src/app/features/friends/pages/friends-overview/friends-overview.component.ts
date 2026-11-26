@@ -63,14 +63,14 @@ export class FriendsOverviewComponent implements OnInit {
 
   protected sendRequest(userId: string): void {
     this.friendsService.sendRequest(userId).subscribe({
-      next: () => this.notifications.success('Vriendschapsverzoek verstuurd!'),
+      next: () => this.notifications.success('Verzoek verstuurd, duimen maar'),
       error: () => this.notifications.error('Versturen mislukt.'),
     });
   }
 
   protected acceptRequest(id: string): void {
     this.friendsService.acceptRequest(id).subscribe({
-      next: () => this.notifications.success('Vriendschap geaccepteerd!'),
+      next: () => this.notifications.success('Jullie zijn nu filmmaatjes 🍿'),
     });
   }
 

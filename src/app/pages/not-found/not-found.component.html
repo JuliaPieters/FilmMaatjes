@@ -1,17 +1,16 @@
 <div class="page-container not-found">
   <div class="not-found-inner fade-in-up">
+    <app-mascot class="not-found-mascot" pose="knipoog" [size]="180" [float]="true" alt="Klappie knipoogt" />
     <div class="error-code gradient-text" aria-hidden="true">404</div>
-    <span class="icon-tile lg error-icon">
-      <mat-icon>movie_off</mat-icon>
-    </span>
-    <h1 class="page-title">Pagina niet gevonden</h1>
+    <h1 class="page-title">Deze scène is eruit geknipt</h1>
     <p class="page-subtitle not-found-text">
-      Deze scène is uit de film geknipt. De pagina die je zoekt bestaat niet of is verplaatst.
+      Klappie heeft overal gezocht, maar deze pagina haalde de eindmontage niet.
+      Misschien is hij verplaatst, of bestond hij nooit.
     </p>
     <div class="not-found-actions">
       <a mat-flat-button routerLink="/">
         <mat-icon>home</mat-icon>
-        Naar home
+        Terug naar home
       </a>
       <a mat-stroked-button routerLink="/movies">
         <mat-icon>movie</mat-icon>

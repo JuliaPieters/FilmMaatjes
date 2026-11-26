@@ -3,14 +3,14 @@
 
   <div class="auth-container">
     <a routerLink="/" class="auth-brand" aria-label="FilmMaatjes, naar de startpagina">
-      <img src="favicon.svg" alt="" width="44" height="44" />
+      <app-mascot pose="zwaai" [size]="92" [float]="true" />
       <span class="auth-wordmark">FilmMaatjes</span>
     </a>
 
     <section class="card auth-card">
       <header class="auth-header">
-        <h1>Account aanmaken</h1>
-        <p>Vind je filmmaatjes en kijk samen films</p>
+        <h1>Word ook een filmmaatje</h1>
+        <p>Maak een account aan en ontdek samen met je vrienden wat jullie gaan kijken.</p>
       </header>
 
       @if (error()) {

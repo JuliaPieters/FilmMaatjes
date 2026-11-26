@@ -10,7 +10,8 @@ import { UserLibraryService, LibraryEntry } from '../../../../core/services/user
 import { WatchlistService } from '../../../watchlists/services/watchlist.service';
 import { ReviewService } from '../../../../core/services/review.service';
 import { TmdbMovie } from '../../../../core/models/movie.model';
-import { LoadingSpinnerComponent } from '../../../../shared/components/loading-spinner/loading-spinner.component';
+import { MascotComponent } from '../../../../shared/components/mascot/mascot.component';
+import { ConfettiComponent } from '../../../../shared/components/confetti/confetti.component';
 import { EmptyStateComponent } from '../../../../shared/components/empty-state/empty-state.component';
 import { MovieMatchingService } from '../../services/movie-matching.service';
 
@@ -26,7 +27,7 @@ interface MatchResult {
 
 @Component({
   selector: 'app-matcher',
-  imports: [RouterLink, DecimalPipe, MatIcon, MatButton, LoadingSpinnerComponent, EmptyStateComponent],
+  imports: [RouterLink, DecimalPipe, MatIcon, MatButton, EmptyStateComponent, MascotComponent, ConfettiComponent],
   templateUrl: './matcher.component.html',
   styleUrl: './matcher.component.scss',
 })
@@ -44,6 +45,9 @@ export class MatcherComponent implements OnInit {
   protected readonly results = signal<MatchResult[]>([]);
   protected readonly step = signal<'select' | 'results'>('select');
   protected readonly displayedScores = signal<Record<string, number>>({});
+  /** Confetti bij een topmatch (≥ 90%); gaat na de burst vanzelf weer uit. */
+  protected readonly celebrate = signal(false);
+  private celebrateTimer: ReturnType<typeof setTimeout> | null = null;
   private scoreAnimationToken = 0;
   private readonly cardStaggerMs = 250;
   private readonly scoreCountMs = 1300;
@@ -220,7 +224,7 @@ export class MatcherComponent implements OnInit {
         if (best) {
           pushResult({
             type: 'best',
-            label: 'Beste Match',
+            label: 'Beste match',
             icon: 'auto_awesome',
             movie: best.movie,
             matchScore: Math.min(99, Math.round(best.total)),
@@ -241,7 +245,7 @@ export class MatcherComponent implements OnInit {
           const safeScore = Math.min(95, Math.round(safe.total * 0.92));
           pushResult({
             type: 'safe',
-            label: 'Veilige Keuze',
+            label: 'Veilige keuze',
             icon: 'verified',
             movie: safe.movie,
             matchScore: safeScore,
@@ -260,7 +264,7 @@ export class MatcherComponent implements OnInit {
           const randScore = Math.min(88, Math.round(rand.total * 0.88));
           pushResult({
             type: 'random',
-            label: 'Willekeurige Keuze',
+            label: 'Verrassing',
             icon: 'shuffle',
             movie: rand.movie,
             matchScore: randScore,
@@ -326,6 +330,7 @@ export class MatcherComponent implements OnInit {
     this.selectedFriends.set(new Set());
     this.scoreAnimationToken++;
     this.displayedScores.set({});
+    this.celebrate.set(false);
   }
 
   protected cardDelayMs(index: number): number {
@@ -336,8 +341,21 @@ export class MatcherComponent implements OnInit {
     return this.cardDelayMs(index) + this.scoreCountMs;
   }
 
+  private celebrateIfTopMatch(results: MatchResult[], token: number): void {
+    const best = results.find(r => r.type === 'best');
+    if (!best || best.matchScore < 90) return;
+    // Vier op het moment dat de score van de beste match "landt"
+    setTimeout(() => {
+      if (token !== this.scoreAnimationToken) return;
+      if (this.celebrateTimer) clearTimeout(this.celebrateTimer);
+      this.celebrate.set(true);
+      this.celebrateTimer = setTimeout(() => this.celebrate.set(false), 1600);
+    }, this.scoreLandDelayMs(results.indexOf(best)));
+  }
+
   private animateScores(results: MatchResult[]): void {
     const token = ++this.scoreAnimationToken;
+    this.celebrateIfTopMatch(results, token);
     this.displayedScores.set(Object.fromEntries(results.map(r => [r.type, 0])));
 
     results.forEach((result, index) => {
