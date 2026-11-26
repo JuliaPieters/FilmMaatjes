@@ -1,85 +1,83 @@
 <div class="page-container">
-  <div class="dashboard-welcome">
+  <header class="page-header">
     <div>
-      <h1 class="welcome-title">
-        Hoi, <span class="gradient-text">{{ authService.user()?.displayName }}</span>!
+      <h1 class="page-title welcome-title">
+        Hoi, <span class="gradient-text">{{ firstName() }}</span>!
       </h1>
-      <p class="welcome-subtitle">Wat ga je vandaag kijken?</p>
+      <p class="page-subtitle">Wat ga je vandaag kijken?</p>
     </div>
-    <div class="quick-actions flex gap-3 flex-wrap">
-      <a mat-flat-button color="primary" routerLink="/roulette" class="quick-action">
-        <mat-icon>casino</mat-icon>
-        Film Roulette
-      </a>
-      <a mat-stroked-button routerLink="/movies" class="quick-action">
-        <mat-icon>search</mat-icon>
-        Zoeken
-      </a>
-      <a mat-stroked-button routerLink="/matcher" class="quick-action">
-        <mat-icon>people</mat-icon>
-        Film Matcher
-      </a>
-    </div>
-  </div>
+  </header>
 
-  <div class="stats-row">
-    <a routerLink="/watchlists" class="stat-card glass-card">
-      <mat-icon class="stat-icon" style="color: var(--color-accent);">bookmark</mat-icon>
-      <div>
-        <p class="stat-value">{{ watchlistCount() }}</p>
-        <p class="stat-label">Watchlists</p>
-      </div>
+  <nav class="quick-actions" aria-label="Snelacties">
+    <a routerLink="/roulette" class="card quick-action">
+      <span class="icon-tile quick-icon roulette"><mat-icon>casino</mat-icon></span>
+      <span class="quick-label">Roulette</span>
     </a>
-    <a routerLink="/profile" class="stat-card glass-card">
-      <mat-icon class="stat-icon" style="color: var(--color-info);">check_circle</mat-icon>
-      <div>
-        <p class="stat-value">{{ watchedCount() }}</p>
-        <p class="stat-label">Gezien</p>
-      </div>
+    <a routerLink="/matcher" class="card quick-action">
+      <span class="icon-tile quick-icon matcher"><mat-icon>group</mat-icon></span>
+      <span class="quick-label">Matcher</span>
     </a>
-    <a routerLink="/friends" class="stat-card glass-card">
-      <mat-icon class="stat-icon" style="color: var(--color-pink);">people</mat-icon>
-      <div>
-        <p class="stat-value">{{ friendsCount() }}</p>
-        <p class="stat-label">Vrienden</p>
-      </div>
+    <a routerLink="/movies" class="card quick-action">
+      <span class="icon-tile quick-icon search"><mat-icon>search</mat-icon></span>
+      <span class="quick-label">Films zoeken</span>
     </a>
-    <a routerLink="/profile" class="stat-card glass-card">
-      <mat-icon class="stat-icon" style="color: var(--color-gold);">star</mat-icon>
-      <div>
-        <p class="stat-value">{{ ratedCount() }}</p>
-        <p class="stat-label">Beoordeeld</p>
-      </div>
+  </nav>
+
+  <section class="stats-grid" aria-label="Jouw statistieken">
+    <a routerLink="/watchlists" class="card stat-card">
+      <mat-icon class="stat-icon accent icon-filled">bookmark</mat-icon>
+      <span class="stat-text">
+        <span class="stat-value">{{ watchlistCount() }}</span>
+        <span class="stat-label">Watchlists</span>
+      </span>
     </a>
-  </div>
+    <a routerLink="/profile" class="card stat-card">
+      <mat-icon class="stat-icon info icon-filled">check_circle</mat-icon>
+      <span class="stat-text">
+        <span class="stat-value">{{ watchedCount() }}</span>
+        <span class="stat-label">Gezien</span>
+      </span>
+    </a>
+    <a routerLink="/friends" class="card stat-card">
+      <mat-icon class="stat-icon pink icon-filled">group</mat-icon>
+      <span class="stat-text">
+        <span class="stat-value">{{ friendsCount() }}</span>
+        <span class="stat-label">Vrienden</span>
+      </span>
+    </a>
+    <a routerLink="/profile" class="card stat-card">
+      <mat-icon class="stat-icon gold icon-filled">star</mat-icon>
+      <span class="stat-text">
+        <span class="stat-value">{{ ratedCount() }}</span>
+        <span class="stat-label">Beoordeeld</span>
+      </span>
+    </a>
+  </section>
 
   @if (loading()) {
     <app-loading-spinner message="Films laden..." />
   } @else if (!hasApiKey) {
-    <div class="api-notice glass-card p-6 mt-6 flex items-center gap-4">
-      <mat-icon class="text-accent-light text-3xl flex-shrink-0" style="font-size: 2rem; width: 2rem; height: 2rem;">info</mat-icon>
-      <div>
-        <p class="text-text-primary font-medium">TMDB API-sleutel nodig</p>
-        <p class="text-text-muted text-sm mt-1">
-          Voeg je TMDB API-sleutel toe aan <code class="bg-surface-50 px-1.5 py-0.5 rounded text-accent-light text-xs">src/environments/environment.ts</code> om films te laden.
-        </p>
-      </div>
+    <div class="card api-notice" role="status">
+      <mat-icon>info</mat-icon>
+      <p>
+        <strong>TMDB API-sleutel nodig.</strong>
+        Voeg hem toe aan <code>src/environments/environment.ts</code> om films te laden.
+      </p>
     </div>
   } @else {
     @if (recommended().length > 0) {
-      <section class="mt-8">
-        <div class="flex items-center justify-between mb-4">
+      <section class="section">
+        <div class="section-header">
           <div>
-            <h2 class="section-title mb-0">Aanbevolen voor jou</h2>
-            <p class="text-text-muted text-sm mt-0.5">
-              @if (hasPersonalizedRecommendations()) {
-                Op basis van jouw beoordelingen
-              } @else {
-                Populair onder filmliefhebbers
-              }
+            <h2 class="section-title">Aanbevolen voor jou</h2>
+            <p class="section-subtitle">
+              {{ hasPersonalizedRecommendations() ? 'Op basis van jouw beoordelingen' : 'Populair onder filmliefhebbers' }}
             </p>
           </div>
-          <a routerLink="/recommendations" class="see-all-link">Alles zien</a>
+          <a routerLink="/recommendations" class="see-all-link">
+            Alles zien
+            <mat-icon>chevron_right</mat-icon>
+          </a>
         </div>
         <div class="horizontal-scroll bleed-row">
           @for (movie of recommended(); track movie.id) {
@@ -90,10 +88,13 @@
     }
 
     @if (trending().length > 0) {
-      <section class="mt-8">
-        <div class="flex items-center justify-between mb-4">
-          <h2 class="section-title mb-0">Trending deze week</h2>
-          <a routerLink="/movies" class="see-all-link">Alles bekijken</a>
+      <section class="section">
+        <div class="section-header">
+          <h2 class="section-title">Trending deze week</h2>
+          <a routerLink="/movies" class="see-all-link">
+            Alles zien
+            <mat-icon>chevron_right</mat-icon>
+          </a>
         </div>
         <div class="horizontal-scroll bleed-row">
           @for (movie of trending(); track movie.id) {
@@ -104,10 +105,13 @@
     }
 
     @if (popular().length > 0) {
-      <section class="mt-10">
-        <div class="flex items-center justify-between mb-4">
-          <h2 class="section-title mb-0">Populair</h2>
-          <a routerLink="/movies" class="see-all-link">Alles bekijken</a>
+      <section class="section">
+        <div class="section-header">
+          <h2 class="section-title">Populair</h2>
+          <a routerLink="/movies" class="see-all-link">
+            Alles zien
+            <mat-icon>chevron_right</mat-icon>
+          </a>
         </div>
         <div class="horizontal-scroll bleed-row">
           @for (movie of popular(); track movie.id) {

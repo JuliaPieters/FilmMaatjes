@@ -1,140 +1,128 @@
-<header class="navbar">
-  <div class="navbar-inner">
-    <div class="navbar-left">
-      <a routerLink="/" class="logo">
-        <img src="favicon.svg" class="logo-icon" alt="" />
-        <span class="logo-text">FilmMaatjes</span>
-      </a>
-    </div>
+<header class="topbar">
+  <div class="topbar-inner">
+    <a [routerLink]="authService.isAuthenticated() ? '/dashboard' : '/'" class="brand" aria-label="FilmMaatjes, naar start">
+      <img src="favicon.svg" class="brand-icon" alt="" width="32" height="32" />
+      <span class="brand-text">FilmMaatjes</span>
+    </a>
 
-    <nav class="navbar-center">
-      @for (link of navLinks; track link.route) {
+    <nav class="desktop-nav" aria-label="Hoofdnavigatie">
+      @for (link of navLinks(); track link.route) {
         <a
           [routerLink]="link.route"
-          routerLinkActive="nav-link-active"
+          routerLinkActive="active"
+          #rla="routerLinkActive"
           class="nav-link"
+          [class.icon-filled]="rla.isActive"
         >
-          {{ link.label }}
+          <mat-icon>{{ link.icon }}</mat-icon>
+          <span>{{ link.label }}</span>
         </a>
       }
     </nav>
 
-    <div class="navbar-right">
+    <div class="topbar-actions">
       @if (authService.isAuthenticated()) {
-        <a mat-icon-button routerLink="/watchlists" matTooltip="Watchlists" class="desktop-only">
-          <mat-icon>bookmark</mat-icon>
-        </a>
-
         <button
-          mat-icon-button
+          type="button"
+          class="icon-btn ghost"
           [matMenuTriggerFor]="notificationsMenu"
-          matTooltip="Meldingen"
-          class="notification-btn"
+          aria-label="Meldingen"
         >
-          <mat-icon
-            [matBadge]="activityService.unreadCount()"
-            [matBadgeHidden]="activityService.unreadCount() === 0"
-            matBadgeColor="warn"
-            matBadgeSize="small"
-          >notifications</mat-icon>
-        </button>
-
-        <mat-menu #notificationsMenu="matMenu" class="notifications-menu" (closed)="markNotificationsSeen()">
-          <div class="notifications-header">
-            <span>Vriendenactiviteit</span>
-            @if (activityService.activity().length > 0) {
-              <button type="button" class="clear-all-btn" (click)="clearAll($event)">Wis alles</button>
-            }
-          </div>
-          <mat-divider />
-          @if (activityService.activity().length === 0) {
-            <div class="notifications-empty">
-              <mat-icon>notifications_none</mat-icon>
-              <p>Nog geen activiteit van vrienden.</p>
-            </div>
-          } @else {
-            @for (item of activityService.activity(); track item.id) {
-              <a
-                mat-menu-item
-                class="notification-item"
-                [class.unread]="isUnread(item)"
-                [routerLink]="['/movies', item.movieId]"
-              >
-                <div class="notification-avatar">
-                  @if (item.userAvatar) {
-                    <img [src]="item.userAvatar" [alt]="item.userName" />
-                  } @else {
-                    {{ (item.userName || '?').charAt(0).toUpperCase() }}
-                  }
-                </div>
-                <div class="notification-body">
-                  <p class="notification-text">
-                    <strong>{{ item.userName || 'Een vriend' }}</strong>
-                    @if (item.type === 'review') {
-                      heeft een review geplaatst bij <strong>{{ item.movieTitle }}</strong>
-                    } @else {
-                      heeft <strong>{{ item.movieTitle }}</strong> beoordeeld met {{ item.rating }} ster{{ item.rating === 1 ? '' : 'ren' }}
-                    }
-                  </p>
-                  <p class="notification-time">{{ formatActivityTime(item.createdAt) }}</p>
-                </div>
-                <button
-                  type="button"
-                  class="notification-dismiss"
-                  matTooltip="Verwijderen"
-                  (click)="dismiss(item.id, $event)"
-                >
-                  <mat-icon>close</mat-icon>
-                </button>
-              </a>
-            }
+          <mat-icon>notifications</mat-icon>
+          @if (activityService.unreadCount() > 0) {
+            <span class="unread-dot">{{ activityService.unreadCount() > 9 ? '9+' : activityService.unreadCount() }}</span>
           }
-        </mat-menu>
-
-        <button
-          mat-icon-button
-          [matMenuTriggerFor]="userMenu"
-          class="avatar-btn"
-        >
-          <div class="avatar">
-            @if (authService.user()?.avatar) {
-              <img [src]="authService.user()!.avatar" [alt]="authService.user()!.displayName" />
-            } @else {
-              <span>{{ authService.user()?.displayName?.charAt(0)?.toUpperCase() }}</span>
-            }
-          </div>
         </button>
 
-        <mat-menu #userMenu="matMenu" class="user-menu">
-          <div class="user-menu-header">
-            <p class="user-display-name">{{ authService.user()?.displayName }}</p>
-            <p class="user-username">&#64;{{ authService.user()?.username }}</p>
-          </div>
-          <mat-divider />
-          <a mat-menu-item routerLink="/profile">
-            <mat-icon>person</mat-icon>
-            <span>Profiel</span>
-          </a>
-          <a mat-menu-item routerLink="/watchlists">
-            <mat-icon>bookmark</mat-icon>
-            <span>Mijn Watchlists</span>
-          </a>
-          <a mat-menu-item routerLink="/dashboard">
-            <mat-icon>dashboard</mat-icon>
-            <span>Dashboard</span>
-          </a>
-          <mat-divider />
-          <button mat-menu-item (click)="logout()">
-            <mat-icon>logout</mat-icon>
-            <span>Uitloggen</span>
-          </button>
-        </mat-menu>
+        <button type="button" class="avatar-btn" [matMenuTriggerFor]="userMenu" aria-label="Accountmenu">
+          <span class="avatar sm">
+            @if (authService.user()?.avatar) {
+              <img [src]="authService.user()!.avatar" alt="" />
+            } @else {
+              {{ authService.user()?.displayName?.charAt(0)?.toUpperCase() }}
+            }
+          </span>
+        </button>
       } @else {
-        <a mat-button routerLink="/auth/login" class="login-btn">Inloggen</a>
-        <a mat-flat-button routerLink="/auth/register" color="primary" class="register-btn">
-          Aanmelden
-        </a>
+        <a mat-button routerLink="/auth/login" class="login-link">Inloggen</a>
+        <a mat-flat-button routerLink="/auth/register" class="register-btn">Aanmelden</a>
       }
     </div>
   </div>
 </header>
+
+<mat-menu #notificationsMenu="matMenu" class="notifications-menu" xPosition="before" (closed)="markNotificationsSeen()">
+  <div class="menu-header" (click)="$event.stopPropagation()">
+    <span>Vriendenactiviteit</span>
+    @if (activityService.activity().length > 0) {
+      <button type="button" class="menu-header-action" (click)="clearAll($event)">Wis alles</button>
+    }
+  </div>
+  @if (activityService.activity().length === 0) {
+    <div class="notifications-empty">
+      <mat-icon>notifications_none</mat-icon>
+      <p>Nog geen activiteit van vrienden.</p>
+    </div>
+  } @else {
+    @for (item of activityService.activity(); track item.id) {
+      <a
+        mat-menu-item
+        class="notification-item"
+        [class.unread]="isUnread(item)"
+        [routerLink]="['/movies', item.movieId]"
+      >
+        <span class="avatar xs">
+          @if (item.userAvatar) {
+            <img [src]="item.userAvatar" alt="" />
+          } @else {
+            {{ (item.userName || '?').charAt(0).toUpperCase() }}
+          }
+        </span>
+        <span class="notification-body">
+          <span class="notification-text">
+            <strong>{{ item.userName || 'Een vriend' }}</strong>
+            @if (item.type === 'review') {
+              schreef een review bij <strong>{{ item.movieTitle }}</strong>
+            } @else {
+              gaf <strong>{{ item.movieTitle }}</strong> {{ item.rating }} ster{{ item.rating === 1 ? '' : 'ren' }}
+            }
+          </span>
+          <span class="notification-time">{{ formatActivityTime(item.createdAt) }}</span>
+        </span>
+        <button
+          type="button"
+          class="icon-btn ghost sm notification-dismiss"
+          aria-label="Verwijderen"
+          (click)="dismiss(item.id, $event)"
+        >
+          <mat-icon>close</mat-icon>
+        </button>
+      </a>
+    }
+  }
+</mat-menu>
+
+<mat-menu #userMenu="matMenu" class="user-menu" xPosition="before">
+  <div class="menu-user">
+    <p class="menu-user-name">{{ authService.user()?.displayName }}</p>
+    <p class="menu-user-handle">&#64;{{ authService.user()?.username }}</p>
+  </div>
+  <mat-divider />
+  <a mat-menu-item routerLink="/profile">
+    <mat-icon>person</mat-icon>
+    <span>Mijn profiel</span>
+  </a>
+  <a mat-menu-item routerLink="/watchlists">
+    <mat-icon>bookmark</mat-icon>
+    <span>Mijn watchlists</span>
+  </a>
+  <a mat-menu-item routerLink="/recommendations">
+    <mat-icon>auto_awesome</mat-icon>
+    <span>Aanbevolen voor mij</span>
+  </a>
+  <mat-divider />
+  <button mat-menu-item class="logout-item" (click)="logout()">
+    <mat-icon>logout</mat-icon>
+    <span>Uitloggen</span>
+  </button>
+</mat-menu>

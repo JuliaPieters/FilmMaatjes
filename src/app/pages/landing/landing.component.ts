@@ -5,13 +5,14 @@ import { MatButton } from '@angular/material/button';
 import { MovieService } from '../../features/movies/services/movie.service';
 import { TmdbMovie } from '../../core/models/movie.model';
 import { MovieCardComponent } from '../../shared/components/movie-card/movie-card.component';
-import { AuthService } from '../../features/auth/services/auth.service';
 
 interface Feature {
   icon: string;
   title: string;
   description: string;
   color: string;
+  /** CSS-var met `r, g, b` voor de getinte tegelachtergrond */
+  rgbVar: string;
 }
 
 @Component({
@@ -22,7 +23,6 @@ interface Feature {
 })
 export class LandingComponent implements OnInit {
   private readonly movieService = inject(MovieService);
-  protected readonly authService = inject(AuthService);
 
   protected readonly trendingMovies = signal<TmdbMovie[]>([]);
   protected readonly hasApiKey = this.movieService.hasApiKey();
@@ -33,24 +33,28 @@ export class LandingComponent implements OnInit {
       title: 'Beoordeel films',
       description: 'Geef je mening met een beoordeling van 1 tot 5 sterren en schrijf uitgebreide reviews.',
       color: 'var(--color-gold)',
+      rgbVar: '--color-gold-rgb',
     },
     {
       icon: 'bookmark',
       title: 'Watchlists',
       description: 'Maak persoonlijke lijsten aan voor films die je wilt kijken of al hebt gezien.',
-      color: 'var(--color-accent)',
+      color: 'var(--color-accent-light)',
+      rgbVar: '--color-accent-rgb',
     },
     {
       icon: 'people',
       title: 'Vrienden',
       description: 'Volg vrienden, bekijk hun beoordelingen en ontdek films samen.',
       color: 'var(--color-info)',
+      rgbVar: '--color-info-rgb',
     },
     {
       icon: 'casino',
       title: 'Film Roulette',
       description: 'Geen idee wat je wilt kijken? Laat ons een willekeurige film voor je kiezen!',
       color: 'var(--color-pink)',
+      rgbVar: '--color-pink-rgb',
     },
   ];
 

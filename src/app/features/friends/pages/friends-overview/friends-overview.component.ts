@@ -1,21 +1,16 @@
-import { Component, computed, effect, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, DestroyRef, inject, OnInit, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { MatIcon } from '@angular/material/icon';
-import { MatButton, MatIconButton } from '@angular/material/button';
-import { MatFormField, MatLabel, MatSuffix } from '@angular/material/form-field';
-import { MatInput } from '@angular/material/input';
-import { MatTab, MatTabGroup } from '@angular/material/tabs';
-import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
+import { MatButton } from '@angular/material/button';
+import { of } from 'rxjs';
+import { catchError, debounceTime, distinctUntilChanged, switchMap, tap } from 'rxjs/operators';
 import { FriendsService } from '../../services/friends.service';
 import { User } from '../../../../core/models/user.model';
 import { LoadingSpinnerComponent } from '../../../../shared/components/loading-spinner/loading-spinner.component';
 import { EmptyStateComponent } from '../../../../shared/components/empty-state/empty-state.component';
 import { NotificationService } from '../../../../core/services/notification.service';
-import { WatchlistService } from '../../../watchlists/services/watchlist.service';
-import { WatchStreakService } from '../../../../core/services/watch-streak.service';
-import { UserLibraryService } from '../../../../core/services/user-library.service';
-import { AuthService } from '../../../auth/services/auth.service';
 
 @Component({
   selector: 'app-friends-overview',
@@ -24,13 +19,6 @@ import { AuthService } from '../../../auth/services/auth.service';
     RouterLink,
     MatIcon,
     MatButton,
-    MatIconButton,
-    MatFormField,
-    MatLabel,
-    MatSuffix,
-    MatInput,
-    MatTab,
-    MatTabGroup,
     LoadingSpinnerComponent,
     EmptyStateComponent,
   ],
@@ -40,11 +28,9 @@ import { AuthService } from '../../../auth/services/auth.service';
 export class FriendsOverviewComponent implements OnInit {
   private readonly friendsService = inject(FriendsService);
   private readonly notifications = inject(NotificationService);
-  private readonly watchlistService = inject(WatchlistService);
-  private readonly watchStreak = inject(WatchStreakService);
-  private readonly library = inject(UserLibraryService);
-  private readonly authService = inject(AuthService);
+  private readonly destroyRef = inject(DestroyRef);
 
+  protected readonly activeTab = signal<'friends' | 'requests' | 'search'>('friends');
   protected readonly friends = this.friendsService.friends;
   protected readonly pendingRequests = this.friendsService.pendingRequests;
   protected readonly loadingFriends = signal(true);
@@ -55,55 +41,23 @@ export class FriendsOverviewComponent implements OnInit {
   protected readonly friendIds = computed(() => new Set(this.friendsService.friends().map(f => f.id)));
   protected readonly sentRequestIds = computed(() => new Set(this.friendsService.sentRequests().map(r => r.receiverId)));
 
-  protected readonly friendStreaks = computed<Record<string, number>>(() => {
-    const streaks: Record<string, number> = {};
-    for (const friend of this.friends()) {
-      const gezien = this.watchlistService.getWatchlistsForUser(friend.id).find(w => w.name === 'Gezien');
-      const friendDates = (gezien?.movies ?? []).map(m => m.addedAt);
-      streaks[friend.id] = this.watchStreak.getStreakWeeks(friendDates);
-    }
-    return streaks;
-  });
-
-  protected readonly streakLeaderboard = computed(() => {
-    const me = this.authService.user();
-    const myEntry = me ? [{
-      id: me.id,
-      displayName: 'Jij',
-      avatar: me.avatar,
-      weeks: this.watchStreak.getStreakWeeks(this.library.watchedMovies().map(e => e.watchedAt)),
-      isMe: true,
-    }] : [];
-    const friendEntries = this.friends().map(friend => ({
-      id: friend.id,
-      displayName: friend.displayName,
-      avatar: friend.avatar,
-      weeks: this.friendStreaks()[friend.id] ?? 0,
-      isMe: false,
-    }));
-    return [...myEntry, ...friendEntries].sort((a, b) => b.weeks - a.weeks);
-  });
-
-  constructor() {
-    effect(() => {
-      for (const friend of this.friendsService.friends()) {
-        this.watchlistService.loadFriendWatchlists(friend.id).subscribe();
-      }
-    });
-  }
-
   ngOnInit(): void {
     this.friendsService.reloadFromStorage();
     this.friendsService.getMyFriends().subscribe({ next: () => this.loadingFriends.set(false), error: () => this.loadingFriends.set(false) });
     this.friendsService.getPendingRequests().subscribe();
 
-    this.searchControl.valueChanges.pipe(debounceTime(400), distinctUntilChanged()).subscribe(query => {
-      if (!query?.trim()) { this.searchResults.set([]); return; }
-      this.searchLoading.set(true);
-      this.friendsService.searchUsers(query).subscribe({
-        next: users => { this.searchResults.set(users); this.searchLoading.set(false); },
-        error: () => this.searchLoading.set(false),
-      });
+    // switchMap: een tragere, oudere zoekopdracht mag een nieuwere niet overschrijven.
+    this.searchControl.valueChanges.pipe(
+      debounceTime(400),
+      distinctUntilChanged(),
+      tap(query => this.searchLoading.set(!!query?.trim())),
+      switchMap(query => query?.trim()
+        ? this.friendsService.searchUsers(query).pipe(catchError(() => of([] as User[])))
+        : of([] as User[])),
+      takeUntilDestroyed(this.destroyRef),
+    ).subscribe(users => {
+      this.searchResults.set(users);
+      this.searchLoading.set(false);
     });
   }
 

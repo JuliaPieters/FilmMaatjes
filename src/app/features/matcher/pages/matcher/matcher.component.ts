@@ -2,7 +2,7 @@ import { Component, effect, inject, OnInit, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { DecimalPipe } from '@angular/common';
 import { MatIcon } from '@angular/material/icon';
-import { MatButton, MatIconButton } from '@angular/material/button';
+import { MatButton } from '@angular/material/button';
 import { lastValueFrom } from 'rxjs';
 import { MovieService } from '../../../movies/services/movie.service';
 import { FriendsService } from '../../../friends/services/friends.service';
@@ -26,12 +26,12 @@ interface MatchResult {
 
 @Component({
   selector: 'app-matcher',
-  imports: [RouterLink, DecimalPipe, MatIcon, MatButton, MatIconButton, LoadingSpinnerComponent, EmptyStateComponent],
+  imports: [RouterLink, DecimalPipe, MatIcon, MatButton, LoadingSpinnerComponent, EmptyStateComponent],
   templateUrl: './matcher.component.html',
   styleUrl: './matcher.component.scss',
 })
 export class MatcherComponent implements OnInit {
-  private readonly movieService = inject(MovieService);
+  protected readonly movieService = inject(MovieService);
   private readonly friendsService = inject(FriendsService);
   private readonly library = inject(UserLibraryService);
   private readonly watchlistService = inject(WatchlistService);

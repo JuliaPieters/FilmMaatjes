@@ -1,54 +1,64 @@
-    <div class="page-container">
-      <div class="flex items-center gap-3 mb-6">
-        <button mat-icon-button class="back-btn" (click)="goBack()">
-          <mat-icon>arrow_back</mat-icon>
-        </button>
-        <div class="flex-1 min-w-0">
-          <h1 class="text-3xl font-bold text-text-primary tracking-tight truncate">
-            {{ watchlist()?.name ?? 'Watchlist' }}
-          </h1>
-          @if (watchlist()?.description) {
-            <p class="text-text-secondary text-sm mt-1">{{ watchlist()!.description }}</p>
-          }
-          <span class="movie-count-mobile whitespace-nowrap">
+<div class="page-container">
+  @if (loading()) {
+    <app-loading-spinner message="Watchlist laden..." />
+  } @else if (!watchlist()) {
+    <app-empty-state
+      icon="bookmark"
+      title="Watchlist niet gevonden"
+      description="Deze lijst bestaat niet (meer) of is van iemand anders."
+      actionLabel="Terug naar watchlists"
+      actionRoute="/watchlists"
+    />
+  } @else {
+    <header class="page-header detail-header">
+      <button type="button" class="icon-btn ghost back-btn" (click)="goBack()" aria-label="Terug">
+        <mat-icon>arrow_back</mat-icon>
+      </button>
+      <div class="detail-text">
+        <h1 class="page-title detail-title">{{ watchlist()!.name }}</h1>
+        @if (watchlist()!.description) {
+          <p class="page-subtitle detail-description">{{ watchlist()!.description }}</p>
+        }
+        <div class="detail-meta">
+          <span class="meta-item">
+            <mat-icon>movie</mat-icon>
             {{ movies().length }} film{{ movies().length === 1 ? '' : 's' }}
           </span>
+          <span class="meta-item">
+            <mat-icon>{{ watchlist()!.isPublic ? 'public' : 'lock' }}</mat-icon>
+            {{ watchlist()!.isPublic ? 'Publiek' : 'Privé' }}
+          </span>
         </div>
-        <span class="movie-count-desktop text-text-muted text-sm whitespace-nowrap">
-          {{ movies().length }} film{{ movies().length === 1 ? '' : 's' }}
-        </span>
       </div>
+    </header>
 
-      @if (!watchlist()) {
-        <div class="flex flex-col items-center justify-center min-h-[40vh] gap-4">
-          <mat-icon class="text-text-muted" style="font-size: 4rem; width: 4rem; height: 4rem;">bookmark_border</mat-icon>
-          <p class="text-text-secondary">Watchlist niet gevonden.</p>
-          <a mat-stroked-button routerLink="/watchlists">Terug naar watchlists</a>
-        </div>
-      } @else if (movies().length === 0) {
-        <app-empty-state
-          icon="movie"
-          title="Nog geen films"
-          description="Voeg films toe via de filmdetailpagina of de filmkaarten op de overzichtspagina."
-          actionLabel="Films bladeren"
-          actionLink="/movies"
-        />
-      } @else {
-        <div class="card-grid">
-          @for (entry of movies(); track entry.movieId) {
-            @if (entry.movie) {
-              <div class="relative group">
-                <app-movie-card [movie]="entry.movie" />
-                <button
-                  class="remove-btn"
-                  (click)="removeMovie(entry.movieId)"
-                  title="Verwijderen uit lijst"
-                >
-                  <mat-icon style="font-size: 1rem; width: 1rem; height: 1rem;">close</mat-icon>
-                </button>
-              </div>
-            }
+    @if (movies().length === 0) {
+      <app-empty-state
+        icon="movie"
+        title="Nog geen films"
+        description="Voeg films toe via de filmdetailpagina of met het bladwijzer-icoon op een filmposter."
+        actionLabel="Films bladeren"
+        actionRoute="/movies"
+      />
+    } @else {
+      <div class="card-grid">
+        @for (entry of movies(); track entry.movieId) {
+          @if (entry.movie) {
+            <div class="poster-item">
+              <app-movie-card [movie]="entry.movie" />
+              <button
+                type="button"
+                class="icon-btn sm remove-btn"
+                (click)="removeMovie(entry.movieId)"
+                [attr.aria-label]="entry.movie.title + ' verwijderen uit lijst'"
+                title="Verwijderen uit lijst"
+              >
+                <mat-icon>close</mat-icon>
+              </button>
+            </div>
           }
-        </div>
-      }
-    </div>
+        }
+      </div>
+    }
+  }
+</div>

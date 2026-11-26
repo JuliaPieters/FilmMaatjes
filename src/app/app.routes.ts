@@ -4,6 +4,7 @@ import { LandingComponent } from './pages/landing/landing.component';
 import { DashboardComponent } from './pages/dashboard/dashboard.component';
 import { NotFoundComponent } from './pages/not-found/not-found.component';
 import { authGuard } from './core/guards/auth.guard';
+import { guestGuard } from './core/guards/guest.guard';
 
 export const routes: Routes = [
   {
@@ -18,6 +19,7 @@ export const routes: Routes = [
       {
         path: '',
         component: LandingComponent,
+        canActivate: [guestGuard],
       },
       {
         path: 'dashboard',

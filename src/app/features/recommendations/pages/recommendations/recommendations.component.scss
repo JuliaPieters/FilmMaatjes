@@ -1,6 +1,27 @@
-    @media (max-width: 767px) {
-      .rec-subtitle {
-        font-size: 14px;
-        color: var(--color-text-meta);
-      }
-    }
+.first-section {
+  margin-top: 0;
+}
+
+.group-heading {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  min-width: 0;
+}
+
+.group-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+
+  .mat-icon {
+    font-size: 20px;
+  }
+}
+
+.group-title {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

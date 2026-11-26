@@ -1,93 +1,118 @@
 <div class="page-container">
-  <div class="page-header flex items-center justify-between mb-4">
-    <h1 class="page-title text-3xl font-bold text-text-primary tracking-tight">Films</h1>
-    @if (!isSearching()) {
-      <div class="sort-pill">
-        {{ tabs[selectedTab()].label }}
-        <mat-icon>expand_more</mat-icon>
-      </div>
-    }
-  </div>
+  <header class="page-header">
+    <div>
+      <h1 class="page-title">Films</h1>
+      <p class="page-subtitle">Zoek een titel of blader door de categorieën.</p>
+    </div>
+  </header>
 
-  <div class="movies-search-field">
-    <mat-icon class="movies-search-icon">search</mat-icon>
+  <form class="search-bar" role="search" (submit)="onSearchSubmit($event)">
+    <mat-icon class="search-icon">search</mat-icon>
     <input
-      type="text"
-      class="movies-search-input"
-      placeholder="Zoek een filmtitel..."
+      #searchInput
+      type="search"
+      class="search-input"
+      placeholder="Zoek een filmtitel…"
+      aria-label="Zoek een film"
+      autocomplete="off"
+      enterkeyhint="search"
       [value]="searchQuery()"
       (input)="onSearchInput($event)"
     />
     @if (searchQuery()) {
-      <button type="button" class="movies-search-clear" (click)="clearSearch()">
+      <button type="button" class="icon-btn ghost sm search-clear" aria-label="Zoekopdracht wissen" (click)="clearSearch()">
         <mat-icon>close</mat-icon>
       </button>
     }
-  </div>
+  </form>
 
   @if (!hasApiKey) {
-    <div class="api-key-notice">
-      <mat-icon style="font-size: 3rem; width: 3rem; height: 3rem;" class="mb-3 text-accent-light">key</mat-icon>
-      <h2 class="text-xl font-semibold text-text-primary mb-2">TMDB API-sleutel nodig</h2>
-      <p class="text-text-secondary max-w-md text-center">
-        Voeg je sleutel toe aan
-        <code class="bg-surface-50 px-2 py-0.5 rounded text-accent-light">src/environments/environment.ts</code>.
-      </p>
-    </div>
+    <app-empty-state
+      icon="key"
+      title="TMDB API-sleutel nodig"
+      description="Voeg je sleutel toe aan src/environments/environment.ts om films te laden."
+    />
   } @else if (isSearching()) {
+    <!-- Zoekweergave -->
+    <div class="results-bar">
+      @if (searchLoading() && searchResults().length === 0) {
+        <span class="results-summary">Zoeken naar <strong>“{{ searchQuery().trim() }}”</strong>…</span>
+      } @else if (searchResults().length > 0) {
+        <span class="results-summary">
+          {{ searchTotalResults() }} {{ searchTotalResults() === 1 ? 'resultaat' : 'resultaten' }} voor
+          <strong>“{{ activeQuery() }}”</strong>
+        </span>
+      }
+    </div>
+
     @if (searchLoading() && searchResults().length === 0) {
-      <app-loading-spinner message="Zoeken..." [minHeight]="'300px'" />
-    } @else if (hasSearched() && searchResults().length === 0) {
+      <app-loading-spinner message="Zoeken…" minHeight="280px" />
+    } @else if (searchError() && searchResults().length === 0) {
+      <app-empty-state icon="wifi_off" title="Er ging iets mis" [description]="searchError()!">
+        <button mat-stroked-button type="button" (click)="retrySearch()">Opnieuw proberen</button>
+      </app-empty-state>
+    } @else if (searchResults().length === 0) {
       <app-empty-state
         icon="search_off"
-        title="Geen resultaten gevonden"
-        [description]="'Geen films gevonden voor &quot;' + searchQuery() + '&quot;. Probeer andere zoektermen.'"
-      />
-    } @else if (searchResults().length > 0) {
-      <p class="results-summary text-text-muted mb-4 mt-4">
-        {{ searchTotalResults() }} {{ searchTotalResults() === 1 ? 'resultaat' : 'resultaten' }} voor
-        <span class="text-text-secondary">&quot;{{ searchQuery() }}&quot;</span>
-      </p>
+        title="Geen films gevonden"
+        [description]="'We vonden niets voor “' + activeQuery() + '”. Controleer de spelling of probeer een andere titel.'"
+      >
+        <button mat-stroked-button type="button" (click)="clearSearch()">Zoekopdracht wissen</button>
+      </app-empty-state>
+    } @else {
       <div class="card-grid">
         @for (movie of searchResults(); track movie.id) {
           <app-movie-card [movie]="movie" [showActions]="true" />
         }
       </div>
+      <ng-container *ngTemplateOutlet="listFooter; context: { busy: searchLoading(), failed: searchError(), retry: 'search' }" />
     }
   } @else {
-    <div class="tab-bar" #tabBar>
+    <!-- Categorieweergave -->
+    <nav class="chip-row category-row" aria-label="Categorieën" #tabBar>
       @for (tab of tabs; track tab.category) {
         <button
           #tabBtn
-          class="tab-btn"
+          type="button"
+          class="pill"
           [class.active]="selectedTab() === $index"
+          [attr.aria-pressed]="selectedTab() === $index"
           (click)="onTabChange($index)"
         >
           <mat-icon>{{ tab.icon }}</mat-icon>
           {{ tab.label }}
         </button>
       }
-    </div>
+    </nav>
 
-    @if (error()) {
-      <div class="error-state">
-        <mat-icon style="font-size: 2.5rem; width: 2.5rem; height: 2.5rem;" class="text-red-400 mb-3">error_outline</mat-icon>
-        <p class="text-text-secondary">{{ error() }}</p>
-      </div>
+    @if (error() && movies().length === 0) {
+      <app-empty-state icon="wifi_off" title="Er ging iets mis" [description]="error()!">
+        <button mat-stroked-button type="button" (click)="retryCategory()">Opnieuw proberen</button>
+      </app-empty-state>
     } @else if (movies().length === 0 && loading()) {
-      <app-loading-spinner message="Films laden..." [minHeight]="'400px'" />
+      <app-loading-spinner message="Films laden…" minHeight="320px" />
+    } @else if (movies().length === 0) {
+      <app-empty-state icon="movie" title="Geen films" description="Er zijn in deze categorie nu geen films beschikbaar." />
     } @else {
-      <div class="card-grid mt-4">
+      <div class="card-grid">
         @for (movie of movies(); track movie.id) {
           <app-movie-card [movie]="movie" [showActions]="true" />
         }
       </div>
-
-      @if (loading()) {
-        <div class="flex justify-center py-8 load-more-spinner">
-          <app-loading-spinner [diameter]="36" />
-        </div>
-      }
+      <ng-container *ngTemplateOutlet="listFooter; context: { busy: loading(), failed: error(), retry: 'category' }" />
     }
   }
 </div>
+
+<ng-template #listFooter let-busy="busy" let-failed="failed" let-retry="retry">
+  @if (busy) {
+    <div class="list-footer" aria-live="polite">
+      <div class="spinner" role="status" aria-label="Meer films laden"></div>
+    </div>
+  } @else if (failed) {
+    <div class="list-footer">
+      <span>{{ failed }}</span>
+      <button mat-button type="button" (click)="retry === 'search' ? retrySearch() : retryCategory()">Opnieuw</button>
+    </div>
+  }
+</ng-template>

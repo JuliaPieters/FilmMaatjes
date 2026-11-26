@@ -1,57 +1,44 @@
-    <div class="sheet">
-      <div class="sheet-header">
-        <h3 class="sheet-title">
-          <mat-icon>tune</mat-icon>
-          Filters
-        </h3>
-        <div class="sheet-header-actions">
-          @if (data.selectedGenreIds().length > 0 || data.minRating() > 0 || data.yearFrom()) {
-            <button type="button" class="sheet-clear" (click)="data.clearFilters()">Wissen</button>
-          }
-          <button type="button" class="sheet-close" (click)="close()">
-            <mat-icon>close</mat-icon>
-          </button>
-        </div>
-      </div>
+<div class="sheet">
+  <span class="sheet-handle" aria-hidden="true"></span>
 
-      <div class="filter-group">
-        <label class="filter-label">Genre</label>
-        <div class="genre-chips">
-          @for (genre of data.genres; track genre.id) {
-            <button
-              type="button"
-              class="genre-chip"
-              [class.selected]="data.isGenreSelected(genre.id)"
-              (click)="data.toggleGenre(genre.id)"
-            >
-              {{ genre.name }}
-            </button>
-          }
-        </div>
-      </div>
+  <header class="sheet-header">
+    <h2 class="sheet-title">Filters</h2>
+    @if (data.selectedGenreIds().length > 0 || data.minRating() > 0 || data.yearFrom()) {
+      <button mat-button type="button" (click)="data.clearFilters()">Wissen</button>
+    }
+    <button type="button" class="icon-btn ghost" aria-label="Sluiten" (click)="close()">
+      <mat-icon>close</mat-icon>
+    </button>
+  </header>
 
-      <div class="filter-group">
-        <label class="filter-label">Decennium</label>
-        <div class="decade-chips">
-          @for (decade of data.decadeOptions; track decade.label) {
-            <button
-              type="button"
-              class="genre-chip"
-              [class.selected]="data.yearFrom() === (decade.from ?? null)"
-              (click)="data.setDecade(decade)"
-            >
-              {{ decade.label }}
-            </button>
-          }
-        </div>
-      </div>
-
-      <div class="filter-group">
-        <label class="filter-label">
-          Minimale beoordeling: {{ data.minRating() > 0 ? data.minRating() + '/10' : 'Alles' }}
-        </label>
-        <mat-slider min="0" max="9" step="1" class="w-full">
-          <input matSliderThumb [(ngModel)]="minRatingValue" />
-        </mat-slider>
-      </div>
+  <div class="field-group">
+    <span class="field-label">Genre</span>
+    <div class="chip-row wrap">
+      @for (genre of data.genres; track genre.id) {
+        <button type="button" class="pill sm" [class.active]="data.isGenreSelected(genre.id)" (click)="data.toggleGenre(genre.id)">
+          {{ genre.name }}
+        </button>
+      }
     </div>
+  </div>
+
+  <div class="field-group">
+    <span class="field-label">Decennium</span>
+    <div class="chip-row wrap">
+      @for (decade of data.decadeOptions; track decade.label) {
+        <button type="button" class="pill sm" [class.active]="data.yearFrom() === (decade.from ?? null)" (click)="data.setDecade(decade)">
+          {{ decade.label }}
+        </button>
+      }
+    </div>
+  </div>
+
+  <div class="field-group">
+    <span class="field-label">Minimale beoordeling: {{ data.minRating() > 0 ? data.minRating() + '/10' : 'Alles' }}</span>
+    <mat-slider min="0" max="9" step="1" class="rating-slider">
+      <input matSliderThumb [(ngModel)]="minRatingValue" aria-label="Minimale beoordeling" />
+    </mat-slider>
+  </div>
+
+  <button mat-flat-button type="button" class="sheet-done" (click)="close()">Klaar</button>
+</div>

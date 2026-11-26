@@ -1,166 +1,184 @@
+<div class="page-container">
+  <header class="page-header">
+    <div>
+      <h1 class="page-title">Vrienden</h1>
+      <p class="page-subtitle">Kijk samen, deel je smaak en vind je volgende film.</p>
+    </div>
+  </header>
 
-    <div class="page-container">
-      <h1 class="text-3xl font-bold text-text-primary tracking-tight mb-6">Vrienden</h1>
+  <nav class="tabs" role="tablist" aria-label="Vrienden">
+    <button type="button" role="tab" class="tab" [class.active]="activeTab() === 'friends'" [attr.aria-selected]="activeTab() === 'friends'" (click)="activeTab.set('friends')">
+      Mijn vrienden
+      @if (friends().length > 0) {
+        <span class="tab-count">{{ friends().length }}</span>
+      }
+    </button>
+    <button type="button" role="tab" class="tab" [class.active]="activeTab() === 'requests'" [attr.aria-selected]="activeTab() === 'requests'" (click)="activeTab.set('requests')">
+      Verzoeken
+      @if (pendingRequests().length > 0) {
+        <span class="tab-count highlight">{{ pendingRequests().length }}</span>
+      }
+    </button>
+    <button type="button" role="tab" class="tab" [class.active]="activeTab() === 'search'" [attr.aria-selected]="activeTab() === 'search'" (click)="activeTab.set('search')">
+      <mat-icon>person_search</mat-icon>
+      Zoeken
+    </button>
+  </nav>
 
-      @if (streakLeaderboard()[0]?.weeks) {
-        <div class="leaderboard glass-card mb-6">
-          <p class="leaderboard-title">
-            <mat-icon>local_fire_department</mat-icon>
-            Streak-ranglijst
-          </p>
-          <div class="leaderboard-list">
-            @for (entry of streakLeaderboard(); track entry.id; let i = $index) {
-              <div class="leaderboard-row" [class.me]="entry.isMe">
-                <span class="leaderboard-rank">{{ i + 1 }}</span>
-                <div class="leaderboard-avatar">
-                  @if (entry.avatar) {
-                    <img [src]="entry.avatar" [alt]="entry.displayName" />
+  <div class="tab-panel">
+    @switch (activeTab()) {
+      @case ('friends') {
+        @if (loadingFriends()) {
+          <app-loading-spinner message="Vrienden laden..." />
+        } @else if (friends().length === 0) {
+          <app-empty-state
+            icon="group"
+            title="Nog geen vrienden"
+            description="Zoek je vrienden op naam of gebruikersnaam en stuur ze een verzoek."
+          >
+            <button mat-flat-button class="mt-6" (click)="activeTab.set('search')">
+              <mat-icon>person_add</mat-icon>
+              Vrienden zoeken
+            </button>
+          </app-empty-state>
+        } @else {
+          <div class="person-list">
+            @for (friend of friends(); track friend.id) {
+              <a class="person-row card" [routerLink]="['/profile', friend.username]">
+                <span class="avatar md">
+                  @if (friend.avatar) {
+                    <img [src]="friend.avatar" alt="" />
                   } @else {
-                    <span>{{ entry.displayName.charAt(0).toUpperCase() }}</span>
+                    {{ friend.displayName.charAt(0).toUpperCase() }}
                   }
-                </div>
-                <span class="leaderboard-name">{{ entry.displayName }}</span>
-                <span class="leaderboard-weeks">{{ entry.weeks }} {{ entry.weeks === 1 ? 'week' : 'weken' }}</span>
-              </div>
+                </span>
+                <span class="person-text">
+                  <span class="person-name">{{ friend.displayName }}</span>
+                  <span class="person-handle">&#64;{{ friend.username }}</span>
+                </span>
+                <mat-icon class="row-chevron">chevron_right</mat-icon>
+              </a>
             }
           </div>
-        </div>
+        }
       }
 
-      <mat-tab-group animationDuration="200ms" class="friends-tabs">
-        <mat-tab label="Mijn vrienden">
-          @if (loadingFriends()) {
-            <app-loading-spinner message="Vrienden laden..." />
-          } @else if (friends().length === 0) {
-            <app-empty-state
-              icon="people_outline"
-              title="Nog geen vrienden"
-              description="Zoek gebruikers om hen als vriend toe te voegen."
-            />
-          } @else {
-            <div class="friends-grid mt-6">
-              @for (friend of friends(); track friend.id) {
-                <a class="friend-card glass-card p-4 flex items-center gap-3 no-underline" [routerLink]="['/profile', friend.username]">
-                  <div class="friend-avatar">
-                    @if (friend.avatar) {
-                      <img [src]="friend.avatar" [alt]="friend.displayName" />
+      @case ('requests') {
+        <div class="panel-toolbar">
+          <p class="panel-meta">
+            {{ pendingRequests().length }} openstaand{{ pendingRequests().length === 1 ? '' : 'e' }}
+            verzoek{{ pendingRequests().length === 1 ? '' : 'en' }}
+          </p>
+          <button mat-button (click)="refreshRequests()">
+            <mat-icon>refresh</mat-icon>
+            Vernieuwen
+          </button>
+        </div>
+
+        @if (pendingRequests().length === 0) {
+          <app-empty-state
+            icon="mark_email_read"
+            title="Geen openstaande verzoeken"
+            description="Nieuwe vriendschapsverzoeken verschijnen hier."
+            [compact]="true"
+          />
+        } @else {
+          <div class="person-list">
+            @for (request of pendingRequests(); track request.id) {
+              <div class="person-row card">
+                <a class="person-link" [routerLink]="['/profile', request.sender?.username]">
+                  <span class="avatar md">
+                    @if (request.sender?.avatar) {
+                      <img [src]="request.sender!.avatar!" alt="" />
                     } @else {
-                      <span>{{ friend.displayName.charAt(0).toUpperCase() }}</span>
+                      {{ request.sender?.displayName?.charAt(0)?.toUpperCase() }}
                     }
-                  </div>
-                  <div class="flex-1 min-w-0">
-                    <p class="friend-name text-text-primary font-semibold truncate">{{ friend.displayName }}</p>
-                    <p class="friend-username text-text-muted text-sm truncate">&#64;{{ friend.username }}</p>
-                  </div>
-                  @if (friendStreaks()[friend.id] > 0) {
-                    <div class="streak-chip" [class.milestone]="friendStreaks()[friend.id] % 5 === 0">
-                      <mat-icon>local_fire_department</mat-icon>
-                      {{ friendStreaks()[friend.id] }}
-                    </div>
-                  }
-                  <mat-icon class="text-text-muted">chevron_right</mat-icon>
+                  </span>
+                  <span class="person-text">
+                    <span class="person-name">{{ request.sender?.displayName }}</span>
+                    <span class="person-handle">&#64;{{ request.sender?.username }}</span>
+                  </span>
                 </a>
-              }
-            </div>
+                <div class="row-actions">
+                  <button type="button" class="icon-btn active" (click)="acceptRequest(request.id)" aria-label="Accepteren">
+                    <mat-icon>check</mat-icon>
+                  </button>
+                  <button type="button" class="icon-btn danger" (click)="declineRequest(request.id)" aria-label="Weigeren">
+                    <mat-icon>close</mat-icon>
+                  </button>
+                </div>
+              </div>
+            }
+          </div>
+        }
+      }
+
+      @case ('search') {
+        <label class="search-field">
+          <mat-icon class="search-icon">search</mat-icon>
+          <input
+            type="search"
+            class="search-input"
+            [formControl]="searchControl"
+            placeholder="Zoek op naam of gebruikersnaam"
+            autocomplete="off"
+            enterkeyhint="search"
+          />
+          @if (searchControl.value) {
+            <button type="button" class="icon-btn ghost sm" aria-label="Wissen" (click)="searchControl.setValue('')">
+              <mat-icon>close</mat-icon>
+            </button>
           }
-        </mat-tab>
+        </label>
 
-        <mat-tab [label]="pendingRequests().length > 0 ? 'Vriendverzoeken (' + pendingRequests().length + ')' : 'Vriendverzoeken'">
-
-          <div class="mt-6">
-            <div class="flex items-center justify-between mb-4">
-              <p class="text-text-muted text-sm">{{ pendingRequests().length }} openstaand{{ pendingRequests().length === 1 ? '' : 'e' }} verzoek{{ pendingRequests().length === 1 ? '' : 'en' }}</p>
-              <button mat-stroked-button (click)="refreshRequests()">
-                <mat-icon>refresh</mat-icon> Vernieuwen
-              </button>
-            </div>
-            @if (pendingRequests().length === 0) {
-              <app-empty-state
-                icon="person_add_disabled"
-                title="Geen openstaande verzoeken"
-                description="Je hebt geen openstaande vriendschapsverzoeken."
-              />
-            } @else {
-              <div class="friends-grid">
-                @for (request of pendingRequests(); track request.id) {
-                  <div class="friend-card glass-card p-4 flex items-center gap-3">
-                    <div class="friend-avatar">
-                      @if (request.sender?.avatar) {
-                        <img [src]="request.sender!.avatar!" [alt]="request.sender!.displayName" />
-                      } @else {
-                        <span>{{ request.sender?.displayName?.charAt(0)?.toUpperCase() }}</span>
-                      }
-                    </div>
-                    <div class="flex-1 min-w-0">
-                      <p class="friend-name text-text-primary font-semibold">{{ request.sender?.displayName }}</p>
-                      <p class="friend-username text-text-muted text-sm">&#64;{{ request.sender?.username }}</p>
-                    </div>
-                    <div class="flex gap-2">
-                      <button mat-icon-button color="primary" class="request-accept-btn" (click)="acceptRequest(request.id)" title="Accepteren">
-                        <mat-icon>check</mat-icon>
-                      </button>
-                      <button mat-icon-button class="request-decline-btn" (click)="declineRequest(request.id)" title="Weigeren">
-                        <mat-icon>close</mat-icon>
-                      </button>
-                    </div>
-                  </div>
-                }
-              </div>
-            }
-          </div>
-        </mat-tab>
-
-        <mat-tab label="Gebruikers zoeken">
-          <div class="mt-6">
-            <mat-form-field appearance="fill" class="friends-search-field w-full max-w-md">
-              <mat-label>Zoek op naam of gebruikersnaam</mat-label>
-              <input matInput [formControl]="searchControl" placeholder="Bijv. filmfan123" />
-              <mat-icon matSuffix>search</mat-icon>
-            </mat-form-field>
-
-            @if (searchLoading()) {
-              <app-loading-spinner [diameter]="32" />
-            } @else if (searchResults().length === 0 && searchControl.value?.trim()) {
-              <app-empty-state
-                icon="person_search"
-                title="Geen gebruikers gevonden"
-                description="Probeer een andere gebruikersnaam."
-              />
-            } @else if (searchResults().length > 0) {
-              <div class="friends-grid mt-4">
-                @for (user of searchResults(); track user.id) {
-                  <div class="friend-card glass-card p-4 flex items-center gap-3">
-                    <a class="flex items-center gap-3 flex-1 min-w-0 no-underline" [routerLink]="['/profile', user.username]">
-                      <div class="friend-avatar">
-                        @if (user.avatar) {
-                          <img [src]="user.avatar" [alt]="user.displayName" />
-                        } @else {
-                          <span>{{ user.displayName.charAt(0).toUpperCase() }}</span>
-                        }
-                      </div>
-                      <div class="min-w-0">
-                        <p class="friend-name text-text-primary font-semibold truncate">{{ user.displayName }}</p>
-                        <p class="friend-username text-text-muted text-sm truncate">&#64;{{ user.username }}</p>
-                      </div>
-                    </a>
-                    @if (friendIds().has(user.id)) {
-                      <button mat-icon-button disabled class="status-btn" title="Al vrienden">
-                        <mat-icon style="color: var(--color-success)">people</mat-icon>
-                      </button>
-                    } @else if (sentRequestIds().has(user.id)) {
-                      <button mat-icon-button disabled class="status-btn" title="Verzoek verstuurd">
-                        <mat-icon style="color: var(--color-accent-light)">hourglass_empty</mat-icon>
-                      </button>
+        @if (searchLoading()) {
+          <app-loading-spinner [diameter]="28" minHeight="120px" />
+        } @else if (searchResults().length === 0 && searchControl.value?.trim()) {
+          <app-empty-state
+            icon="person_search"
+            title="Niemand gevonden"
+            description="Controleer de spelling of probeer een gebruikersnaam."
+            [compact]="true"
+          />
+        } @else if (searchResults().length > 0) {
+          <div class="person-list">
+            @for (user of searchResults(); track user.id) {
+              <div class="person-row card">
+                <a class="person-link" [routerLink]="['/profile', user.username]">
+                  <span class="avatar md">
+                    @if (user.avatar) {
+                      <img [src]="user.avatar" alt="" />
                     } @else {
-                      <button mat-icon-button color="primary" class="status-btn" (click)="sendRequest(user.id)" title="Vriendschapsverzoek sturen">
-                        <mat-icon class="status-icon-add">person_add</mat-icon>
-                      </button>
+                      {{ user.displayName.charAt(0).toUpperCase() }}
                     }
-                  </div>
+                  </span>
+                  <span class="person-text">
+                    <span class="person-name">{{ user.displayName }}</span>
+                    <span class="person-handle">&#64;{{ user.username }}</span>
+                  </span>
+                </a>
+                @if (friendIds().has(user.id)) {
+                  <span class="status-chip success">
+                    <mat-icon>check</mat-icon>
+                    Vrienden
+                  </span>
+                } @else if (sentRequestIds().has(user.id)) {
+                  <span class="status-chip">
+                    <mat-icon>schedule</mat-icon>
+                    Verstuurd
+                  </span>
+                } @else {
+                  <button type="button" class="icon-btn active" (click)="sendRequest(user.id)" aria-label="Vriendschapsverzoek sturen">
+                    <mat-icon>person_add</mat-icon>
+                  </button>
                 }
               </div>
             }
           </div>
-        </mat-tab>
-      </mat-tab-group>
-    </div>
+        } @else {
+          <p class="search-hint">Typ minimaal één letter om te zoeken.</p>
+        }
+      }
+    }
+  </div>
+</div>

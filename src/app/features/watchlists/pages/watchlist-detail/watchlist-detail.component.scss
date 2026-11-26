@@ -1,58 +1,85 @@
-    .remove-btn {
-      position: absolute;
-      top: 6px;
-      left: 6px;
-      width: 28px;
-      height: 28px;
-      border-radius: 50%;
-      border: none;
-      background: rgba(var(--color-black-rgb), 0.7);
-      backdrop-filter: blur(4px);
+.detail-header {
+  flex-wrap: nowrap;
+  align-items: flex-start;
+  gap: 0.5rem;
+}
+
+.back-btn {
+  margin-left: -0.625rem;
+  margin-top: -0.125rem;
+}
+
+.detail-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.detail-title {
+  overflow-wrap: anywhere;
+}
+
+.detail-description {
+  overflow-wrap: anywhere;
+}
+
+.detail-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 1rem;
+  margin-top: 0.5rem;
+  font-size: 0.8125rem;
+  color: var(--color-text-meta);
+}
+
+.meta-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3125rem;
+
+  .mat-icon {
+    font-size: 16px;
+  }
+}
+
+.poster-item {
+  position: relative;
+  min-width: 0;
+}
+
+// Rechtsboven op de poster (de scorebadge zit linksboven)
+.remove-btn {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  z-index: 2;
+  border-color: rgba(var(--color-white-rgb), 0.12);
+  background: rgba(var(--color-black-rgb), 0.62);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  color: var(--color-text-primary);
+
+  // 36px zichtbaar, 44px raakvlak
+  &::after {
+    content: '';
+    position: absolute;
+    inset: -4px;
+  }
+}
+
+// Desktop: alleen tonen bij hover/focus; op touch altijd zichtbaar
+@media (hover: hover) {
+  .remove-btn {
+    opacity: 0;
+    transition: opacity 0.15s var(--ease), background-color 0.15s var(--ease), color 0.15s var(--ease);
+
+    &:hover:not(:disabled) {
+      background: rgba(var(--color-danger-strong-rgb), 0.85);
       color: var(--color-text-primary);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      opacity: 0;
-      transition: opacity 0.15s;
-      z-index: 2;
     }
+  }
 
-    .group:hover .remove-btn {
-      opacity: 1;
-    }
-
-    @media (hover: none) {
-      .remove-btn {
-        opacity: 1;
-        width: 32px;
-        height: 32px;
-      }
-    }
-
-    .movie-count-mobile {
-      display: none;
-    }
-
-    @media (max-width: 767px) {
-      .back-btn {
-        width: 44px !important;
-        height: 44px !important;
-        padding: 0;
-      }
-
-      .movie-count-desktop {
-        display: none;
-      }
-
-      .movie-count-mobile {
-        display: block;
-        margin-top: 2px;
-        font-size: 13px;
-        color: var(--color-text-meta);
-      }
-
-      .card-grid {
-        grid-template-columns: repeat(2, 1fr) !important;
-      }
-    }
+  .poster-item:hover .remove-btn,
+  .remove-btn:focus-visible {
+    opacity: 1;
+  }
+}

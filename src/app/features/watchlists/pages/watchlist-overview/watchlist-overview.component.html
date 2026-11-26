@@ -1,66 +1,95 @@
-    <div class="page-container">
-      <div class="flex items-center justify-between mb-6">
-        <h1 class="text-3xl font-bold text-text-primary tracking-tight">Mijn Watchlists</h1>
-        <button mat-flat-button color="primary" class="header-new-btn" (click)="createWatchlist()">
-          <mat-icon>add</mat-icon>
-          Nieuwe watchlist
-        </button>
-      </div>
+<div class="page-container">
+  <header class="page-header">
+    <div>
+      <h1 class="page-title">Mijn watchlists</h1>
+      <p class="page-subtitle">Bewaar films die je nog wilt kijken, alleen of samen.</p>
+    </div>
+    <button mat-flat-button class="header-new-btn" type="button" (click)="createWatchlist()">
+      <mat-icon>add</mat-icon>
+      Nieuwe watchlist
+    </button>
+  </header>
 
-      @if (loading()) {
-        <app-loading-spinner message="Watchlists laden..." />
-      } @else if (watchlists().length === 0) {
-        <app-empty-state
-          icon="bookmark_border"
-          title="Nog geen watchlists"
-          description="Maak een watchlist aan om films bij te houden die je wilt kijken."
-          actionLabel="Watchlist aanmaken"
-        />
-      } @else {
-        <div class="watchlist-grid">
-          @for (list of watchlists(); track list.id) {
-            <a class="watchlist-card glass-card p-4 hover:border-accent/30 transition-all cursor-pointer block no-underline"
-               [routerLink]="['/watchlists', list.id]">
-              <div class="flex items-center justify-between mb-3">
-                <div class="list-icon w-11 h-11 bg-accent/20 flex items-center justify-center flex-shrink-0">
-                  <mat-icon class="text-accent-light">bookmark</mat-icon>
-                </div>
-                <div class="flex gap-1">
-                  <button mat-icon-button class="delete-btn text-text-muted" (click)="deleteWatchlist(list, $event)" title="Verwijderen">
-                    <mat-icon style="font-size: 1.125rem; width: 1.125rem; height: 1.125rem;">delete_outline</mat-icon>
-                  </button>
-                </div>
-              </div>
-              <h3 class="list-name font-semibold text-text-primary mb-1">{{ list.name }}</h3>
-              @if (list.description) {
-                <p class="list-description text-text-muted text-sm mb-3 line-clamp-2">{{ list.description }}</p>
-              }
-              <div class="flex items-center gap-2 text-xs text-text-muted">
-                <mat-icon style="font-size: 1rem; width: 1rem; height: 1rem;">movie</mat-icon>
-                <span>{{ (list.movies.length || list._count?.movies || 0) }} films</span>
-                @if (list.isPublic) {
-                  <span class="ml-auto flex items-center gap-1">
-                    <mat-icon style="font-size: 1rem; width: 1rem; height: 1rem;">public</mat-icon>
-                    Publiek
-                  </span>
+  @if (loading()) {
+    <app-loading-spinner message="Watchlists laden..." />
+  } @else if (watchlists().length === 0) {
+    <app-empty-state
+      icon="bookmark"
+      title="Nog geen watchlists"
+      description="Maak een watchlist aan om films bij te houden die je wilt kijken."
+    >
+      <button mat-flat-button type="button" class="empty-create-btn" (click)="createWatchlist()">
+        <mat-icon>add</mat-icon>
+        Watchlist aanmaken
+      </button>
+    </app-empty-state>
+  } @else {
+    <div class="wl-grid">
+      @for (list of watchlists(); track list.id) {
+        <article class="wl-item">
+          <a class="card wl-card" [routerLink]="['/watchlists', list.id]">
+            <div class="wl-head">
+              <span class="icon-tile">
+                <mat-icon class="icon-filled">bookmark</mat-icon>
+              </span>
+              <div class="wl-text">
+                <h2 class="wl-name">{{ list.name }}</h2>
+                @if (list.description) {
+                  <p class="wl-description">{{ list.description }}</p>
                 }
               </div>
-              @if (list.movies.length > 0) {
-                <div class="poster-strip">
-                  @for (entry of list.movies.slice(0, 3); track entry.movieId) {
-                    <img class="poster-thumb" [src]="posterUrl(entry.movie?.poster_path)" [alt]="entry.movie?.title ?? ''" />
-                  }
-                  @if (list.movies.length > 3) {
-                    <div class="poster-thumb poster-more">+{{ list.movies.length - 3 }}</div>
-                  }
-                </div>
-              }
-            </a>
-          }
-        </div>
-      }
+            </div>
 
-      <button mat-fab class="new-watchlist-fab" (click)="createWatchlist()" aria-label="Nieuwe watchlist" title="Nieuwe watchlist">
-        <mat-icon>add</mat-icon>
-      </button>
+            <div class="wl-meta">
+              <span class="wl-meta-item">
+                <mat-icon>movie</mat-icon>
+                {{ movieCount(list) }} film{{ movieCount(list) === 1 ? '' : 's' }}
+              </span>
+              <span class="wl-meta-item">
+                <mat-icon>{{ list.isPublic ? 'public' : 'lock' }}</mat-icon>
+                {{ list.isPublic ? 'Publiek' : 'Privé' }}
+              </span>
+            </div>
+
+            @if (list.movies.length > 0) {
+              <div class="poster-strip" aria-hidden="true">
+                @for (entry of stripMovies(list); track entry.movieId) {
+                  <img
+                    class="strip-poster"
+                    [src]="posterUrl(entry.movie?.poster_path)"
+                    alt=""
+                    loading="lazy"
+                    decoding="async"
+                  />
+                }
+                @if (list.movies.length > stripSize) {
+                  <span class="strip-poster strip-more">+{{ list.movies.length - (stripSize - 1) }}</span>
+                } @else {
+                  @for (slot of emptySlots(list); track $index) {
+                    <span class="strip-poster strip-empty"></span>
+                  }
+                }
+              </div>
+            } @else {
+              <p class="wl-empty-note">Nog geen films in deze lijst</p>
+            }
+          </a>
+
+          <button
+            type="button"
+            class="icon-btn ghost sm danger wl-delete"
+            (click)="deleteWatchlist(list, $event)"
+            [attr.aria-label]="'Verwijder ' + list.name"
+            title="Verwijderen"
+          >
+            <mat-icon>delete</mat-icon>
+          </button>
+        </article>
+      }
     </div>
+  }
+
+  <button type="button" class="new-fab" (click)="createWatchlist()" aria-label="Nieuwe watchlist" title="Nieuwe watchlist">
+    <mat-icon>add</mat-icon>
+  </button>
+</div>

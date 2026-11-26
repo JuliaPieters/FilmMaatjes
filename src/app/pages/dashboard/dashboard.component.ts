@@ -1,7 +1,6 @@
 import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { MatIcon } from '@angular/material/icon';
-import { MatButton } from '@angular/material/button';
 import { MovieService } from '../../features/movies/services/movie.service';
 import { AuthService } from '../../features/auth/services/auth.service';
 import { UserLibraryService } from '../../core/services/user-library.service';
@@ -13,7 +12,7 @@ import { LoadingSpinnerComponent } from '../../shared/components/loading-spinner
 
 @Component({
   selector: 'app-dashboard',
-  imports: [RouterLink, MatIcon, MatButton, MovieCardComponent, LoadingSpinnerComponent],
+  imports: [RouterLink, MatIcon, MovieCardComponent, LoadingSpinnerComponent],
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.scss',
 })
@@ -29,6 +28,11 @@ export class DashboardComponent implements OnInit {
   protected readonly recommended = signal<TmdbMovie[]>([]);
   protected readonly loading = signal(true);
   protected readonly hasApiKey = this.movieService.hasApiKey();
+
+  protected readonly firstName = computed(() => {
+    const name = this.authService.user()?.displayName?.trim();
+    return name ? name.split(/\s+/)[0] : 'filmmaatje';
+  });
 
   protected readonly watchedCount = computed(() => this.library.watchedMovies().length);
   protected readonly ratedCount = computed(() => this.library.ratedMovies().length);

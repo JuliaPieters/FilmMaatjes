@@ -7,12 +7,17 @@
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
+  "display_override": [
+    "standalone",
+    "minimal-ui"
+  ],
   "background_color": "#0f0f13",
   "theme_color": "#0f0f13",
   "categories": [
     "entertainment",
     "social"
   ],
+  "prefer_related_applications": false,
   "icons": [
     {
       "src": "/icons/icon-192.png",
@@ -35,6 +40,52 @@
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Films ontdekken",
+      "short_name": "Films",
+      "url": "/movies",
+      "icons": [
+        {
+          "src": "/icons/icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "Film Roulette",
+      "short_name": "Roulette",
+      "url": "/roulette",
+      "icons": [
+        {
+          "src": "/icons/icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "Film Matcher",
+      "short_name": "Matcher",
+      "url": "/matcher",
+      "icons": [
+        {
+          "src": "/icons/icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "Mijn watchlists",
+      "short_name": "Lijsten",
+      "url": "/watchlists",
+      "icons": [
+        {
+          "src": "/icons/icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
     }
   ]
 }

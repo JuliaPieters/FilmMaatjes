@@ -13,18 +13,17 @@ import { FriendsService } from '../../../friends/services/friends.service';
 import { ReviewService } from '../../../../core/services/review.service';
 import { MovieService } from '../../../movies/services/movie.service';
 import { NotificationService } from '../../../../core/services/notification.service';
-import { WatchStreakService } from '../../../../core/services/watch-streak.service';
-import { AchievementsService, AchievementStats } from '../../../../core/services/achievements.service';
 import { MovieCardComponent } from '../../../../shared/components/movie-card/movie-card.component';
 import { StarRatingComponent } from '../../../../shared/components/star-rating/star-rating.component';
+import { LoadingSpinnerComponent } from '../../../../shared/components/loading-spinner/loading-spinner.component';
+import { EmptyStateComponent } from '../../../../shared/components/empty-state/empty-state.component';
 import { User } from '../../../../core/models/user.model';
 import { Watchlist } from '../../../../core/models/watchlist.model';
 import { Review } from '../../../../core/models/review.model';
-import { TmdbMovie } from '../../../../core/models/movie.model';
 
 @Component({
   selector: 'app-profile',
-  imports: [RouterLink, MatIcon, MatButton, FormsModule, DatePipe, MovieCardComponent, StarRatingComponent, NgTemplateOutlet],
+  imports: [RouterLink, MatIcon, MatButton, FormsModule, DatePipe, MovieCardComponent, StarRatingComponent, NgTemplateOutlet, LoadingSpinnerComponent, EmptyStateComponent],
   templateUrl: './profile.component.html',
   styleUrl: './profile.component.scss',
 })
@@ -39,13 +38,11 @@ export class ProfileComponent implements OnInit {
   protected readonly watchlistService = inject(WatchlistService);
   private readonly reviewService = inject(ReviewService);
   private readonly movieService = inject(MovieService);
-  private readonly watchStreak = inject(WatchStreakService);
-  private readonly achievementsService = inject(AchievementsService);
 
   protected readonly user = signal<User | null>(null);
   protected readonly isOwnProfile = signal(false);
   protected readonly loading = signal(false);
-  protected readonly activeTab = signal<'watched' | 'rated' | 'watchlists' | 'reviews' | 'badges'>('watched');
+  protected readonly activeTab = signal<'watched' | 'rated' | 'watchlists' | 'reviews'>('watched');
   protected readonly editMode = signal(false);
   protected editDisplayName = '';
   protected editBio = '';
@@ -73,7 +70,7 @@ export class ProfileComponent implements OnInit {
   protected readonly friendActualCount = signal<number | null>(null);
   protected readonly loadingFriendData = signal(false);
   protected readonly expandedWatchlistId = signal<string | null>(null);
-  protected readonly publicActiveTab = signal<'watchlists' | 'reviews' | 'rated' | 'badges'>('watchlists');
+  protected readonly publicActiveTab = signal<'watchlists' | 'reviews' | 'rated'>('watchlists');
 
   protected readonly watchedCount = computed(() => this.library.watchedMovies().length);
   protected readonly ratedCount = computed(() => this.library.ratedMovies().length);
@@ -89,42 +86,6 @@ export class ProfileComponent implements OnInit {
     const gezien = this.friendProfileWatchlists().find(watchlist => watchlist.name === 'Gezien');
     return gezien?.movies?.length ?? gezien?._count?.movies ?? 0;
   });
-
-  protected readonly streakWeeks = computed(() => {
-    const dates = this.isOwnProfile()
-      ? this.library.watchedMovies().map(e => e.watchedAt)
-      : (this.friendProfileWatchlists().find(watchlist => watchlist.name === 'Gezien')?.movies ?? []).map(m => m.addedAt);
-    return this.watchStreak.getStreakWeeks(dates);
-  });
-
-  protected readonly achievements = computed(() => {
-    const own = this.isOwnProfile();
-    const ratedMovies = own ? this.library.ratedMovies() : this.friendRatedMovies();
-    const reviews = own ? this.ownReviews() : this.friendReviews();
-    const watchedMovies: TmdbMovie[] = own
-      ? this.library.watchedMovies().map(e => e.movie)
-      : (this.friendProfileWatchlists().find(watchlist => watchlist.name === 'Gezien')?.movies ?? [])
-          .map(m => m.movie)
-          .filter((m): m is TmdbMovie => !!m);
-
-    const stats: AchievementStats = {
-      watchedCount: own ? this.watchedCount() : this.friendWatchedCount(),
-      ratedCount: ratedMovies.length,
-      fiveStarCount: ratedMovies.filter(e => e.rating === 5).length,
-      hasOneStarRating: ratedMovies.some(e => e.rating === 1),
-      reviewCount: reviews.length,
-      hasLateNightReview: reviews.some(r => new Date(r.createdAt).getHours() < 5),
-      friendCount: own ? this.friendsService.friends().length : (this.friendActualCount() ?? this.user()?._count?.friends ?? 0),
-      streakWeeks: this.streakWeeks(),
-      distinctGenreCount: new Set(watchedMovies.flatMap(m => m.genre_ids ?? [])).size,
-    };
-
-    return this.achievementsService.getAchievements(stats);
-  });
-
-  protected readonly unlockedAchievementCount = computed(() => this.achievements().filter(a => a.unlocked).length);
-  private seenAchievementIds: Set<string> | null = null;
-  private readonly seenAchievementIdsLoaded = signal(false);
 
   protected readonly displayWatchlistCount = computed(() => {
     if (this.isOwnProfile()) return this.watchlistService.watchlists().length;
@@ -148,11 +109,6 @@ export class ProfileComponent implements OnInit {
         const u = this.authService.user();
         this.user.set(u);
         if (u) {
-          this.achievementsService.getSeenAchievementIds(u.id).then(ids => {
-            this.seenAchievementIds = ids;
-            this.seenAchievementIdsLoaded.set(true);
-          });
-
           this.reviewService.getUserReviews(u.id).subscribe(async reviews => {
             this.ownReviewCount.set(reviews.length);
 
@@ -178,19 +134,6 @@ export class ProfileComponent implements OnInit {
       }
     });
 
-    effect(() => {
-      if (!this.isOwnProfile() || !this.seenAchievementIdsLoaded()) return;
-      const unlocked = this.achievements().filter(a => a.unlocked);
-      const newlyUnlocked = unlocked.filter(a => !this.seenAchievementIds!.has(a.id));
-      if (newlyUnlocked.length === 0) return;
-
-      for (const badge of newlyUnlocked) {
-        this.notifications.success(`Nieuwe badge behaald: ${badge.title}!`);
-      }
-      this.seenAchievementIds = new Set(unlocked.map(a => a.id));
-      const uid = this.user()?.id;
-      if (uid) this.achievementsService.markAchievementsSeen(uid, [...this.seenAchievementIds]);
-    });
   }
 
   ngOnInit(): void {

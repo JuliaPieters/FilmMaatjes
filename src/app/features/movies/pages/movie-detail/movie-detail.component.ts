@@ -1,8 +1,8 @@
-import { Component, computed, DestroyRef, effect, inject, OnInit, signal } from '@angular/core';
+import { Component, computed, DestroyRef, effect, inject, OnInit, signal, untracked } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { MatIcon } from '@angular/material/icon';
-import { MatButton, MatIconButton } from '@angular/material/button';
+import { MatButton } from '@angular/material/button';
 import { DecimalPipe, DatePipe, Location } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MovieService } from '../../services/movie.service';
@@ -10,6 +10,7 @@ import { TmdbMovie, TmdbMovieDetail, TmdbCastMember } from '../../../../core/mod
 import { LoadingSpinnerComponent } from '../../../../shared/components/loading-spinner/loading-spinner.component';
 import { StarRatingComponent } from '../../../../shared/components/star-rating/star-rating.component';
 import { MovieCardComponent } from '../../../../shared/components/movie-card/movie-card.component';
+import { EmptyStateComponent } from '../../../../shared/components/empty-state/empty-state.component';
 import { AuthService } from '../../../auth/services/auth.service';
 import { NotificationService } from '../../../../core/services/notification.service';
 import { UserLibraryService } from '../../../../core/services/user-library.service';
@@ -25,13 +26,13 @@ import { FriendsService } from '../../../friends/services/friends.service';
     RouterLink,
     MatIcon,
     MatButton,
-    MatIconButton,
     DecimalPipe,
     DatePipe,
     FormsModule,
     LoadingSpinnerComponent,
     StarRatingComponent,
     MovieCardComponent,
+    EmptyStateComponent,
   ],
   templateUrl: './movie-detail.component.html',
   styleUrl: './movie-detail.component.scss',
@@ -98,14 +99,31 @@ export class MovieDetailComponent implements OnInit {
     return this.friendsService.friends().filter(f => matchingIds.has(f.id));
   });
 
+  protected readonly friendAvatars = computed(() => this.friendsWithMovieOnWatchlist().slice(0, 4));
+
+  protected readonly hasOwnReview = computed(() => {
+    const m = this.movie();
+    return m ? !!this.reviewService.getUserReviewForMovie(m.id) : false;
+  });
+
   protected readonly friendsWithMovieLabel = computed(() => {
     const friends = this.friendsWithMovieOnWatchlist();
     if (friends.length === 0) return null;
-    if (friends.length === 1) return `Ook op ${friends[0].displayName}'s watchlist`;
-    return `Ook op de watchlist van ${friends[0].displayName} en ${friends.length - 1} anderen`;
+    if (friends.length === 1) return `${friends[0].displayName} heeft deze film op de watchlist`;
+    if (friends.length === 2) return `${friends[0].displayName} en ${friends[1].displayName} hebben deze film op de watchlist`;
+    const others = friends.length - 1;
+    return `${friends[0].displayName} en ${others} andere vrienden hebben deze film op de watchlist`;
   });
 
   constructor() {
+    // Beoordeling volgt de bibliotheek, ook als die pas na de film geladen wordt
+    effect(() => {
+      const m = this.movie();
+      if (!m) return;
+      const rating = this.libraryService.getRating(m.id);
+      untracked(() => this.userRating.set(rating));
+    });
+
     effect(() => {
       for (const friend of this.friendsService.friends()) {
         this.watchlistService.loadFriendWatchlists(friend.id).subscribe();
@@ -136,7 +154,6 @@ export class MovieDetailComponent implements OnInit {
     this.movieService.getMovieDetail(id).subscribe({
       next: movie => {
         this.movie.set(movie);
-        this.userRating.set(this.libraryService.getRating(movie.id));
         this.loading.set(false);
         this.reviewService.getMovieReviews(movie.id).subscribe();
       },
@@ -210,7 +227,11 @@ export class MovieDetailComponent implements OnInit {
   protected deleteReview(id: string): void {
     if (!confirm('Review verwijderen?')) return;
     this.reviewService.deleteReview(id).subscribe({
-      next: () => this.notifications.success('Review verwijderd.'),
+      next: () => {
+        this.notifications.success('Review verwijderd.');
+        if (this.editingReview()?.id === id) this.cancelReview();
+      },
+      error: () => this.notifications.error('Review verwijderen mislukt.'),
     });
   }
 
@@ -221,8 +242,8 @@ export class MovieDetailComponent implements OnInit {
   get reviewTextModel(): string { return this.reviewText(); }
   set reviewTextModel(v: string) { this.reviewText.set(v); }
 
-  protected openWatchlistPicker(event: MouseEvent): void {
-    event.stopPropagation();
+  /** Eén lijst: direct togglen; meerdere: gedeelde bottom sheet (zonder "Gezien"). */
+  protected toggleWatchlist(): void {
     const m = this.movie();
     if (!m) return;
     this.movieActions.toggleWatchlist(m as unknown as TmdbMovie);
@@ -239,12 +260,14 @@ export class MovieDetailComponent implements OnInit {
   }
 
   protected onRate(rating: number): void {
+    const m = this.movie();
+    if (!m) return;
     if (!this.authService.isAuthenticated()) {
+      // [(value)] heeft de sterren al lokaal gezet; terugdraaien vóór de redirect
+      this.userRating.set(this.libraryService.getRating(m.id));
       this.router.navigate(['/auth/login']);
       return;
     }
-    const m = this.movie();
-    if (!m) return;
     this.libraryService.setRating(m as unknown as TmdbMovie, rating);
     this.notifications.success(rating > 0 ? `${rating} ster${rating === 1 ? '' : 'ren'} opgeslagen!` : 'Beoordeling verwijderd');
 

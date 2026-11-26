@@ -30,6 +30,24 @@ Nieuwe kleur nodig? Voeg 'm toe aan `:root` in `styles.scss`, verwijs er dan naa
 `text-text-secondary`, etc.). Beide systemen gebruiken dezelfde kleurwaarden maar zijn niet
 technisch aan elkaar gekoppeld.
 
+## UI-bouwstenen en iconen
+
+`src/styles.scss` bevat het designsysteem: gebruik `.page-container`, `.page-header`/`.page-title`,
+`.section`/`.section-header`, `.card`, `.card-grid`, `.horizontal-scroll.bleed-row`,
+`.chip-row`/`.pill`, `.tabs`/`.tab`, `.segmented`/`.segment`, `.icon-btn`, `.avatar`, `.icon-tile`
+en `.field-input` in plaats van per component een eigen variant te bouwen. Material-knoppen,
+-velden, -menu's e.d. staan via `mat.*-overrides` in `:root` al in de huisstijl — geen
+`color="primary"` en geen knopkleuren per component overschrijven.
+
+Iconen zijn Material Symbols Outlined (één font, ingesteld in `app.ts`). `.mat-icon` is globaal
+`1em × 1em` en gecentreerd: zet alleen `font-size`, nooit losse width/height. Gevuld icoon via de
+class `icon-filled`. Zet een `<mat-icon>` in een Material-knop nooit in een `@if` met meerdere
+nodes (NG8011): dan landt het icoon niet in het icoonslot en staat het scheef.
+
+Nooit horizontale overflow op mobiel: `min-width: 0` op flex-kinderen met tekst, grids met
+`minmax(0, 1fr)`, negatieve marges alleen via `.bleed-row`/`.chip-row`, geen `100vw`. Hover-effecten
+alleen binnen `@media (hover: hover)`.
+
 ## SOLID / componentverantwoordelijkheid
 
 Watchlist-toggle, "gezien"-toggle en het matcher-scoringsalgoritme zijn al uit de

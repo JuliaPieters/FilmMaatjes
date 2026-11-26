@@ -1,8 +1,8 @@
-    <div class="min-h-screen flex flex-col bg-surface">
-      <app-navbar />
-      <main class="flex-1">
-        <router-outlet />
-      </main>
-      <app-footer />
-      <app-bottom-tab-bar />
-    </div>
+<div class="app-shell" [class.no-tabbar]="!authService.isAuthenticated()">
+  <app-navbar />
+  <main class="app-main">
+    <router-outlet />
+  </main>
+  <app-footer />
+  <app-bottom-tab-bar />
+</div>

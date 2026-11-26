@@ -4,7 +4,12 @@ import {
   LOCALE_ID,
   provideBrowserGlobalErrorListeners,
 } from '@angular/core';
-import { provideRouter, withComponentInputBinding, withRouterConfig } from '@angular/router';
+import {
+  provideRouter,
+  withComponentInputBinding,
+  withInMemoryScrolling,
+  withRouterConfig,
+} from '@angular/router';
 import { provideHttpClient, withFetch } from '@angular/common/http';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 import { registerLocaleData } from '@angular/common';
@@ -22,6 +27,7 @@ export const appConfig: ApplicationConfig = {
       routes,
       withComponentInputBinding(),
       withRouterConfig({ onSameUrlNavigation: 'reload' }),
+      withInMemoryScrolling({ scrollPositionRestoration: 'enabled', anchorScrolling: 'enabled' }),
     ),
     provideHttpClient(withFetch()),
     provideAnimationsAsync(),

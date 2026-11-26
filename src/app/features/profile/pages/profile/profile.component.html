@@ -1,258 +1,299 @@
-    <div class="profile-page">
-      <div class="profile-banner"></div>
+<div class="profile-banner" aria-hidden="true"></div>
 
-      <div class="page-container">
-        @if (loading()) {
-          <div class="flex items-center justify-center py-16 text-text-muted">
-            <mat-icon class="animate-spin mr-2">refresh</mat-icon> Laden...
-          </div>
-        } @else if (!user()) {
-          <div class="flex flex-col items-center justify-center py-16 gap-3 text-text-muted">
-            <mat-icon style="font-size:3rem;width:3rem;height:3rem">person_off</mat-icon>
-            <p>Gebruiker niet gevonden.</p>
-            <a mat-stroked-button routerLink="/friends">Terug</a>
-          </div>
+<div class="page-container profile-page">
+  @if (loading()) {
+    <app-loading-spinner message="Profiel laden..." />
+  } @else if (!user()) {
+    <app-empty-state
+      icon="person_off"
+      title="Gebruiker niet gevonden"
+      description="Dit profiel bestaat niet (meer)."
+      actionLabel="Naar vrienden"
+      actionRoute="/friends"
+    />
+  } @else {
+    <!-- Kop -->
+    <section class="profile-header">
+      <div class="profile-avatar">
+        @if (user()?.avatar) {
+          <img [src]="user()!.avatar!" [alt]="user()!.displayName" />
         } @else {
-          <div class="profile-header">
-            <div class="profile-avatar">
-              @if (user()?.avatar) {
-                <img [src]="user()!.avatar!" [alt]="user()!.displayName" />
-              } @else {
-                <span>{{ user()?.displayName?.charAt(0)?.toUpperCase() }}</span>
-              }
-              @if (isOwnProfile() && editMode()) {
-                <button
-                  type="button"
-                  class="avatar-upload-btn"
-                  [disabled]="uploadingAvatar()"
-                  (click)="avatarInput.click()"
-                >
-                  @if (uploadingAvatar()) {
-                    <mat-icon class="animate-spin">refresh</mat-icon>
-                  } @else {
-                    <mat-icon>photo_camera</mat-icon>
-                  }
-                </button>
-                <input #avatarInput type="file" accept="image/*" hidden (change)="onAvatarSelected($event)" />
-              }
+          <span>{{ user()?.displayName?.charAt(0)?.toUpperCase() }}</span>
+        }
+        @if (isOwnProfile() && editMode()) {
+          <button
+            type="button"
+            class="avatar-upload-btn"
+            [disabled]="uploadingAvatar()"
+            (click)="avatarInput.click()"
+            aria-label="Profielfoto wijzigen"
+          >
+            @if (uploadingAvatar()) {
+              <span class="spinner small"></span>
+            } @else {
+              <mat-icon>photo_camera</mat-icon>
+            }
+          </button>
+          <input #avatarInput type="file" accept="image/*" hidden (change)="onAvatarSelected($event)" />
+        }
+      </div>
+
+      <div class="profile-info">
+        <h1 class="profile-name">{{ user()?.displayName }}</h1>
+        <p class="profile-handle">&#64;{{ user()?.username }}</p>
+        @if (user()?.bio) {
+          <p class="profile-bio">{{ user()!.bio }}</p>
+        }
+      </div>
+
+      <div class="profile-actions">
+        @if (isOwnProfile()) {
+          @if (!editMode()) {
+            <button mat-stroked-button (click)="startEdit()">
+              <mat-icon>edit</mat-icon>
+              Profiel bewerken
+            </button>
+          }
+        } @else if (isFriend()) {
+          <span class="friend-status">
+            <mat-icon class="icon-filled">check_circle</mat-icon>
+            Vrienden
+          </span>
+        } @else if (requestSent()) {
+          <button mat-stroked-button disabled>
+            <mat-icon>schedule</mat-icon>
+            Verzoek verstuurd
+          </button>
+        } @else {
+          <button mat-flat-button (click)="sendFriendRequest()">
+            <mat-icon>person_add</mat-icon>
+            Vriend toevoegen
+          </button>
+        }
+      </div>
+    </section>
+
+    <!-- Statistieken -->
+    <section class="profile-stats card">
+      @if (isOwnProfile()) {
+        <button type="button" class="stat" (click)="activeTab.set('watched')">
+          <span class="stat-value">{{ watchedCount() }}</span>
+          <span class="stat-label">Gezien</span>
+        </button>
+        <button type="button" class="stat" (click)="activeTab.set('reviews')">
+          <span class="stat-value">{{ ownReviewCount() }}</span>
+          <span class="stat-label">Reviews</span>
+        </button>
+        <button type="button" class="stat" (click)="activeTab.set('watchlists')">
+          <span class="stat-value">{{ displayWatchlistCount() }}</span>
+          <span class="stat-label">Lijsten</span>
+        </button>
+        <a class="stat" routerLink="/friends">
+          <span class="stat-value">{{ friendsService.friends().length }}</span>
+          <span class="stat-label">Vrienden</span>
+        </a>
+      } @else {
+        <div class="stat">
+          <span class="stat-value">{{ friendWatchedCount() }}</span>
+          <span class="stat-label">Gezien</span>
+        </div>
+        <button type="button" class="stat" (click)="publicActiveTab.set('reviews')">
+          <span class="stat-value">{{ friendReviews().length }}</span>
+          <span class="stat-label">Reviews</span>
+        </button>
+        <button type="button" class="stat" (click)="publicActiveTab.set('watchlists')">
+          <span class="stat-value">{{ displayWatchlistCount() }}</span>
+          <span class="stat-label">Lijsten</span>
+        </button>
+        <div class="stat">
+          <span class="stat-value">{{ friendActualCount() ?? user()?._count?.friends ?? 0 }}</span>
+          <span class="stat-label">Vrienden</span>
+        </div>
+      }
+    </section>
+
+    <!-- Instellingen (eigen profiel) -->
+    @if (editMode()) {
+      <section class="settings">
+        <div class="settings-card card">
+          <h2 class="settings-title"><mat-icon>person</mat-icon> Profiel</h2>
+          <div class="settings-fields">
+            <div class="field-group">
+              <label class="field-label" for="displayName">Weergavenaam</label>
+              <input id="displayName" class="field-input" [(ngModel)]="editDisplayName" placeholder="Jouw naam" maxlength="40" />
             </div>
-
-            <div class="profile-info">
-              <h1 class="profile-name">{{ user()?.displayName }}</h1>
-              <p class="profile-username">&#64;{{ user()?.username }}</p>
-              @if (user()?.bio) {
-                <p class="profile-bio">{{ user()!.bio }}</p>
-              }
-
-              @if (streakWeeks() > 0) {
-                <div class="streak-badge" [class.milestone]="streakWeeks() % 5 === 0">
-                  <mat-icon>local_fire_department</mat-icon>
-                  <span>{{ streakWeeks() }} {{ streakWeeks() === 1 ? 'week' : 'weken' }} film-streak</span>
-                </div>
-              } @else if (isOwnProfile()) {
-                <p class="no-streaks">Nog geen actieve kijk-streak — vink deze week een film af als "Gezien".</p>
-              }
-
-              <div class="profile-stats">
-                @if (!isOwnProfile()) {
-                  <div class="stat">
-                    <span class="stat-value">{{ friendWatchedCount() }}</span>
-                    <span class="stat-label">Gezien</span>
-                  </div>
-                }
-                <div class="stat">
-                  <span class="stat-value">{{ displayWatchlistCount() }}</span>
-                  <span class="stat-label">Watchlists</span>
-                </div>
-                @if (isOwnProfile()) {
-                  <div class="stat">
-                    <span class="stat-value">{{ ownReviewCount() }}</span>
-                    <span class="stat-label">Reviews</span>
-                  </div>
-                }
-                <div class="stat">
-                  <span class="stat-value">{{ isOwnProfile() ? friendsService.friends().length : (friendActualCount() ?? user()?._count?.friends ?? 0) }}</span>
-                  <span class="stat-label">Vrienden</span>
-                </div>
-              </div>
-            </div>
-
-            <div class="profile-actions">
-              @if (isOwnProfile()) {
-                @if (!editMode()) {
-                  <button mat-stroked-button (click)="startEdit()">
-                    <mat-icon>edit</mat-icon>
-                    Profiel bewerken
-                  </button>
-                }
-              } @else {
-                @if (isFriend()) {
-                  <button mat-stroked-button disabled>
-                    <mat-icon>people</mat-icon>
-                    Vrienden
-                  </button>
-                } @else if (requestSent()) {
-                  <button mat-stroked-button disabled>
-                    <mat-icon>hourglass_empty</mat-icon>
-                    Verzoek verstuurd
-                  </button>
-                } @else {
-                  <button mat-flat-button color="primary" (click)="sendFriendRequest()">
-                    <mat-icon>person_add</mat-icon>
-                    Toevoegen als vriend
-                  </button>
-                }
-              }
+            <div class="field-group">
+              <label class="field-label" for="bio">Bio</label>
+              <textarea id="bio" class="field-input" [(ngModel)]="editBio" placeholder="Vertel iets over je filmsmaak..." rows="3" maxlength="200"></textarea>
             </div>
           </div>
+          <div class="settings-actions">
+            <button mat-flat-button (click)="saveEdit()">Opslaan</button>
+            <button mat-button (click)="cancelEdit()">Annuleren</button>
+          </div>
+        </div>
 
-          <!-- Edit form (own profile only) -->
-          @if (editMode()) {
-            <div class="edit-form glass-card p-6 mt-6">
-              <h3 class="text-lg font-semibold text-text-primary mb-4">Profiel bewerken</h3>
-              <div class="edit-fields">
-                <div class="field-group">
-                  <label class="field-label">Weergavenaam</label>
-                  <input class="field-input" [(ngModel)]="editDisplayName" placeholder="Jouw naam" />
-                </div>
-                <div class="field-group">
-                  <label class="field-label">Bio</label>
-                  <textarea class="field-input field-textarea" [(ngModel)]="editBio" placeholder="Vertel iets over jezelf..." rows="3"></textarea>
-                </div>
+        <div class="settings-card card">
+          <h2 class="settings-title"><mat-icon>mail</mat-icon> E-mailadres wijzigen</h2>
+          <p class="settings-desc">Je ontvangt een bevestigingsmail op het nieuwe adres.</p>
+          @if (emailChangeSuccess()) {
+            <p class="settings-feedback success">
+              <mat-icon>check_circle</mat-icon>
+              <span>Bevestigingsmail verstuurd naar {{ editNewEmail }}. Klik op de link om de wijziging door te voeren.</span>
+            </p>
+          } @else {
+            <div class="settings-fields">
+              <div class="field-group">
+                <label class="field-label" for="emailPw">Huidig wachtwoord</label>
+                <input id="emailPw" class="field-input" type="password" autocomplete="current-password" [(ngModel)]="emailCurrentPassword" placeholder="Ter bevestiging" />
               </div>
-              <div class="flex gap-2 mt-4">
-                <button mat-flat-button color="primary" (click)="saveEdit()">Opslaan</button>
-                <button mat-stroked-button (click)="cancelEdit()">Annuleren</button>
+              <div class="field-group">
+                <label class="field-label" for="newEmail">Nieuw e-mailadres</label>
+                <input id="newEmail" class="field-input" type="email" autocomplete="email" [(ngModel)]="editNewEmail" placeholder="nieuw@email.nl" />
               </div>
             </div>
-
-            <!-- E-mail wijzigen -->
-            <div class="edit-form glass-card p-6 mt-4">
-              <h3 class="settings-section-title">
-                <mat-icon>email</mat-icon>
-                E-mailadres wijzigen
-              </h3>
-              <p class="settings-section-desc">Je ontvangt een bevestigingsmail op het nieuwe adres.</p>
-              @if (emailChangeSuccess()) {
-                <div class="settings-success">
-                  <mat-icon>check_circle</mat-icon>
-                  Bevestigingsmail verstuurd naar {{ editNewEmail }}. Klik op de link om de wijziging door te voeren.
-                </div>
-              } @else {
-                <div class="edit-fields">
-                  <div class="field-group">
-                    <label class="field-label">Huidig wachtwoord</label>
-                    <input class="field-input" type="password" [(ngModel)]="emailCurrentPassword" placeholder="Ter bevestiging" />
-                  </div>
-                  <div class="field-group">
-                    <label class="field-label">Nieuw e-mailadres</label>
-                    <input class="field-input" type="email" [(ngModel)]="editNewEmail" placeholder="nieuw@email.nl" />
-                  </div>
-                </div>
-                @if (emailChangeError()) {
-                  <p class="settings-error">{{ emailChangeError() }}</p>
-                }
-                <div class="flex gap-2 mt-4">
-                  <button mat-flat-button color="primary" [disabled]="savingEmail()" (click)="saveEmail()">
-                    @if (savingEmail()) { Versturen... } @else { Bevestigingsmail sturen }
-                  </button>
-                </div>
-              }
-            </div>
-
-            <!-- Wachtwoord wijzigen -->
-            <div class="edit-form glass-card p-6 mt-4">
-              <h3 class="settings-section-title">
-                <mat-icon>lock</mat-icon>
-                Wachtwoord wijzigen
-              </h3>
-              @if (passwordChangeSuccess()) {
-                <div class="settings-success">
-                  <mat-icon>check_circle</mat-icon>
-                  Wachtwoord succesvol gewijzigd.
-                </div>
-              } @else {
-                <div class="edit-fields">
-                  <div class="field-group">
-                    <label class="field-label">Huidig wachtwoord</label>
-                    <input class="field-input" type="password" [(ngModel)]="passwordCurrent" placeholder="Huidig wachtwoord" />
-                  </div>
-                  <div class="field-group">
-                    <label class="field-label">Nieuw wachtwoord</label>
-                    <input class="field-input" type="password" [(ngModel)]="passwordNew" placeholder="Minimaal 8 tekens" />
-                  </div>
-                  <div class="field-group">
-                    <label class="field-label">Herhaal nieuw wachtwoord</label>
-                    <input class="field-input" type="password" [(ngModel)]="passwordConfirm" placeholder="Nogmaals nieuw wachtwoord" />
-                  </div>
-                </div>
-                @if (passwordChangeError()) {
-                  <p class="settings-error">{{ passwordChangeError() }}</p>
-                }
-                <div class="flex gap-2 mt-4">
-                  <button mat-flat-button color="primary" [disabled]="savingPassword()" (click)="savePassword()">
-                    @if (savingPassword()) { Opslaan... } @else { Wachtwoord wijzigen }
-                  </button>
-                </div>
-              }
+            @if (emailChangeError()) {
+              <p class="settings-feedback error"><mat-icon>error_outline</mat-icon><span>{{ emailChangeError() }}</span></p>
+            }
+            <div class="settings-actions">
+              <button mat-flat-button [disabled]="savingEmail()" (click)="saveEmail()">
+                {{ savingEmail() ? 'Versturen...' : 'Bevestigingsmail sturen' }}
+              </button>
             </div>
           }
+        </div>
 
-          <!-- Public profile tabs (friend view) -->
-          @if (!isOwnProfile()) {
-            <div class="profile-tabs mt-8">
-              <button class="profile-tab" [class.active]="publicActiveTab() === 'watchlists'" (click)="publicActiveTab.set('watchlists')">
-                <mat-icon>bookmark</mat-icon>
-                Watchlists ({{ publicWatchlists().length }})
-              </button>
-              <button class="profile-tab" [class.active]="publicActiveTab() === 'rated'" (click)="publicActiveTab.set('rated')">
-                <mat-icon>star</mat-icon>
-                Beoordeeld ({{ friendRatedMovies().length }})
-              </button>
-              <button class="profile-tab" [class.active]="publicActiveTab() === 'reviews'" (click)="publicActiveTab.set('reviews')">
-                <mat-icon>rate_review</mat-icon>
-                Reviews ({{ friendReviews().length }})
-              </button>
-              <button class="profile-tab" [class.active]="publicActiveTab() === 'badges'" (click)="publicActiveTab.set('badges')">
-                <mat-icon>military_tech</mat-icon>
-                Badges ({{ unlockedAchievementCount() }})
+        <div class="settings-card card">
+          <h2 class="settings-title"><mat-icon>lock</mat-icon> Wachtwoord wijzigen</h2>
+          @if (passwordChangeSuccess()) {
+            <p class="settings-feedback success">
+              <mat-icon>check_circle</mat-icon>
+              <span>Wachtwoord succesvol gewijzigd.</span>
+            </p>
+          } @else {
+            <div class="settings-fields">
+              <div class="field-group">
+                <label class="field-label" for="pwCurrent">Huidig wachtwoord</label>
+                <input id="pwCurrent" class="field-input" type="password" autocomplete="current-password" [(ngModel)]="passwordCurrent" />
+              </div>
+              <div class="field-group">
+                <label class="field-label" for="pwNew">Nieuw wachtwoord</label>
+                <input id="pwNew" class="field-input" type="password" autocomplete="new-password" [(ngModel)]="passwordNew" placeholder="Minimaal 8 tekens" />
+              </div>
+              <div class="field-group">
+                <label class="field-label" for="pwConfirm">Herhaal nieuw wachtwoord</label>
+                <input id="pwConfirm" class="field-input" type="password" autocomplete="new-password" [(ngModel)]="passwordConfirm" />
+              </div>
+            </div>
+            @if (passwordChangeError()) {
+              <p class="settings-feedback error"><mat-icon>error_outline</mat-icon><span>{{ passwordChangeError() }}</span></p>
+            }
+            <div class="settings-actions">
+              <button mat-flat-button [disabled]="savingPassword()" (click)="savePassword()">
+                {{ savingPassword() ? 'Opslaan...' : 'Wachtwoord wijzigen' }}
               </button>
             </div>
-            <div class="tab-content mt-6">
-              @if (loadingFriendData()) {
-                <div class="empty-state">
-                  <mat-icon class="animate-spin">refresh</mat-icon>
-                  <p>Laden...</p>
-                </div>
-              } @else if (publicActiveTab() === 'watchlists') {
-                @if (publicWatchlists().length === 0) {
-                  <div class="empty-state">
-                    <mat-icon>bookmark_border</mat-icon>
-                    <p>Geen watchlists om weer te geven.</p>
-                  </div>
-                } @else {
-                  <div class="public-watchlist-list">
-                    @for (watchlist of publicWatchlists(); track watchlist.id) {
-                      <div class="public-watchlist-section">
-                        <button class="public-watchlist-header glass-card" (click)="toggleWatchlist(watchlist.id)">
-                          <div class="watchlist-icon"><mat-icon>bookmark</mat-icon></div>
-                          <div class="flex-1 min-w-0 text-left">
-                            <p class="watchlist-name">{{ watchlist.name }}</p>
-                            <p class="watchlist-count">{{ watchlist.movies.length || watchlist._count?.movies || 0 }} films</p>
-                          </div>
-                          <mat-icon class="watchlist-chevron" [class.rotated]="expandedWatchlistId() === watchlist.id">
-                            expand_more
-                          </mat-icon>
-                        </button>
+          }
+        </div>
+      </section>
+    }
 
-                        @if (expandedWatchlistId() === watchlist.id) {
+    <!-- Tabs: eigen profiel -->
+    @if (isOwnProfile()) {
+      <nav class="tabs profile-tabs" role="tablist">
+        <button type="button" role="tab" class="tab" [class.active]="activeTab() === 'watched'" (click)="activeTab.set('watched')">
+          Gezien <span class="tab-count">{{ watchedCount() }}</span>
+        </button>
+        <button type="button" role="tab" class="tab" [class.active]="activeTab() === 'rated'" (click)="activeTab.set('rated')">
+          Beoordeeld <span class="tab-count">{{ ratedCount() }}</span>
+        </button>
+        <button type="button" role="tab" class="tab" [class.active]="activeTab() === 'watchlists'" (click)="activeTab.set('watchlists')">
+          Lijsten <span class="tab-count">{{ watchlistCount() }}</span>
+        </button>
+        <button type="button" role="tab" class="tab" [class.active]="activeTab() === 'reviews'" (click)="activeTab.set('reviews')">
+          Reviews <span class="tab-count">{{ ownReviewCount() }}</span>
+        </button>
+      </nav>
+
+      <div class="tab-panel">
+        @switch (activeTab()) {
+          @case ('watched') {
+            @if (library.watchedMovies().length === 0) {
+              <app-empty-state icon="visibility" title="Nog niets gezien" description="Markeer films als gezien om ze hier te verzamelen." actionLabel="Films ontdekken" actionRoute="/movies" [compact]="true" />
+            } @else {
+              <div class="card-grid">
+                @for (entry of library.watchedMovies(); track entry.movieId) {
+                  <app-movie-card [movie]="entry.movie" />
+                }
+              </div>
+            }
+          }
+          @case ('rated') {
+            <ng-container [ngTemplateOutlet]="ratedList" [ngTemplateOutletContext]="{ $implicit: library.ratedMovies() }" />
+          }
+          @case ('watchlists') {
+            @if (watchlistService.watchlists().length === 0) {
+              <app-empty-state icon="bookmark" title="Nog geen lijsten" actionLabel="Lijsten beheren" actionRoute="/watchlists" [compact]="true" />
+            } @else {
+              <div class="list-grid">
+                @for (watchlist of watchlistService.watchlists(); track watchlist.id) {
+                  <a class="list-row card" [routerLink]="['/watchlists', watchlist.id]">
+                    <span class="icon-tile"><mat-icon>bookmark</mat-icon></span>
+                    <span class="list-text">
+                      <span class="list-name">{{ watchlist.name }}</span>
+                      <span class="list-meta">{{ watchlist._count?.movies ?? watchlist.movies.length }} films</span>
+                    </span>
+                    <mat-icon class="row-chevron">chevron_right</mat-icon>
+                  </a>
+                }
+              </div>
+            }
+          }
+          @case ('reviews') {
+            <ng-container [ngTemplateOutlet]="reviewList" [ngTemplateOutletContext]="{ $implicit: ownReviews() }" />
+          }
+        }
+      </div>
+    } @else {
+      <!-- Tabs: profiel van een ander -->
+      <nav class="tabs profile-tabs" role="tablist">
+        <button type="button" role="tab" class="tab" [class.active]="publicActiveTab() === 'watchlists'" (click)="publicActiveTab.set('watchlists')">
+          Lijsten <span class="tab-count">{{ publicWatchlists().length }}</span>
+        </button>
+        <button type="button" role="tab" class="tab" [class.active]="publicActiveTab() === 'rated'" (click)="publicActiveTab.set('rated')">
+          Beoordeeld <span class="tab-count">{{ friendRatedMovies().length }}</span>
+        </button>
+        <button type="button" role="tab" class="tab" [class.active]="publicActiveTab() === 'reviews'" (click)="publicActiveTab.set('reviews')">
+          Reviews <span class="tab-count">{{ friendReviews().length }}</span>
+        </button>
+      </nav>
+
+      <div class="tab-panel">
+        @if (loadingFriendData()) {
+          <app-loading-spinner [diameter]="28" minHeight="160px" />
+        } @else {
+          @switch (publicActiveTab()) {
+            @case ('watchlists') {
+              @if (publicWatchlists().length === 0) {
+                <app-empty-state icon="bookmark" title="Geen lijsten om te tonen" [compact]="true" />
+              } @else {
+                <div class="accordion">
+                  @for (watchlist of publicWatchlists(); track watchlist.id) {
+                    <div class="accordion-item card" [class.open]="expandedWatchlistId() === watchlist.id">
+                      <button type="button" class="list-row accordion-header" (click)="toggleWatchlist(watchlist.id)" [attr.aria-expanded]="expandedWatchlistId() === watchlist.id">
+                        <span class="icon-tile"><mat-icon>bookmark</mat-icon></span>
+                        <span class="list-text">
+                          <span class="list-name">{{ watchlist.name }}</span>
+                          <span class="list-meta">{{ watchlist.movies.length || watchlist._count?.movies || 0 }} films</span>
+                        </span>
+                        <mat-icon class="row-chevron accordion-chevron">expand_more</mat-icon>
+                      </button>
+                      @if (expandedWatchlistId() === watchlist.id) {
+                        <div class="accordion-body">
                           @if (watchlist.movies.length === 0) {
-                            <div class="empty-state py-8">
-                              <mat-icon>movie_off</mat-icon>
-                              <p>Geen films in deze watchlist.</p>
-                            </div>
+                            <p class="accordion-empty">Geen films in deze lijst.</p>
                           } @else {
-                            <div class="card-grid mt-4 pb-4">
+                            <div class="card-grid">
                               @for (entry of watchlist.movies; track entry.movieId) {
                                 @if (entry.movie) {
                                   <app-movie-card [movie]="entry.movie" />
@@ -260,215 +301,75 @@
                               }
                             </div>
                           }
-                        }
-                      </div>
-                    }
-                  </div>
-                }
-              } @else if (publicActiveTab() === 'rated') {
-                @if (friendRatedMovies().length === 0) {
-                  <div class="empty-state">
-                    <mat-icon>star_border</mat-icon>
-                    <p>Nog geen films beoordeeld.</p>
-                  </div>
-                } @else {
-                  <div class="rated-grid">
-                    @for (entry of friendRatedMovies(); track entry.movieId) {
-                      <a class="rated-item" [routerLink]="['/movies', entry.movieId]">
-                        <div class="rated-poster">
-                          <img [src]="entry.movie.poster_path ? 'https://image.tmdb.org/t/p/w185' + entry.movie.poster_path : '/assets/movie-placeholder.svg'"
-                               [alt]="entry.movie.title" loading="lazy" />
                         </div>
-                        <div class="rated-info">
-                          <p class="rated-title">{{ entry.movie.title }}</p>
-                          <app-star-rating [value]="entry.rating" [readonly]="true" [size]="16" />
-                        </div>
-                      </a>
-                    }
-                  </div>
-                }
-              } @else if (publicActiveTab() === 'reviews') {
-                @if (friendReviews().length === 0) {
-                  <div class="empty-state">
-                    <mat-icon>rate_review</mat-icon>
-                    <p>Nog geen reviews geschreven.</p>
-                  </div>
-                } @else {
-                  <div class="reviews-list">
-                    @for (review of friendReviews(); track review.id) {
-                      <a class="review-card glass-card" [routerLink]="['/movies', review.movieId]">
-                        <div class="review-poster">
-                          @if (review.moviePosterPath) {
-                            <img [src]="'https://image.tmdb.org/t/p/w92' + review.moviePosterPath" [alt]="review.movieTitle" loading="lazy" />
-                          } @else {
-                            <div class="review-poster-placeholder"><mat-icon>movie</mat-icon></div>
-                          }
-                        </div>
-                        <div class="review-body">
-                          @if (review.movieTitle) {
-                            <p class="review-movie-title">{{ review.movieTitle }}</p>
-                          }
-                          <div class="review-top">
-                            <app-star-rating [value]="review.rating" [readonly]="true" [size]="16" />
-                            <span class="review-date">{{ review.createdAt | date: 'd MMM yyyy' }}</span>
-                          </div>
-                          @if (review.content) {
-                            <p class="review-content">{{ review.content }}</p>
-                          }
-                        </div>
-                      </a>
-                    }
-                  </div>
-                }
-              } @else {
-                <ng-container [ngTemplateOutlet]="badgesGrid" />
+                      }
+                    </div>
+                  }
+                </div>
               }
-            </div>
-          }
-
-          <!-- Own profile tabs -->
-          @if (isOwnProfile()) {
-            <div class="profile-tabs mt-8">
-              <button class="profile-tab" [class.active]="activeTab() === 'watched'" (click)="activeTab.set('watched')">
-                <mat-icon>visibility</mat-icon>
-                Gezien ({{ watchedCount() }})
-              </button>
-              <button class="profile-tab" [class.active]="activeTab() === 'rated'" (click)="activeTab.set('rated')">
-                <mat-icon>star</mat-icon>
-                Beoordeeld ({{ ratedCount() }})
-              </button>
-              <button class="profile-tab" [class.active]="activeTab() === 'watchlists'" (click)="activeTab.set('watchlists')">
-                <mat-icon>bookmark</mat-icon>
-                Watchlists ({{ watchlistCount() }})
-              </button>
-              <button class="profile-tab" [class.active]="activeTab() === 'reviews'" (click)="activeTab.set('reviews')">
-                <mat-icon>rate_review</mat-icon>
-                Reviews ({{ ownReviewCount() }})
-              </button>
-              <button class="profile-tab" [class.active]="activeTab() === 'badges'" (click)="activeTab.set('badges')">
-                <mat-icon>military_tech</mat-icon>
-                Badges ({{ unlockedAchievementCount() }})
-              </button>
-            </div>
-
-            <div class="tab-content mt-6">
-              @if (activeTab() === 'watched') {
-                @if (library.watchedMovies().length === 0) {
-                  <div class="empty-state">
-                    <mat-icon>visibility_off</mat-icon>
-                    <p>Nog niets als gezien gemarkeerd.</p>
-                    <a mat-stroked-button routerLink="/movies">Films bekijken</a>
-                  </div>
-                } @else {
-                  <div class="card-grid">
-                    @for (entry of library.watchedMovies(); track entry.movieId) {
-                      <app-movie-card [movie]="entry.movie" />
-                    }
-                  </div>
-                }
-              }
-
-              @if (activeTab() === 'rated') {
-                @if (library.ratedMovies().length === 0) {
-                  <div class="empty-state">
-                    <mat-icon>star_border</mat-icon>
-                    <p>Nog geen films beoordeeld.</p>
-                    <a mat-stroked-button routerLink="/movies">Films beoordelen</a>
-                  </div>
-                } @else {
-                  <div class="rated-grid">
-                    @for (entry of library.ratedMovies(); track entry.movieId) {
-                      <a class="rated-item" [routerLink]="['/movies', entry.movieId]">
-                        <div class="rated-poster">
-                          <img [src]="entry.movie.poster_path ? 'https://image.tmdb.org/t/p/w185' + entry.movie.poster_path : '/assets/movie-placeholder.svg'"
-                               [alt]="entry.movie.title" loading="lazy" />
-                        </div>
-                        <div class="rated-info">
-                          <p class="rated-title">{{ entry.movie.title }}</p>
-                          <app-star-rating [value]="entry.rating" [readonly]="true" [size]="16" />
-                        </div>
-                      </a>
-                    }
-                  </div>
-                }
-              }
-
-              @if (activeTab() === 'watchlists') {
-                @if (watchlistService.watchlists().length === 0) {
-                  <div class="empty-state">
-                    <mat-icon>bookmark_border</mat-icon>
-                    <p>Nog geen watchlists aangemaakt.</p>
-                    <a mat-stroked-button routerLink="/watchlists">Watchlists beheren</a>
-                  </div>
-                } @else {
-                  <div class="watchlist-grid">
-                    @for (watchlist of watchlistService.watchlists(); track watchlist.id) {
-                      <a class="watchlist-card glass-card" [routerLink]="['/watchlists', watchlist.id]">
-                        <div class="watchlist-icon"><mat-icon>bookmark</mat-icon></div>
-                        <div>
-                          <p class="watchlist-name">{{ watchlist.name }}</p>
-                          <p class="watchlist-count">{{ watchlist._count?.movies ?? watchlist.movies.length }} films</p>
-                        </div>
-                      </a>
-                    }
-                  </div>
-                }
-              }
-
-              @if (activeTab() === 'reviews') {
-                @if (ownReviews().length === 0) {
-                  <div class="empty-state">
-                    <mat-icon>rate_review</mat-icon>
-                    <p>Nog geen reviews geschreven.</p>
-                    <a mat-stroked-button routerLink="/movies">Films bekijken</a>
-                  </div>
-                } @else {
-                  <div class="reviews-list">
-                    @for (review of ownReviews(); track review.id) {
-                      <a class="review-card glass-card" [routerLink]="['/movies', review.movieId]">
-                        <div class="review-poster">
-                          @if (review.moviePosterPath) {
-                            <img [src]="'https://image.tmdb.org/t/p/w92' + review.moviePosterPath" [alt]="review.movieTitle" loading="lazy" />
-                          } @else {
-                            <div class="review-poster-placeholder"><mat-icon>movie</mat-icon></div>
-                          }
-                        </div>
-                        <div class="review-body">
-                          @if (review.movieTitle) {
-                            <p class="review-movie-title">{{ review.movieTitle }}</p>
-                          }
-                          <div class="review-top">
-                            <app-star-rating [value]="review.rating" [readonly]="true" [size]="16" />
-                            <span class="review-date">{{ review.createdAt | date: 'd MMM yyyy' }}</span>
-                          </div>
-                          @if (review.content) {
-                            <p class="review-content">{{ review.content }}</p>
-                          }
-                        </div>
-                      </a>
-                    }
-                  </div>
-                }
-              }
-
-              @if (activeTab() === 'badges') {
-                <ng-container [ngTemplateOutlet]="badgesGrid" />
-              }
-            </div>
+            }
+            @case ('rated') {
+              <ng-container [ngTemplateOutlet]="ratedList" [ngTemplateOutletContext]="{ $implicit: friendRatedMovies() }" />
+            }
+            @case ('reviews') {
+              <ng-container [ngTemplateOutlet]="reviewList" [ngTemplateOutletContext]="{ $implicit: friendReviews() }" />
+            }
           }
         }
       </div>
+    }
+  }
+</div>
+
+<ng-template #ratedList let-entries>
+  @if (entries.length === 0) {
+    <app-empty-state icon="star" title="Nog geen films beoordeeld" [compact]="true" />
+  } @else {
+    <div class="list-grid">
+      @for (entry of entries; track entry.movieId) {
+        <a class="rated-row card" [routerLink]="['/movies', entry.movieId]">
+          <img
+            class="row-poster"
+            [src]="entry.movie.poster_path ? 'https://image.tmdb.org/t/p/w154' + entry.movie.poster_path : '/assets/movie-placeholder.svg'"
+            [alt]="entry.movie.title"
+            loading="lazy"
+          />
+          <span class="list-text">
+            <span class="list-name">{{ entry.movie.title }}</span>
+            <app-star-rating [value]="entry.rating" [readonly]="true" [size]="16" />
+          </span>
+        </a>
+      }
     </div>
+  }
+</ng-template>
 
-    <ng-template #badgesGrid>
-      <p class="badges-summary">{{ unlockedAchievementCount() }} / {{ achievements().length }} badges behaald</p>
-      <div class="badges-grid">
-        @for (badge of achievements(); track badge.id) {
-          <div class="badge-tile" [class.locked]="!badge.unlocked" [class]="'tier-' + badge.tier">
-            <div class="badge-icon"><mat-icon>{{ badge.icon }}</mat-icon></div>
-            <p class="badge-title">{{ badge.title }}</p>
-            <p class="badge-description">{{ badge.description }}</p>
+<ng-template #reviewList let-reviews>
+  @if (reviews.length === 0) {
+    <app-empty-state icon="rate_review" title="Nog geen reviews" [compact]="true" />
+  } @else {
+    <div class="review-list">
+      @for (review of reviews; track review.id) {
+        <a class="review-card card" [routerLink]="['/movies', review.movieId]">
+          @if (review.moviePosterPath) {
+            <img class="row-poster" [src]="'https://image.tmdb.org/t/p/w154' + review.moviePosterPath" [alt]="review.movieTitle" loading="lazy" />
+          } @else {
+            <span class="row-poster placeholder"><mat-icon>movie</mat-icon></span>
+          }
+          <div class="review-body">
+            @if (review.movieTitle) {
+              <p class="list-name">{{ review.movieTitle }}</p>
+            }
+            <div class="review-meta">
+              <app-star-rating [value]="review.rating" [readonly]="true" [size]="15" />
+              <span>{{ review.createdAt | date: 'd MMM yyyy' }}</span>
+            </div>
+            @if (review.content) {
+              <p class="review-content">{{ review.content }}</p>
+            }
           </div>
-        }
-      </div>
-    </ng-template>
+        </a>
+      }
+    </div>
+  }
+</ng-template>

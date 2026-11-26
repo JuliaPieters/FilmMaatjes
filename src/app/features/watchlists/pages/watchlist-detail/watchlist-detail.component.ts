@@ -1,17 +1,17 @@
 import { Component, computed, inject, OnInit, signal } from '@angular/core';
-import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { Location } from '@angular/common';
 import { MatIcon } from '@angular/material/icon';
-import { MatButton, MatIconButton } from '@angular/material/button';
 import { WatchlistService } from '../../services/watchlist.service';
 import { Watchlist } from '../../../../core/models/watchlist.model';
 import { MovieCardComponent } from '../../../../shared/components/movie-card/movie-card.component';
 import { EmptyStateComponent } from '../../../../shared/components/empty-state/empty-state.component';
+import { LoadingSpinnerComponent } from '../../../../shared/components/loading-spinner/loading-spinner.component';
 import { NotificationService } from '../../../../core/services/notification.service';
 
 @Component({
   selector: 'app-watchlist-detail',
-  imports: [RouterLink, MatIcon, MatButton, MatIconButton, MovieCardComponent, EmptyStateComponent],
+  imports: [MatIcon, MovieCardComponent, EmptyStateComponent, LoadingSpinnerComponent],
   templateUrl: './watchlist-detail.component.html',
   styleUrl: './watchlist-detail.component.scss',
 })
@@ -27,6 +27,8 @@ export class WatchlistDetailComponent implements OnInit {
   protected readonly watchlist = computed<Watchlist | undefined>(() =>
     this.watchlistService.watchlists().find(watchlist => watchlist.id === this.id()),
   );
+
+  protected readonly loading = computed(() => !this.watchlistService.loaded());
 
   protected readonly movies = computed(() => this.watchlist()?.movies ?? []);
 
@@ -53,6 +55,7 @@ export class WatchlistDetailComponent implements OnInit {
     if (!watchlist) return;
     this.watchlistService.removeMovie(watchlist.id, movieId).subscribe({
       next: () => this.notifications.success('Film verwijderd uit watchlist'),
+      error: () => this.notifications.error('Verwijderen mislukt. Probeer opnieuw.'),
     });
   }
 }

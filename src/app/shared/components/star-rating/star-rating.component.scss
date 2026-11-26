@@ -1,19 +1,50 @@
-    .star-btn {
-      background: none;
-      border: none;
-      line-height: 1;
-      display: inline-flex;
-      align-items: center;
-    }
-    .star-btn:focus-visible {
-      outline: 2px solid var(--color-accent);
-      border-radius: 4px;
-    }
+:host {
+  display: inline-block;
+}
 
-    @media (hover: none) {
-      .star-btn:not(.readonly) {
-        min-width: 44px;
-        min-height: 44px;
-        justify-content: center;
-      }
-    }
+.stars {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1px;
+}
+
+.star {
+  color: var(--color-text-muted);
+  transition: color 0.12s var(--ease), transform 0.12s var(--ease);
+
+  &.on {
+    color: var(--color-gold);
+  }
+}
+
+/* Elke ster een raakvlak van minimaal 44px op touch, compacter met muis */
+.star-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: calc(var(--star-size, 24px) + 12px);
+  min-height: calc(var(--star-size, 24px) + 12px);
+  padding: 0;
+  border: none;
+  border-radius: 10px;
+  background: none;
+  cursor: pointer;
+
+  &:active .star {
+    transform: scale(0.85);
+  }
+
+  @media (hover: none) {
+    min-width: 44px;
+    min-height: 44px;
+  }
+}
+
+.star-value {
+  margin-left: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+}

@@ -1,105 +1,191 @@
-    .watchlist-grid {
-      display: grid;
-      grid-template-columns: repeat(1, 1fr);
-      gap: 1rem;
+.wl-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0.875rem;
 
-      > * {
-        min-width: 0;
-      }
+  @media (min-width: 640px) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
+  }
 
-      @media (min-width: 640px) {
-        grid-template-columns: repeat(2, 1fr);
-      }
+  @media (min-width: 1024px) {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
 
-      @media (min-width: 1024px) {
-        grid-template-columns: repeat(3, 1fr);
-      }
+.wl-item {
+  position: relative;
+  min-width: 0;
+}
+
+.wl-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.875rem;
+  height: 100%;
+  padding: 1rem;
+  color: inherit;
+  text-decoration: none;
+}
+
+.wl-head {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  // ruimte voor de verwijderknop rechtsboven
+  padding-right: 2.5rem;
+}
+
+.wl-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.wl-name {
+  margin: 0;
+  overflow: hidden;
+  font-size: 1.0625rem;
+  font-weight: 700;
+  line-height: 1.3;
+  letter-spacing: -0.01em;
+  color: var(--color-text-primary);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.wl-description {
+  display: -webkit-box;
+  margin: 0.25rem 0 0;
+  overflow: hidden;
+  font-size: 0.875rem;
+  line-height: 1.45;
+  color: var(--color-text-meta);
+  overflow-wrap: anywhere;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+}
+
+.wl-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.25rem 1rem;
+  font-size: 0.8125rem;
+  color: var(--color-text-muted);
+}
+
+.wl-meta-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3125rem;
+
+  .mat-icon {
+    font-size: 16px;
+  }
+}
+
+.poster-strip {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.5rem;
+  margin-top: auto;
+  max-width: 280px;
+}
+
+.strip-poster {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  aspect-ratio: 2 / 3;
+  border-radius: 8px;
+  background: var(--color-poster-placeholder);
+  object-fit: cover;
+}
+
+.strip-more {
+  background: rgba(var(--color-accent-rgb), 0.15);
+  border: 1px solid rgba(var(--color-accent-rgb), 0.25);
+  color: var(--color-accent-light);
+  font-size: 0.875rem;
+  font-weight: 700;
+}
+
+.strip-empty {
+  background: rgba(var(--color-white-rgb), 0.03);
+  border: 1px dashed rgba(var(--color-white-rgb), 0.08);
+}
+
+.wl-empty-note {
+  margin: auto 0 0;
+  font-size: 0.8125rem;
+  color: var(--color-text-muted);
+}
+
+.wl-delete {
+  position: absolute;
+  top: 0.625rem;
+  right: 0.625rem;
+  color: var(--color-text-muted);
+
+  // 36px zichtbaar, 44px raakvlak
+  &::after {
+    content: '';
+    position: absolute;
+    inset: -4px;
+  }
+}
+
+.empty-create-btn {
+  margin-top: 1.5rem;
+}
+
+.new-fab {
+  display: none;
+}
+
+@media (max-width: 767px) {
+  .header-new-btn {
+    display: none;
+  }
+
+  .new-fab {
+    position: fixed;
+    right: 16px;
+    bottom: calc(var(--tabbar-h) + env(safe-area-inset-bottom) + 16px);
+    z-index: 40;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 56px;
+    height: 56px;
+    padding: 0;
+    border: none;
+    border-radius: 50%;
+    background: var(--color-accent);
+    color: var(--color-text-primary);
+    box-shadow: 0 8px 28px rgba(var(--color-accent-rgb), 0.45);
+    cursor: pointer;
+    transition: transform 0.15s var(--ease);
+    -webkit-tap-highlight-color: transparent;
+
+    .mat-icon {
+      font-size: 28px;
     }
 
-    .new-watchlist-fab {
-      display: none;
+    &:active {
+      transform: scale(0.94);
     }
 
-    .poster-strip {
-      display: none;
+    &:focus-visible {
+      outline: 2px solid var(--color-accent-lighter);
+      outline-offset: 3px;
     }
+  }
 
-    .list-icon {
-      border-radius: 10px;
-    }
-
-    @media (max-width: 767px) {
-      .header-new-btn {
-        display: none;
-      }
-
-      .new-watchlist-fab {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        position: fixed;
-        right: 20px;
-        bottom: 108px;
-        width: 56px;
-        height: 56px;
-        min-width: 56px;
-        border-radius: 50%;
-        background-color: var(--color-accent) !important;
-        box-shadow: 0 8px 30px rgba(var(--color-accent-rgb), 0.45);
-        z-index: 40;
-        color: #fff !important;
-      }
-
-      .new-watchlist-fab mat-icon {
-        font-size: 26px;
-        width: 26px;
-        height: 26px;
-        color: #fff !important;
-      }
-
-      .watchlist-card {
-        border-radius: 12px;
-        background: rgba(var(--color-surface-50-rgb), 0.8);
-        border: 1px solid rgba(var(--color-white-rgb), 0.06);
-      }
-
-      .delete-btn {
-        width: 44px !important;
-        height: 44px !important;
-        padding: 0;
-      }
-
-      .list-name {
-        font-size: 17px;
-        font-weight: 600;
-      }
-
-      .list-description {
-        font-size: 14px;
-        color: var(--color-text-meta);
-      }
-
-      .poster-strip {
-        display: flex;
-        gap: 6px;
-        margin-top: 12px;
-      }
-
-      .poster-thumb {
-        width: 48px;
-        height: 72px;
-        border-radius: 8px;
-        object-fit: cover;
-        flex-shrink: 0;
-      }
-
-      .poster-more {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        background: rgba(var(--color-accent-rgb), 0.15);
-        color: var(--color-accent-light);
-        font-size: 13px;
-        font-weight: 600;
-      }
-    }
+  // FAB mag de laatste kaart niet afdekken
+  .wl-grid {
+    padding-bottom: 4.5rem;
+  }
+}

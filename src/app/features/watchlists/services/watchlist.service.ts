@@ -1,4 +1,4 @@
-import { effect, inject, Injectable, signal } from '@angular/core';
+import { computed, effect, inject, Injectable, signal } from '@angular/core';
 import { Observable, from, of } from 'rxjs';
 import { map, tap, catchError } from 'rxjs/operators';
 import {
@@ -16,6 +16,9 @@ export class WatchlistService {
 
   private readonly _watchlists = signal<Watchlist[]>([]);
   readonly watchlists = this._watchlists.asReadonly();
+
+  /** Lijsten waar je zelf films aan toevoegt; "Gezien" loopt via de gezien-toggle. */
+  readonly pickableWatchlists = computed(() => this._watchlists().filter(w => w.name !== 'Gezien'));
 
   private readonly _loaded = signal(false);
   readonly loaded = this._loaded.asReadonly();
@@ -215,7 +218,7 @@ export class WatchlistService {
   }
 
   isMovieInAnyWatchlist(movieId: number): boolean {
-    return this._watchlists().some(watchlist => (watchlist.movies ?? []).some(m => m.movieId === movieId));
+    return this.pickableWatchlists().some(watchlist => (watchlist.movies ?? []).some(m => m.movieId === movieId));
   }
 
   getFriendIdsWithMovieInWatchlist(movieId: number, friendIds: string[]): string[] {

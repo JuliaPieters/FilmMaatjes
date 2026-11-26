@@ -1,42 +1,38 @@
-    <div class="page-container">
-      <div class="mb-8">
-        <h1 class="text-3xl font-bold text-text-primary tracking-tight">Aanbevolen voor jou</h1>
-        <p class="text-text-muted mt-1 rec-subtitle">
-          @if (topGenres().length > 0) {
-            Op basis van jouw kijkgeschiedenis en beoordelingen
-          } @else {
-            Populair onder filmliefhebbers
-          }
-        </p>
-      </div>
-
-      @if (loading()) {
-        <app-loading-spinner message="Aanbevelingen laden..." />
-      } @else if (groups().length === 0) {
-        <app-empty-state
-          icon="auto_awesome"
-          title="Nog geen aanbevelingen"
-          description="Beoordeel een paar films om gepersonaliseerde aanbevelingen te krijgen."
-          actionLabel="Films ontdekken"
-          actionRoute="/movies"
-        />
-      } @else {
-        @for (group of groups(); track group.reason) {
-          @if (group.movies.length > 0) {
-            <section class="mb-10">
-              <div class="flex items-center gap-2 mb-4">
-                <mat-icon class="text-accent-light">{{ group.icon }}</mat-icon>
-                <div>
-                  <h2 class="section-title mb-0">{{ group.reason }}</h2>
-                </div>
-              </div>
-              <div class="horizontal-scroll">
-                @for (movie of group.movies; track movie.id) {
-                  <app-movie-card [movie]="movie" [showActions]="true" />
-                }
-              </div>
-            </section>
-          }
-        }
-      }
+<div class="page-container">
+  <header class="page-header">
+    <div>
+      <h1 class="page-title">Aanbevolen voor jou</h1>
+      <p class="page-subtitle">
+        {{ topGenres().length > 0 ? 'Op basis van jouw kijkgeschiedenis en beoordelingen' : 'Populair onder filmliefhebbers' }}
+      </p>
     </div>
+  </header>
+
+  @if (loading()) {
+    <app-loading-spinner message="Aanbevelingen laden..." />
+  } @else if (groups().length === 0) {
+    <app-empty-state
+      icon="auto_awesome"
+      title="Nog geen aanbevelingen"
+      description="Beoordeel een paar films om gepersonaliseerde aanbevelingen te krijgen."
+      actionLabel="Films ontdekken"
+      actionRoute="/movies"
+    />
+  } @else {
+    @for (group of groups(); track group.reason; let first = $first) {
+      <section class="section" [class.first-section]="first">
+        <div class="section-header">
+          <div class="group-heading">
+            <span class="icon-tile group-icon"><mat-icon class="icon-filled">{{ group.icon }}</mat-icon></span>
+            <h2 class="section-title group-title">{{ group.reason }}</h2>
+          </div>
+        </div>
+        <div class="horizontal-scroll bleed-row">
+          @for (movie of group.movies; track movie.id) {
+            <app-movie-card [movie]="movie" [showActions]="true" />
+          }
+        </div>
+      </section>
+    }
+  }
+</div>

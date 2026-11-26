@@ -13,6 +13,7 @@ import { WatchlistPickerSheetComponent } from '../../shared/components/watchlist
  * shared by the movie card, movie detail page, and anywhere else a movie can
  * be acted on. Owns the auth-guard, the notification text, and the
  * single-list-vs-bottom-sheet decision so components only trigger intent.
+ * Without any lists the sheet still opens, so the user can create one right there.
  */
 @Injectable({ providedIn: 'root' })
 export class MovieActionsService {
@@ -26,12 +27,7 @@ export class MovieActionsService {
   toggleWatchlist(movie: TmdbMovie): void {
     if (!this.requireAuth()) return;
 
-    const lists = this.watchlistService.watchlists();
-    if (lists.length === 0) {
-      this.notifications.info('Maak eerst een watchlist aan via de Watchlists pagina.');
-      return;
-    }
-
+    const lists = this.watchlistService.pickableWatchlists();
     if (lists.length === 1) {
       const watchlist = lists[0];
       if (this.watchlistService.isMovieInWatchlist(watchlist.id, movie.id)) {

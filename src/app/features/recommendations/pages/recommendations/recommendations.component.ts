@@ -42,13 +42,18 @@ export class RecommendationsComponent {
     });
   }
 
+  private loadToken = 0;
+
   private loadGroups(genres: number[]): void {
+    const token = ++this.loadToken;
+    const isCurrent = () => token === this.loadToken;
     this.loading.set(true);
     const watchedIds = new Set(this.library.watchedMovies().map(e => e.movieId));
 
     if (genres.length === 0) {
       this.movieService.getTopRated().subscribe({
         next: page => {
+          if (!isCurrent()) return;
           this.groups.set([{
             reason: 'Hoog gewaardeerde films',
             icon: 'star',
@@ -56,13 +61,24 @@ export class RecommendationsComponent {
           }]);
           this.loading.set(false);
         },
-        error: () => this.loading.set(false),
+        error: () => {
+          if (!isCurrent()) return;
+          this.groups.set([]);
+          this.loading.set(false);
+        },
       });
       return;
     }
 
     let pending = genres.length;
     const result: RecommendationGroup[] = genres.map(() => ({ reason: '', icon: 'movie', movies: [] }));
+    const settle = () => {
+      pending--;
+      if (pending === 0 && isCurrent()) {
+        this.groups.set(result.filter(g => g.movies.length > 0));
+        this.loading.set(false);
+      }
+    };
 
     genres.forEach((genreId, i) => {
       this.movieService.discoverMovies({ with_genres: String(genreId), 'vote_average.gte': 6.5 }).subscribe({
@@ -72,16 +88,9 @@ export class RecommendationsComponent {
             icon: 'favorite',
             movies: page.results.filter(m => !watchedIds.has(m.id)).slice(0, 10),
           };
-          pending--;
-          if (pending === 0) {
-            this.groups.set(result.filter(g => g.movies.length > 0));
-            this.loading.set(false);
-          }
+          settle();
         },
-        error: () => {
-          pending--;
-          if (pending === 0) this.loading.set(false);
-        },
+        error: () => settle(),
       });
     });
   }

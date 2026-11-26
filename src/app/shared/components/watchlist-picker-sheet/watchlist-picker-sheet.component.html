@@ -1,25 +1,49 @@
-    <div class="sheet">
-      <div class="sheet-header">
-        <h3 class="sheet-title">Toevoegen aan watchlist</h3>
-        <button type="button" class="sheet-close" (click)="close()">
-          <mat-icon>close</mat-icon>
-        </button>
-      </div>
-      @if (watchlistService.watchlists().length === 0) {
-        <p class="sheet-empty">Je hebt nog geen watchlists.</p>
-      } @else {
-        <div class="sheet-list">
-          @for (watchlist of watchlistService.watchlists(); track watchlist.id) {
-            <button type="button" class="sheet-item" (click)="toggle(watchlist.id)">
-              <span class="sheet-item-icon" [class.active]="isIn(watchlist.id)">
-                <mat-icon>{{ isIn(watchlist.id) ? 'bookmark' : 'bookmark_add' }}</mat-icon>
-              </span>
-              <span class="sheet-item-name">{{ watchlist.name }}</span>
-              @if (isIn(watchlist.id)) {
-                <mat-icon class="sheet-item-check">check</mat-icon>
-              }
-            </button>
-          }
-        </div>
-      }
+<div class="sheet">
+  <div class="sheet-handle" aria-hidden="true"></div>
+  <div class="sheet-header">
+    <div class="min-w-0">
+      <h3 class="sheet-title">Opslaan in lijst</h3>
+      <p class="sheet-subtitle">{{ movieTitle }}</p>
     </div>
+    <button type="button" class="icon-btn ghost sm" aria-label="Sluiten" (click)="close()">
+      <mat-icon>close</mat-icon>
+    </button>
+  </div>
+
+  <div class="sheet-list">
+    @for (watchlist of watchlistService.pickableWatchlists(); track watchlist.id) {
+      <button type="button" class="sheet-item" (click)="toggle(watchlist.id)">
+        <span class="sheet-item-icon" [class.active]="isIn(watchlist.id)">
+          <mat-icon [class.icon-filled]="isIn(watchlist.id)">bookmark</mat-icon>
+        </span>
+        <span class="sheet-item-text">
+          <span class="sheet-item-name">{{ watchlist.name }}</span>
+          <span class="sheet-item-meta">{{ watchlist.movies.length }} films</span>
+        </span>
+        <span class="sheet-check" [class.on]="isIn(watchlist.id)">
+          <mat-icon>check</mat-icon>
+        </span>
+      </button>
+    }
+
+    @if (creating()) {
+      <form class="sheet-create" (submit)="$event.preventDefault(); create()">
+        <input
+          #nameInput
+          class="field-input"
+          [value]="newName()"
+          (input)="newName.set(nameInput.value)"
+          placeholder="Naam van je nieuwe lijst"
+          maxlength="60"
+          autofocus
+        />
+        <button mat-flat-button type="submit" [disabled]="!newName().trim() || saving()">Maak</button>
+      </form>
+    } @else {
+      <button type="button" class="sheet-item new-list" (click)="creating.set(true)">
+        <span class="sheet-item-icon"><mat-icon>add</mat-icon></span>
+        <span class="sheet-item-name">Nieuwe lijst</span>
+      </button>
+    }
+  </div>
+</div>

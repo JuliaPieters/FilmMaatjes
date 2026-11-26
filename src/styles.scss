@@ -4,6 +4,7 @@
 @import '@fontsource/inter/500.css';
 @import '@fontsource/inter/600.css';
 @import '@fontsource/inter/700.css';
+@import '@fontsource/inter/800.css';
 
 @tailwind base;
 @tailwind components;
@@ -19,6 +20,7 @@ $app-theme: mat.define-theme((
   ),
   typography: (
     brand-family: 'Inter, system-ui, sans-serif',
+    plain-family: 'Inter, system-ui, sans-serif',
     bold-weight: 700,
   ),
   density: (
@@ -86,7 +88,108 @@ $app-theme: mat.define-theme((
   --color-white-rgb: 255, 255, 255;
   --color-black-rgb: 0, 0, 0;
   --color-scrollbar-thumb: #2a2a3e;
+
+  /* Layout */
+  --topbar-h: 60px;
+  --tabbar-h: 64px;
+  --gutter: 1rem;
+  --page-max: 1200px;
+  --radius-card: 16px;
+  --radius-poster: 12px;
+  --ease: cubic-bezier(0.4, 0, 0.2, 1);
+
+  @media (min-width: 768px) {
+    --topbar-h: 68px;
+    --tabbar-h: 0px;
+    --gutter: 2rem;
+  }
+
+  /* Material: alles in de huisstijl i.p.v. de lila M3-standaard */
+  @include mat.button-overrides((
+    filled-container-color: var(--color-accent),
+    filled-label-text-color: var(--color-text-primary),
+    filled-container-shape: 999px,
+    filled-container-height: 44px,
+    filled-horizontal-padding: 20px,
+    filled-label-text-weight: 600,
+    filled-disabled-container-color: rgba(var(--color-white-rgb), 0.06),
+    filled-disabled-label-text-color: var(--color-text-muted),
+    outlined-outline-color: rgba(var(--color-white-rgb), 0.14),
+    outlined-label-text-color: var(--color-text-soft),
+    outlined-container-shape: 999px,
+    outlined-container-height: 44px,
+    outlined-horizontal-padding: 20px,
+    outlined-label-text-weight: 600,
+    outlined-disabled-outline-color: rgba(var(--color-white-rgb), 0.08),
+    outlined-disabled-label-text-color: var(--color-text-muted),
+    text-label-text-color: var(--color-accent-light),
+    text-container-shape: 999px,
+    text-container-height: 44px,
+    text-label-text-weight: 600,
+  ));
+  @include mat.icon-button-overrides((
+    icon-color: var(--color-text-secondary),
+    state-layer-size: 44px,
+    icon-size: 22px,
+  ));
+  @include mat.form-field-overrides((
+    filled-container-color: var(--color-surface-100),
+    filled-container-shape: 12px,
+    filled-active-indicator-color: transparent,
+    filled-hover-active-indicator-color: transparent,
+    filled-focus-active-indicator-color: var(--color-accent),
+    filled-label-text-color: var(--color-text-meta),
+    filled-focus-label-text-color: var(--color-accent-light),
+    filled-input-text-color: var(--color-text-primary),
+    filled-caret-color: var(--color-accent-light),
+  ));
+  @include mat.menu-overrides((
+    container-color: var(--color-surface-50),
+    container-shape: 14px,
+    item-label-text-color: var(--color-text-soft),
+    item-icon-color: var(--color-text-secondary),
+    divider-color: rgba(var(--color-white-rgb), 0.06),
+  ));
+  @include mat.snack-bar-overrides((
+    container-color: var(--color-surface-50),
+    supporting-text-color: var(--color-text-primary),
+    button-color: var(--color-accent-light),
+    container-shape: 12px,
+  ));
+  @include mat.tooltip-overrides((
+    container-color: var(--color-surface-50),
+    supporting-text-color: var(--color-text-soft),
+  ));
+  @include mat.tabs-overrides((
+    active-indicator-color: var(--color-accent),
+    active-focus-indicator-color: var(--color-accent),
+    active-hover-indicator-color: var(--color-accent),
+    active-label-text-color: var(--color-accent-light),
+    active-focus-label-text-color: var(--color-accent-light),
+    active-hover-label-text-color: var(--color-accent-light),
+    inactive-label-text-color: var(--color-text-meta),
+    divider-color: rgba(var(--color-white-rgb), 0.06),
+  ));
+  @include mat.badge-overrides((
+    background-color: var(--color-gold),
+    text-color: var(--color-surface),
+  ));
+  @include mat.bottom-sheet-overrides((
+    container-background-color: var(--color-surface-50),
+    container-shape: 20px,
+  ));
+  @include mat.dialog-overrides((
+    container-color: var(--color-surface-50),
+    container-shape: 20px,
+  ));
+  @include mat.progress-spinner-overrides((
+    active-indicator-color: var(--color-accent-light),
+  ));
 }
+
+/* ------------------------------------------------------------------ */
+/* Basis                                                               */
+/* ------------------------------------------------------------------ */
 
 *, *::before, *::after {
   box-sizing: border-box;
@@ -94,27 +197,62 @@ $app-theme: mat.define-theme((
 
 html,
 body {
-  height: 100%;
   margin: 0;
+  min-height: 100%;
   background-color: var(--color-surface);
   color: var(--color-text-primary);
   font-family: 'Inter', system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  -webkit-text-size-adjust: 100%;
+  -webkit-tap-highlight-color: transparent;
+  /* Niets mag ooit de pagina breder maken dan het scherm. `clip` (i.p.v. `hidden`)
+     maakt geen scrollcontainer aan, zodat `position: sticky` blijft werken. */
+  overflow-x: clip;
+}
+
+html {
+  overscroll-behavior-y: none;
+  scroll-padding-top: calc(var(--topbar-h) + env(safe-area-inset-top));
+}
+
+body {
+  overscroll-behavior-y: contain;
+}
+
+/* Lege body-achtergrond tijdens het laden van de app voorkomt een witte flits */
+app-root {
+  display: block;
+  min-height: 100dvh;
+}
+
+button,
+a,
+[role='button'] {
+  touch-action: manipulation;
+}
+
+::selection {
+  background: rgba(var(--color-accent-rgb), 0.35);
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-accent-light);
+  outline-offset: 2px;
 }
 
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 8px;
+  height: 8px;
 }
 
 ::-webkit-scrollbar-track {
-  background: var(--color-surface);
+  background: transparent;
 }
 
 ::-webkit-scrollbar-thumb {
   background: var(--color-scrollbar-thumb);
-  border-radius: 3px;
+  border-radius: 999px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
@@ -131,114 +269,677 @@ img {
   height: auto;
 }
 
+/* iOS zoomt in op velden met tekst < 16px — dat voelt kapot in een PWA */
+input,
+textarea,
+select {
+  font-size: 16px;
+  font-family: inherit;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ------------------------------------------------------------------ */
+/* Iconen — altijd vierkant en gecentreerd, grootte volgt font-size   */
+/* ------------------------------------------------------------------ */
+
+.material-symbols-outlined {
+  font-family: 'Material Symbols Outlined';
+  font-weight: normal;
+  font-style: normal;
+  line-height: 1;
+  letter-spacing: normal;
+  text-transform: none;
+  white-space: nowrap;
+  word-wrap: normal;
+  direction: ltr;
+  -webkit-font-feature-settings: 'liga';
+  font-feature-settings: 'liga';
+  -webkit-font-smoothing: antialiased;
+}
+
+.mat-icon {
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 1em !important;
+  height: 1em !important;
+  font-size: 24px;
+  line-height: 1 !important;
+  overflow: visible !important;
+  vertical-align: middle;
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+  user-select: none;
+}
+
+.mat-icon.icon-filled,
+.icon-filled .mat-icon {
+  font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+}
+
+.mat-mdc-icon-button {
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  padding: 0 !important;
+
+  .mat-icon {
+    font-size: 22px;
+  }
+
+  .mat-mdc-button-touch-target {
+    width: 44px;
+    height: 44px;
+  }
+}
+
+.mat-mdc-button,
+.mat-mdc-unelevated-button,
+.mat-mdc-outlined-button,
+.mat-mdc-raised-button {
+  white-space: nowrap;
+
+  > .mat-icon {
+    font-size: 20px;
+  }
+}
+
+/* ------------------------------------------------------------------ */
+/* Material-overlays                                                    */
+/* ------------------------------------------------------------------ */
+
 .mat-mdc-form-field {
   width: 100%;
 }
 
+.mdc-text-field--filled {
+  border-radius: 12px !important;
+}
+
+.mat-mdc-menu-panel {
+  border: 1px solid rgba(var(--color-white-rgb), 0.08);
+  box-shadow: 0 16px 40px rgba(var(--color-black-rgb), 0.5) !important;
+}
+
+/* Snackbar boven de onderbalk en de home-indicator houden */
 .mat-mdc-snack-bar-container {
-  --mdc-snackbar-container-color: var(--color-surface-50);
-  --mdc-snackbar-supporting-text-color: var(--color-text-primary);
+  margin: 12px !important;
+
+  @media (max-width: 767px) {
+    margin-bottom: calc(var(--tabbar-h) + env(safe-area-inset-bottom) + 12px) !important;
+  }
 }
 
-.mdc-text-field--filled:not(.mdc-text-field--disabled) {
-  background-color: var(--color-surface-100) !important;
+.notification-success .mat-mdc-snackbar-surface {
+  border-left: 3px solid var(--color-success);
 }
 
-.mat-mdc-form-field-focus-overlay {
-  background-color: rgba(var(--color-accent-rgb), 0.05) !important;
+.notification-error .mat-mdc-snackbar-surface {
+  border-left: 3px solid var(--color-danger-strong);
 }
+
+.mat-bottom-sheet-container {
+  padding: 0 !important;
+  padding-bottom: env(safe-area-inset-bottom) !important;
+  border: 1px solid rgba(var(--color-white-rgb), 0.08);
+  border-bottom: none;
+}
+
+/* ------------------------------------------------------------------ */
+/* Layout-bouwstenen                                                   */
+/* ------------------------------------------------------------------ */
 
 .page-container {
-  min-height: calc(100vh - 58px);
-  padding: 1.5rem 1.25rem calc(96px + env(safe-area-inset-bottom));
+  width: 100%;
+  max-width: var(--page-max);
+  margin: 0 auto;
+  padding: 1.25rem var(--gutter) calc(var(--tabbar-h) + env(safe-area-inset-bottom) + 2rem);
+  min-height: calc(100dvh - var(--topbar-h) - env(safe-area-inset-top));
 
   @media (min-width: 768px) {
-    min-height: calc(100vh - 90px);
-    padding: 2rem 2rem;
+    padding-top: 2rem;
+    padding-bottom: 4rem;
   }
+}
 
-  @media (min-width: 1024px) {
-    padding: 2rem 3rem;
-    max-width: 1400px;
-    margin: 0 auto;
+.page-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.75rem 1rem;
+  margin-bottom: 1.5rem;
+
+  > * {
+    min-width: 0;
+  }
+}
+
+.page-title {
+  margin: 0;
+  font-size: 1.75rem;
+  font-weight: 800;
+  line-height: 1.15;
+  letter-spacing: -0.03em;
+  color: var(--color-text-primary);
+
+  @media (min-width: 768px) {
+    font-size: 2.125rem;
+  }
+}
+
+.page-subtitle {
+  margin: 0.375rem 0 0;
+  font-size: 0.9375rem;
+  line-height: 1.5;
+  color: var(--color-text-secondary);
+}
+
+.section {
+  margin-top: 2rem;
+
+  @media (min-width: 768px) {
+    margin-top: 2.75rem;
+  }
+}
+
+.section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 0.875rem;
+
+  > * {
+    min-width: 0;
   }
 }
 
 .section-title {
-  font-size: 1.5rem;
+  margin: 0;
+  font-size: 1.1875rem;
   font-weight: 700;
+  letter-spacing: -0.02em;
   color: var(--color-text-primary);
-  margin-bottom: 1.25rem;
-  letter-spacing: -0.025em;
+
+  @media (min-width: 768px) {
+    font-size: 1.375rem;
+  }
 }
 
+.section-subtitle {
+  margin: 0.125rem 0 0;
+  font-size: 0.8125rem;
+  color: var(--color-text-meta);
+}
+
+.see-all-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.125rem;
+  flex-shrink: 0;
+  min-height: 44px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-accent-light);
+  transition: color 0.15s var(--ease);
+
+  .mat-icon {
+    font-size: 18px;
+  }
+
+  &:hover {
+    color: var(--color-accent-lighter);
+  }
+}
+
+/* Kaart: één oppervlaktestijl voor de hele app */
+.glass-card,
+.card {
+  background: rgba(var(--color-surface-50-rgb), 0.72);
+  border: 1px solid rgba(var(--color-white-rgb), 0.06);
+  border-radius: var(--radius-card);
+}
+
+a.card,
+a.glass-card,
+button.card {
+  transition: border-color 0.15s var(--ease), background-color 0.15s var(--ease);
+
+  @media (hover: hover) {
+    &:hover {
+      border-color: rgba(var(--color-accent-rgb), 0.35);
+      background: rgba(var(--color-surface-50-rgb), 0.95);
+    }
+  }
+}
+
+/* Postergrid */
 .card-grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 1rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1.25rem 0.875rem;
   align-items: start;
 
   > * {
     min-width: 0;
   }
 
-  @media (min-width: 640px) {
-    grid-template-columns: repeat(3, 1fr);
+  @media (min-width: 560px) {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 
   @media (min-width: 768px) {
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 1.5rem 1rem;
   }
 
   @media (min-width: 1024px) {
-    grid-template-columns: repeat(5, 1fr);
+    grid-template-columns: repeat(5, minmax(0, 1fr));
   }
 
-  @media (min-width: 1280px) {
-    grid-template-columns: repeat(6, 1fr);
+  @media (min-width: 1200px) {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
   }
 }
 
+/* Horizontale rij die tot de schermrand doorloopt */
 .horizontal-scroll {
   display: flex;
-  gap: 1rem;
+  gap: 0.75rem;
   overflow-x: auto;
-  padding-bottom: 1rem;
-  scrollbar-width: thin;
-  scrollbar-color: var(--color-scrollbar-thumb) transparent;
+  overscroll-behavior-x: contain;
+  scroll-snap-type: x proximity;
+  scroll-padding-inline: var(--gutter);
+  padding-bottom: 0.25rem;
+  scrollbar-width: none;
 
   &::-webkit-scrollbar {
-    height: 4px;
+    display: none;
   }
 
   > * {
-    flex-shrink: 0;
-    width: 132px;
+    flex: 0 0 auto;
+    width: 128px;
+    scroll-snap-align: start;
 
-    @media (min-width: 640px) {
-      width: 160px;
+    @media (min-width: 560px) {
+      width: 150px;
     }
 
     @media (min-width: 768px) {
-      width: 180px;
+      width: 172px;
     }
   }
 }
 
 .bleed-row {
-  margin: 0 -1.25rem;
-  padding: 0 1.25rem;
+  margin-inline: calc(var(--gutter) * -1);
+  padding-inline: var(--gutter);
+}
+
+/* Pills / chips (filters, categorieën, genres) */
+.chip-row {
+  display: flex;
+  gap: 0.5rem;
+  overflow-x: auto;
+  scrollbar-width: none;
+  margin-inline: calc(var(--gutter) * -1);
+  padding: 0.125rem var(--gutter);
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+
+  &.wrap {
+    flex-wrap: wrap;
+    overflow: visible;
+    margin-inline: 0;
+    padding-inline: 0;
+  }
+}
+
+.pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.375rem;
+  flex-shrink: 0;
+  height: 38px;
+  padding: 0 1rem;
+  border-radius: 999px;
+  border: 1px solid rgba(var(--color-white-rgb), 0.1);
+  background: transparent;
+  color: var(--color-text-secondary);
+  font-size: 0.875rem;
+  font-weight: 500;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background-color 0.15s var(--ease), border-color 0.15s var(--ease), color 0.15s var(--ease);
+
+  .mat-icon {
+    font-size: 18px;
+  }
+
+  @media (hover: hover) {
+    &:hover {
+      color: var(--color-text-primary);
+      border-color: rgba(var(--color-white-rgb), 0.2);
+    }
+  }
+
+  &.active {
+    background: rgba(var(--color-accent-rgb), 0.16);
+    border-color: var(--color-accent);
+    color: var(--color-accent-lighter);
+  }
+
+  &.sm {
+    height: 32px;
+    padding: 0 0.75rem;
+    font-size: 0.8125rem;
+  }
+}
+
+/* Onderstreepte tabs (profiel, vrienden) */
+.tabs {
+  display: flex;
+  gap: 0.25rem;
+  overflow-x: auto;
+  scrollbar-width: none;
+  border-bottom: 1px solid rgba(var(--color-white-rgb), 0.06);
+  margin-inline: calc(var(--gutter) * -1);
+  padding-inline: calc(var(--gutter) - 0.75rem);
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
 
   @media (min-width: 768px) {
-    margin: 0;
-    padding: 0;
+    margin-inline: 0;
+    padding-inline: 0;
   }
+}
+
+.tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  flex-shrink: 0;
+  min-height: 48px;
+  padding: 0 0.75rem;
+  margin-bottom: -1px;
+  border: none;
+  border-bottom: 2px solid transparent;
+  background: none;
+  color: var(--color-text-meta);
+  font-size: 0.9375rem;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: color 0.15s var(--ease), border-color 0.15s var(--ease);
+
+  .mat-icon {
+    font-size: 18px;
+  }
+
+  .tab-count {
+    min-width: 20px;
+    height: 20px;
+    padding: 0 6px;
+    border-radius: 999px;
+    background: rgba(var(--color-white-rgb), 0.06);
+    font-size: 0.6875rem;
+    font-weight: 700;
+    line-height: 20px;
+    text-align: center;
+  }
+
+  @media (hover: hover) {
+    &:hover {
+      color: var(--color-text-soft);
+    }
+  }
+
+  &.active {
+    color: var(--color-accent-light);
+    border-bottom-color: var(--color-accent);
+
+    .tab-count {
+      background: rgba(var(--color-accent-rgb), 0.2);
+    }
+  }
+}
+
+/* Segmented control (roulette-modus e.d.) */
+.segmented {
+  display: grid;
+  grid-auto-columns: minmax(0, 1fr);
+  grid-auto-flow: column;
+  gap: 4px;
+  padding: 4px;
+  border-radius: 14px;
+  background: rgba(var(--color-white-rgb), 0.04);
+  border: 1px solid rgba(var(--color-white-rgb), 0.06);
+}
+
+.segment {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.375rem;
+  min-height: 44px;
+  padding: 0 0.5rem;
+  border: none;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--color-text-secondary);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.15s var(--ease), color 0.15s var(--ease);
+
+  .mat-icon {
+    font-size: 18px;
+  }
+
+  &.active {
+    background: rgba(var(--color-accent-rgb), 0.2);
+    color: var(--color-accent-lighter);
+  }
+}
+
+/* Ronde iconknop zonder Material (op posters, in lijsten) */
+.icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border-radius: 50%;
+  border: 1px solid rgba(var(--color-white-rgb), 0.1);
+  background: rgba(var(--color-white-rgb), 0.04);
+  color: var(--color-text-soft);
+  cursor: pointer;
+  transition: background-color 0.15s var(--ease), border-color 0.15s var(--ease), color 0.15s var(--ease);
+
+  .mat-icon {
+    font-size: 22px;
+  }
+
+  @media (hover: hover) {
+    &:hover:not(:disabled) {
+      background: rgba(var(--color-white-rgb), 0.08);
+      color: var(--color-text-primary);
+    }
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: default;
+  }
+
+  &.ghost {
+    border-color: transparent;
+    background: transparent;
+  }
+
+  &.sm {
+    width: 36px;
+    height: 36px;
+
+    .mat-icon {
+      font-size: 20px;
+    }
+  }
+
+  &.active {
+    background: rgba(var(--color-accent-rgb), 0.18);
+    border-color: rgba(var(--color-accent-rgb), 0.45);
+    color: var(--color-accent-light);
+  }
+
+  &.success {
+    background: rgba(var(--color-success-rgb), 0.14);
+    border-color: rgba(var(--color-success-rgb), 0.4);
+    color: var(--color-success);
+  }
+
+  @media (hover: hover) {
+    &.danger:hover:not(:disabled) {
+      color: var(--color-danger-strong);
+    }
+  }
+}
+
+/* Avatar met initiaal */
+.avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  overflow: hidden;
+  background: linear-gradient(135deg, var(--color-accent), var(--color-accent-light));
+  color: var(--color-text-primary);
+  font-size: 1rem;
+  font-weight: 700;
+  line-height: 1;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  &.xs { width: 28px; height: 28px; font-size: 0.75rem; }
+  &.sm { width: 32px; height: 32px; font-size: 0.8125rem; }
+  &.md { width: 44px; height: 44px; font-size: 1.0625rem; }
+  &.lg { width: 56px; height: 56px; font-size: 1.375rem; }
+}
+
+/* Icoon in een getint vierkant (features, kaarten, koppen) */
+.icon-tile {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: rgba(var(--color-accent-rgb), 0.16);
+  border: 1px solid rgba(var(--color-accent-rgb), 0.25);
+  color: var(--color-accent-light);
+
+  .mat-icon {
+    font-size: 22px;
+  }
+
+  &.lg {
+    width: 56px;
+    height: 56px;
+    border-radius: 16px;
+
+    .mat-icon {
+      font-size: 28px;
+    }
+  }
+}
+
+/* Formulieren buiten Material om */
+.field-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+}
+
+.field-label {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+}
+
+.field-input {
+  width: 100%;
+  min-height: 48px;
+  padding: 0.75rem 0.875rem;
+  border-radius: 12px;
+  border: 1px solid rgba(var(--color-white-rgb), 0.1);
+  background: var(--color-surface-100);
+  color: var(--color-text-primary);
+  outline: none;
+  transition: border-color 0.15s var(--ease), box-shadow 0.15s var(--ease);
+
+  &::placeholder {
+    color: var(--color-text-muted);
+  }
+
+  &:focus {
+    border-color: var(--color-accent);
+    box-shadow: 0 0 0 3px rgba(var(--color-accent-rgb), 0.2);
+  }
+}
+
+textarea.field-input {
+  min-height: 96px;
+  resize: vertical;
+  line-height: 1.6;
+}
+
+/* Spinner zonder Material (inline) */
+.spinner {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 3px solid rgba(var(--color-accent-rgb), 0.25);
+  border-top-color: var(--color-accent);
+  animation: spin 0.8s linear infinite;
+}
+
+/* ------------------------------------------------------------------ */
+/* Animaties & tekst                                                    */
+/* ------------------------------------------------------------------ */
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
 }
 
 @keyframes fadeInUp {
   from {
     opacity: 0;
-    transform: translateY(20px);
+    transform: translateY(16px);
   }
   to {
     opacity: 1;
@@ -261,18 +962,11 @@ img {
 }
 
 .fade-in-up {
-  animation: fadeInUp 0.5s ease forwards;
-}
-
-.glass-card {
-  background: rgba(var(--color-surface-50-rgb), 0.8);
-  backdrop-filter: blur(12px);
-  border: 1px solid rgba(var(--color-white-rgb), 0.06);
-  border-radius: 12px;
+  animation: fadeInUp 0.4s var(--ease) both;
 }
 
 .gradient-text {
-  background: linear-gradient(135deg, var(--color-accent-light) 0%, var(--color-accent) 50%, var(--color-accent-dark) 100%);
+  background: linear-gradient(135deg, var(--color-accent-lighter) 0%, var(--color-accent-light) 45%, var(--color-accent) 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;

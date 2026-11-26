@@ -1,15 +1,19 @@
-    <nav class="tab-bar">
-      @for (tab of tabs; track tab.route) {
-        <a
-          [routerLink]="tab.route"
-          routerLinkActive
-          #rla="routerLinkActive"
-          [routerLinkActiveOptions]="{ exact: tab.exact }"
-          [class.tab-active]="rla.isActive"
-          class="tab-item"
-        >
-          <mat-icon class="tab-icon">{{ tab.icon }}</mat-icon>
-          <span class="tab-label">{{ tab.label }}</span>
-        </a>
-      }
-    </nav>
+@if (authService.isAuthenticated()) {
+  <nav class="tab-bar" aria-label="Hoofdnavigatie">
+    @for (tab of tabs; track tab.route) {
+      <a
+        [routerLink]="tab.route"
+        routerLinkActive
+        #rla="routerLinkActive"
+        class="tab-item"
+        [class.active]="rla.isActive"
+        [attr.aria-current]="rla.isActive ? 'page' : null"
+      >
+        <span class="tab-icon-wrap">
+          <mat-icon [class.icon-filled]="rla.isActive">{{ tab.icon }}</mat-icon>
+        </span>
+        <span class="tab-label">{{ tab.label }}</span>
+      </a>
+    }
+  </nav>
+}

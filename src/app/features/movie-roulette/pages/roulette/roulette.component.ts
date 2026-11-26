@@ -13,6 +13,7 @@ import { UserLibraryService } from '../../../../core/services/user-library.servi
 import { NotificationService } from '../../../../core/services/notification.service';
 import { TmdbMovie } from '../../../../core/models/movie.model';
 import { Watchlist } from '../../../../core/models/watchlist.model';
+import { EmptyStateComponent } from '../../../../shared/components/empty-state/empty-state.component';
 import { RouletteFilterSheetComponent, RouletteFilterSheetData } from './roulette-filter-sheet.component';
 
 type RouletteMode = 'random' | 'watchlists' | 'recommended';
@@ -28,7 +29,7 @@ interface Genre {
 
 @Component({
   selector: 'app-roulette',
-  imports: [RouterLink, MatIcon, MatButton, MatSlider, MatSliderThumb, FormsModule, DecimalPipe],
+  imports: [RouterLink, MatIcon, MatButton, MatSlider, MatSliderThumb, FormsModule, DecimalPipe, EmptyStateComponent],
   templateUrl: './roulette.component.html',
   styleUrl: './roulette.component.scss',
 })
@@ -47,12 +48,21 @@ export class RouletteComponent implements OnInit {
 
   // Mode
   protected readonly mode = signal<RouletteMode>('random');
+  protected readonly modeOptions: { value: RouletteMode; label: string; icon: string }[] = [
+    { value: 'random', label: 'Willekeurig', icon: 'shuffle' },
+    { value: 'watchlists', label: 'Watchlists', icon: 'bookmark' },
+    { value: 'recommended', label: 'Aanbevolen', icon: 'recommend' },
+  ];
 
   // Random mode filters
   protected readonly selectedGenreIds = signal<number[]>([]);
   protected readonly minRating = signal(0);
   protected readonly yearFrom = signal<number | null>(null);
   protected readonly yearTo = signal<number | null>(null);
+
+  protected readonly hasActiveFilters = computed(() =>
+    this.selectedGenreIds().length > 0 || this.minRating() > 0 || this.yearFrom() !== null,
+  );
 
   protected get minRatingValue(): number { return this.minRating(); }
   protected set minRatingValue(v: number) { this.minRating.set(v); }

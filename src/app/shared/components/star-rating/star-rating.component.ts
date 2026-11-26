@@ -1,10 +1,9 @@
-import { Component, input, model, output, signal } from '@angular/core';
+import { Component, computed, input, model, output, signal } from '@angular/core';
 import { MatIcon } from '@angular/material/icon';
-import { MatTooltip } from '@angular/material/tooltip';
 
 @Component({
   selector: 'app-star-rating',
-  imports: [MatIcon, MatTooltip],
+  imports: [MatIcon],
   templateUrl: './star-rating.component.html',
   styleUrl: './star-rating.component.scss',
 })
@@ -18,26 +17,13 @@ export class StarRatingComponent {
   readonly ratingChange = output<number>();
 
   protected readonly stars = [1, 2, 3, 4, 5];
-  private hoveredStar = signal(0);
+  private readonly hoveredStar = signal(0);
 
-  protected readonly currentRating = this.value;
-
-  protected getStarIcon(star: number): string {
-    const active = this.hoveredStar() > 0 ? this.hoveredStar() : this.value();
-    return star <= active ? 'star' : 'star_border';
-  }
-
-  protected getStarClass(star: number): string {
-    const active = this.hoveredStar() > 0 ? this.hoveredStar() : this.value();
-    const base = 'transition-colors duration-150';
-    if (star <= active) {
-      return `${base} text-gold`;
-    }
-    return `${base} text-text-muted`;
-  }
+  protected readonly activeValue = computed(() => this.hoveredStar() || this.value());
 
   protected setHover(star: number): void {
-    this.hoveredStar.set(star);
+    // Hover alleen met een echte muis; op touch blijft hij anders "hangen" na een tik.
+    if (!this.readonly() && matchMedia('(hover: hover)').matches) this.hoveredStar.set(star);
   }
 
   protected clearHover(): void {

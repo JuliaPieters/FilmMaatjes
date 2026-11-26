@@ -1,12 +1,10 @@
-import { Component, inject } from '@angular/core';
+import { Component, computed, inject } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { DatePipe } from '@angular/common';
 import { MatIcon } from '@angular/material/icon';
-import { MatIconButton, MatButton } from '@angular/material/button';
+import { MatButton } from '@angular/material/button';
 import { MatMenu, MatMenuTrigger, MatMenuItem } from '@angular/material/menu';
 import { MatDivider } from '@angular/material/divider';
-import { MatTooltip } from '@angular/material/tooltip';
-import { MatBadge } from '@angular/material/badge';
 import { AuthService } from '../../features/auth/services/auth.service';
 import { FriendActivityService } from '../../core/services/friend-activity.service';
 import { FriendActivity } from '../../core/models/friend-activity.model';
@@ -17,14 +15,11 @@ import { FriendActivity } from '../../core/models/friend-activity.model';
     RouterLink,
     RouterLinkActive,
     MatIcon,
-    MatIconButton,
     MatButton,
     MatMenu,
     MatMenuTrigger,
     MatMenuItem,
     MatDivider,
-    MatTooltip,
-    MatBadge,
   ],
   providers: [DatePipe],
   templateUrl: './navbar.component.html',
@@ -71,10 +66,19 @@ export class NavbarComponent {
     this.authService.logout();
   }
 
-  protected readonly navLinks = [
-    { label: 'Films', route: '/movies', icon: 'movie' },
-    { label: 'Roulette', route: '/roulette', icon: 'casino' },
-    { label: 'Matcher', route: '/matcher', icon: 'favorite' },
-    { label: 'Vrienden', route: '/friends', icon: 'people' },
-  ];
+  protected readonly navLinks = computed(() =>
+    this.authService.isAuthenticated()
+      ? [
+          { label: 'Home', route: '/dashboard', icon: 'home' },
+          { label: 'Films', route: '/movies', icon: 'movie' },
+          { label: 'Roulette', route: '/roulette', icon: 'casino' },
+          { label: 'Matcher', route: '/matcher', icon: 'favorite' },
+          { label: 'Lijsten', route: '/watchlists', icon: 'bookmark' },
+          { label: 'Vrienden', route: '/friends', icon: 'people' },
+        ]
+      : [
+          { label: 'Films', route: '/movies', icon: 'movie' },
+          { label: 'Roulette', route: '/roulette', icon: 'casino' },
+        ],
+  );
 }
